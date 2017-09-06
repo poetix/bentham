@@ -13,10 +13,26 @@ provider:
   profile: test
 
 functions:
-  webhook_challenge:
-    handler: handler.webhook_challenge
+  webhook-challenge:
+    handler: handler.webhookChallenge
     events:
       - http:
           method: get
+          path: dropbox-webhook
+          integration: lambda
+
+          request:
+            parameters:
+              querystrings:
+                challenge: true
+
+          response:
+            template: $input.path('$.body')
+
+  webhook-notify:
+    handler: handler.webhookNotify
+    events:
+      - http:
+          method: post
           path: dropbox-webhook
           integration: lambda
