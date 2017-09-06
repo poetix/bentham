@@ -8,9 +8,9 @@ export const webhookChallenge = (event, context, cb) => {
     })
 }
 
-export const webhookNotify = (event, context, cb) => cb(null,
-  processNotification(JSON.parse(event.body))
-)
+export const webhookNotify = (event, context, cb) => {
+  cb(null, processNotification(event.body))
+}
 
 function processNotification(notification) {
     console.log(notification)
