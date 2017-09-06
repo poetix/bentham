@@ -58,9 +58,9 @@ const processOauthCode = (cb, code, redirectUri) => {
      if (res != null && (res.statusCode == 200 || res.statusCode == 201)) {
        let response = JSON.parse(body)
        console.log(`Access token: ${response.access_token}\nAccount id: ${response.account_id}`)
-       cb(null, { statusCode: 200 });
+       cb(null, { statusCode: 200, body: "The application is now authorised" });
      } else {
-       cb(body, { statusCode: res.statusCode });
+       cb(body, null);
      }
    });
 };
