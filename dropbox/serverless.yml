@@ -11,6 +11,9 @@ provider:
   state: dev
   region: eu-west-2
   profile: test
+  environment:
+    DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
+    DROPBOX_CLIENT_SECRET: ${env:DROPBOX_CLIENT_SECRET}
 
 functions:
   webhook-challenge:
@@ -19,15 +22,11 @@ functions:
       - http:
           method: get
           path: dropbox-webhook
-          integration: lambda
 
           request:
             parameters:
               querystrings:
                 challenge: true
-
-          response:
-            template: $input.path('$.body')
 
   webhook-notify:
     handler: handler.webhookNotify
@@ -35,4 +34,23 @@ functions:
       - http:
           method: post
           path: dropbox-webhook
-          integration: lambda
+          integration: lambda-proxy
+
+  oauth-initiate:
+    handler: handler.oauthInitiate
+    events:
+      - http:
+          method: get
+          path: dropbox-oauth-initiate
+
+  oauth-complete:
+    handler: handler.oauthComplete
+    events:
+      - http:
+          method: get
+          path: dropbox-oauth-complete
+
+          request:
+            parameters:
+              querystrings:
+                code: true
