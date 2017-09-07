@@ -16,6 +16,7 @@ NPM installs
 npm install typescript
 npm install ts-loader
 npm install @types/node --save-dev
+npm install aws-sdk
 npm install -g serverless
 npm install serverless-webpack-plugin webpack --save-dev
 npm install --save dropbox

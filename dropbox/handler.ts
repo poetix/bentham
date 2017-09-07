@@ -1,5 +1,7 @@
 
 import request = require('request')
+const AWS = require('aws-sdk');
+const dynamo = new AWS.DynamoDB.DocumentClient();
 
 // Webhook lambdas
 export const webhookChallenge = (event, context, cb) => cb(null,
@@ -9,7 +11,8 @@ export const webhookChallenge = (event, context, cb) => cb(null,
     });
 
 export const webhookNotify = (event, context, cb) => cb(null,
-  processNotification(event.body));
+  processNotification(event.body)
+);
 
 // Oauth lambdas
 export const oauthInitiate = (event, context, cb) => cb(null,
@@ -41,7 +44,8 @@ const processNotification = (notification) => {
     };
 };
 
-const processOauthCode = (cb, code, redirectUri) => {
+const requestToken = (code, redirectUri, cb) => {
+  console.log(`Requesting user token for code ${code}`);
   var options = {
      url: 'https://api.dropboxapi.com/oauth2/token',
      method: 'POST',
@@ -55,12 +59,46 @@ const processOauthCode = (cb, code, redirectUri) => {
    };
 
    request(options, (err, res, body) => {
-     if (res != null && (res.statusCode == 200 || res.statusCode == 201)) {
+     if (res != null && (res.statusCode == 200)) {
        let response = JSON.parse(body)
-       console.log(`Access token: ${response.access_token}\nAccount id: ${response.account_id}`)
-       cb(null, { statusCode: 200, body: "The application is now authorised" });
+       console.log(`Received access token ${response.access_token} for user ${response.account_id}`);
+       cb(null, {
+         accessToken: response.access_token,
+         accountId: response.account_id
+       });
      } else {
-       cb(body, null);
+       console.log('User token request failed');
+       cb(err, null)
      }
    });
+};
+
+const processOauthCode = (cb, code, redirectUri) => {
+  requestToken(code, redirectUri, (err, res) => {
+    if (res == null) {
+      cb(err, null);
+    } else {
+      writeUserToken(cb, res.accountId, res.accessToken)
+    }
+  });
+};
+
+const writeUserToken = (cb, accountId, accessToken) => {
+  console.log("Writing account access token to Dynamo");
+  const params = {
+    TableName: 'user_tokens',
+    Item: {
+      account_id: accountId,
+      access_token: accessToken
+    }
+  };
+
+  dynamo.put(params, (err, res) => {
+    if (err != null) {
+      console.log("Write to Dynamo failed");
+      cb(err, null)
+    } else {
+      cb(null, { statusCode: 200, body: "The application is now authorised" });
+    }
+  });
 };

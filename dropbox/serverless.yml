@@ -54,3 +54,34 @@ functions:
             parameters:
               querystrings:
                 code: true
+
+resources:
+  Resources:
+    UserTokensTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: user_tokens
+        AttributeDefinitions:
+          - AttributeName: account_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: account_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: UserTokensTable
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: arn:aws:dynamodb:*:*:table/user_tokens
+        Roles:
+          - Ref: IamRoleLambdaExecution
