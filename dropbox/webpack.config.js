@@ -15,4 +15,7 @@ module.exports = {
       { test: /\.ts(x?)$/, loader: 'ts-loader' },
     ],
   },
+  resolve: {
+    extensions: ['.ts', '.js']
+  }
 };
