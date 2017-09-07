@@ -1,5 +1,5 @@
 
-import request = require('request')
+const request = require('request')
 const AWS = require('aws-sdk');
 const dynamo = new AWS.DynamoDB.DocumentClient();
 
@@ -18,10 +18,14 @@ export const webhookNotify = (event, context, cb) => cb(null,
 export const oauthInitiate = (event, context, cb) => cb(null,
   redirectTo(dropboxOauthUri(event)));
 
-export const oauthComplete = (event, context, cb) => processOauthCode(
-    cb,
+export const oauthComplete = (event, context, cb) => complete(
+  cb,
+  processOauthCode(
     event.queryStringParameters.code,
-    pathTo(event, "dropbox-oauth-complete"));
+    pathTo(event, "dropbox-oauth-complete")));
+
+const complete = <T>(cb: (err: any, res: T) => any, p: Promise<T>) =>
+  p.then(res => cb(null, res)).catch(err => cb(err, null));
 
 const redirectTo = (uri) => ({
     statusCode: 302,
@@ -44,46 +48,52 @@ const processNotification = (notification) => {
     };
 };
 
-const requestToken = (code, redirectUri, cb) => {
+interface accountAccessToken {
+  accountId: string;
+  accessToken: string;
+}
+
+async function requestToken(code: string, redirectUri: string): Promise<accountAccessToken> {
   console.log(`Requesting user token for code ${code}`);
-  var options = {
-     url: 'https://api.dropboxapi.com/oauth2/token',
-     method: 'POST',
-     form: {
-       code: code,
-       grant_type: "authorization_code",
-       client_id: process.env.DROPBOX_CLIENT_ID,
-       client_secret: process.env.DROPBOX_CLIENT_SECRET,
-       redirect_uri: redirectUri
-     }
-   };
-
-   request(options, (err, res, body) => {
-     if (res != null && (res.statusCode == 200)) {
-       let response = JSON.parse(body)
-       console.log(`Received access token ${response.access_token} for user ${response.account_id}`);
-       cb(null, {
-         accessToken: response.access_token,
-         accountId: response.account_id
-       });
-     } else {
-       console.log('User token request failed');
-       cb(err, null)
-     }
-   });
-};
-
-const processOauthCode = (cb, code, redirectUri) => {
-  requestToken(code, redirectUri, (err, res) => {
-    if (res == null) {
-      cb(err, null);
-    } else {
-      writeUserToken(cb, res.accountId, res.accessToken)
+  let response = await doPost({
+    url: 'https://api.dropboxapi.com/oauth2/token',
+    method: 'POST',
+    form: {
+      code: code,
+      grant_type: "authorization_code",
+      client_id: process.env.DROPBOX_CLIENT_ID,
+      client_secret: process.env.DROPBOX_CLIENT_SECRET,
+      redirect_uri: redirectUri
     }
+  });
+
+   console.log(`Received access token ${response.access_token} for user ${response.account_id}`);
+   return {
+     accessToken: response.access_token,
+     accountId: response.account_id
+   };
+ }
+
+const doPost = (options: any): Promise<any> => {
+  return new Promise<any>((respond, reject) => {
+    request(options, (err, res, body) => {
+      if (res != null && res.statusCode == 200) {
+        respond(JSON.parse(body));
+      } else {
+        reject(err);
+      }
+    });
   });
 };
 
-const writeUserToken = (cb, accountId, accessToken) => {
+async function processOauthCode(code, redirectUri): Promise<any> {
+  let token = await requestToken(code, redirectUri);
+  let dbResult = await writeUserToken(token.accountId, token.accessToken);
+
+  return { statusCode: 200, body: "The application is now authorised" };
+};
+
+const writeUserToken = (accountId: string, accessToken: string): Promise<any> => {
   console.log("Writing account access token to Dynamo");
   const params = {
     TableName: 'user_tokens',
@@ -93,12 +103,14 @@ const writeUserToken = (cb, accountId, accessToken) => {
     }
   };
 
-  dynamo.put(params, (err, res) => {
-    if (err != null) {
-      console.log("Write to Dynamo failed");
-      cb(err, null)
-    } else {
-      cb(null, { statusCode: 200, body: "The application is now authorised" });
-    }
+  return new Promise<any>((respond, reject) => {
+    dynamo.put(params, (err, res) => {
+      if (err != null) {
+        console.log("Write to Dynamo failed");
+        reject(err);
+      } else {
+        respond(res);
+      }
+    });
   });
 };
