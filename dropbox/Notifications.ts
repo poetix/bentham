@@ -1,4 +1,4 @@
-import { dynamoGet, doHttp } from "./CallbackConversions"
+import { dynamoGet, dynamoPut, dynamoBatchWrite, doHttp } from "./CallbackConversions"
 
 export interface ListFolder {
   accounts: Array<string>
@@ -33,10 +33,33 @@ async function recordFileUpdates(accountId: string): Promise<void> {
     return; // bomb out early
   }
 
-  const fileList = await fetchFiles(accountId, token, cursor);
-  console.log(fileList.map(entry => entry.name));
+  const fileList = (await fetchFiles(accountId, token, cursor))
+    .filter(entry => entry.client_modified);
+    
+  if (fileList.length > 0) {
+    await persistChanges(accountId, fileList);
+  }
 
   console.log("Done");
+}
+
+const persistChanges = (accountId: string, fileList: Array<any>): Promise<void> => {
+  const putRequests = fileList.map(entry => ({
+    PutRequest: {
+      Item: {
+        "account_id": accountId,
+        timestamp: entry.client_modified,
+        type: entry[".tag"]
+      }
+    }
+  }));
+
+  console.log("Writing items to DynamoDB");
+  return dynamoBatchWrite({
+    RequestItems: {
+      file_changes: putRequests
+    }
+  });
 }
 
 async function fetchToken(accountId: string): Promise<string> {
@@ -51,7 +74,14 @@ async function fetchToken(accountId: string): Promise<string> {
 }
 
 async function fetchCursor(accountId: string): Promise<string> {
-  return null; // for later
+  const result = await dynamoGet({
+    Key: {
+      "account_id": accountId
+    },
+    TableName: "user_cursors"
+  });
+
+  return result && result.cursor || null;
 }
 
 async function fetchFiles(accountId: string, token: string, cursor: string): Promise<any> {
@@ -64,6 +94,8 @@ async function fetchFiles(accountId: string, token: string, cursor: string): Pro
     result = await listFolderContinue(token, cursor);
   }
 
+  console.log(result)
+
   var entries = result.entries;
   while (result.has_more) {
     console.log(`Fetching more files at cursor ${result.cursor}`);
@@ -74,16 +106,25 @@ async function fetchFiles(accountId: string, token: string, cursor: string): Pro
 
   console.log("Fetched all files");
 
-  await persistCursor(accountId, result.cursor);
-
-  console.log(entries.size);
+  if (result.cursor != null) {
+    await persistCursor(accountId, result.cursor);
+  } else {
+    console.log("Cursor is null");
+  }
 
   return entries;
 }
 
-async function persistCursor(accountId: string, cursor: string): Promise<void> {
+function persistCursor(accountId: string, cursor: string): Promise<void> {
   console.log(`Persisting cursor ${cursor} for account ${accountId}`);
-  return;
+
+  return dynamoPut({
+    TableName: 'user_cursors',
+    Item: {
+      account_id: accountId,
+      cursor: cursor
+    }
+  });
 }
 
 const listFolder = (token: string): Promise<any> =>

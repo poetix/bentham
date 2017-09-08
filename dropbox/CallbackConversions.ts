@@ -18,6 +18,20 @@ export const dynamoPut = (params): Promise<any> => {
   });
 }
 
+export const dynamoBatchWrite = (params): Promise<any> => {
+  const dynamo = new AWS.DynamoDB.DocumentClient();
+
+  return new Promise<any>((respond, reject) => {
+    dynamo.batchWrite(params, (err, res) => {
+      if (err != null) {
+        reject(err);
+      } else {
+        respond(res);
+      }
+    });
+  });
+};
+
 export const dynamoGet = (params): Promise<any> => {
   const dynamo = new AWS.DynamoDB.DocumentClient();
 
