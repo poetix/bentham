@@ -1,5 +1,5 @@
 import { pathTo } from "./Http"
-import { doPost, dynamoPut } from "./CallbackConversions"
+import { doHttp, dynamoPut } from "./CallbackConversions"
 
 export const dropboxOauthUri = (event) =>
   "https://www.dropbox.com/oauth2/authorize?response_type=code" +
@@ -20,7 +20,7 @@ interface accountAccessToken {
 
 async function requestToken(code: string, redirectUri: string): Promise<accountAccessToken> {
   console.log(`Requesting user token for code ${code}`);
-  let response = await doPost({
+  const responseBody = await doHttp({
     url: 'https://api.dropboxapi.com/oauth2/token',
     method: 'POST',
     form: {
@@ -31,6 +31,8 @@ async function requestToken(code: string, redirectUri: string): Promise<accountA
       redirect_uri: redirectUri
     }
   });
+
+  const response = JSON.parse(responseBody);
 
    console.log(`Received access token ${response.access_token} for user ${response.account_id}`);
    return {

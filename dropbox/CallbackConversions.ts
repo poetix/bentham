@@ -18,13 +18,32 @@ export const dynamoPut = (params): Promise<any> => {
   });
 }
 
-export const doPost = (options: any): Promise<any> => {
+export const dynamoGet = (params): Promise<any> => {
+  const dynamo = new AWS.DynamoDB.DocumentClient();
+
+  return new Promise<any>((respond, reject) => {
+      dynamo.get(params, (err, data) => {
+        if (err != null) {
+          reject(err);
+        } else {
+          respond(data.Item);
+        }
+      });
+  });
+};
+
+export const doHttp = (options: any): Promise<any> => {
   return new Promise<any>((respond, reject) => {
     request(options, (err, res, body) => {
       if (res != null && res.statusCode == 200) {
-        respond(JSON.parse(body));
+        respond(body);
       } else {
-        reject(err);
+        console.log("Failure: " + body);
+        if (err == null) {
+          reject(body);
+        } else {
+          reject(err);
+        }
       }
     });
   });
