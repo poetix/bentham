@@ -5,11 +5,7 @@ import { DropboxClient } from "../clients/ClientApi";
 
 export class FileUpdateRecordingNotificationProcessor implements NotificationProcessor {
 
-  fileUpdateRecorder: FileUpdateRecorder;
-
-  constructor(fileUpdateRecorder: FileUpdateRecorder) {
-    this.fileUpdateRecorder = fileUpdateRecorder;
-  }
+  constructor(readonly fileUpdateRecorder: FileUpdateRecorder) {}
 
   async processNotification(notification: Notification): Promise<void> {
     console.log("Recording file updates for accounts: " + notification.list_folder.accounts);
@@ -19,22 +15,12 @@ export class FileUpdateRecordingNotificationProcessor implements NotificationPro
 
 export class DropboxFileUpdateRecorder implements FileUpdateRecorder {
 
-  tokenRepository: TokenRepository;
-  cursorRepository: CursorRepository;
-  dropbox: DropboxClient;
-  fileChangeRepository: FileChangeRepository;
-
   constructor(
-    tokenRepository: TokenRepository,
-    cursorRepository: CursorRepository,
-    dropbox: DropboxClient,
-    fileChangeRepository: FileChangeRepository
-  ) {
-      this.tokenRepository = tokenRepository;
-      this.cursorRepository = cursorRepository;
-      this.dropbox = dropbox;
-      this.fileChangeRepository = fileChangeRepository;
-  }
+    readonly tokenRepository: TokenRepository,
+    readonly cursorRepository: CursorRepository,
+    readonly dropbox: DropboxClient,
+    readonly fileChangeRepository: FileChangeRepository
+  ) {}
 
   async recordUpdates(accountId: accountId): Promise<void> {
     console.log(`Fetching updates for account ${accountId}`);
@@ -48,8 +34,12 @@ export class DropboxFileUpdateRecorder implements FileUpdateRecorder {
       return; // bomb out early
     }
 
-    const fileList = (await this.dropbox.fetchFiles(accountId, token, cursor))
-      .filter(entry => entry.client_modified);
+    const {files, newCursor} = await this.dropbox.fetchFiles(accountId, token, cursor);
+    if (newCursor != null) {
+      await this.cursorRepository.saveCursor(accountId, newCursor);
+    }
+
+    const fileList = files.filter(entry => entry.client_modified);
 
     if (fileList.length > 0) {
       await this.fileChangeRepository.saveFileChanges(accountId, fileList);

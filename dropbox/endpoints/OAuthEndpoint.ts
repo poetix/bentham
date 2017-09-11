@@ -11,11 +11,7 @@ const complete = <T>(cb: callback, p: Promise<T>) =>
 
 export class OAuthEndpoint {
 
-  service: OAuthProcessor;
-
-  constructor(service: OAuthProcessor) {
-    this.service = service;
-  }
+  constructor(readonly service: OAuthProcessor) {}
 
   initiate(cb: callback, event: event) {
     cb(null, redirectTo(this.service.getOAuthUri(event)));

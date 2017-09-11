@@ -5,13 +5,7 @@ import { TokenRepository } from "../Repositories";
 
 export class DropboxOAuthProcessor implements OAuthProcessor {
 
-  dropbox: DropboxClient;
-  oauthRepository: TokenRepository;
-
-  constructor(dropbox: DropboxClient, oauthRepository: TokenRepository) {
-    this.dropbox = dropbox;
-    this.oauthRepository = oauthRepository;
-  }
+  constructor(readonly dropbox: DropboxClient, readonly oauthRepository: TokenRepository) {}
 
   getOAuthUri(event: event): uri {
     return this.dropbox.getOAuthUri(event);

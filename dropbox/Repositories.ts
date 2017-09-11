@@ -16,11 +16,7 @@ export interface FileChangeRepository {
 
 export class DynamoTokenRepository implements TokenRepository {
 
-  dynamo: DynamoClient;
-
-  constructor(dynamo: DynamoClient) {
-    this.dynamo = dynamo;
-  }
+  constructor(readonly dynamo: DynamoClient) {}
 
   saveToken(accountId: string, accessToken: string): Promise<void> {
     console.log("Writing account access token to Dynamo");
@@ -43,11 +39,7 @@ export class DynamoTokenRepository implements TokenRepository {
 
 export class DynamoCursorRepository implements CursorRepository {
 
-  dynamo: DynamoClient;
-
-  constructor(dynamo: DynamoClient) {
-    this.dynamo = dynamo;
-  }
+  constructor(readonly dynamo: DynamoClient) {}
 
   async fetchCursor(accountId: string): Promise<string> {
     const result = await this.dynamo.get("user_cursors", {
@@ -66,11 +58,8 @@ export class DynamoCursorRepository implements CursorRepository {
 }
 
 export class DynamoFileChangeRepository {
-  dynamo: DynamoClient;
 
-  constructor(dynamo: DynamoClient) {
-    this.dynamo = dynamo;
-  }
+  constructor(readonly dynamo: DynamoClient) {}
 
   saveFileChanges(accountId: string, fileList: Array<any>): Promise<void> {
     const items = fileList.map(entry => ({

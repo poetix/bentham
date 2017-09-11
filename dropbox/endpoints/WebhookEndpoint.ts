@@ -11,11 +11,7 @@ const complete = <T>(cb: callback, p: Promise<T>) =>
 
 export class WebhookEndpoint {
 
-  service: NotificationProcessor;
-
-  constructor(service: NotificationProcessor) {
-    this.service = service;
-  }
+  constructor(readonly service: NotificationProcessor) {}
 
   challenge(cb: callback, event: event) {
     cb(null,

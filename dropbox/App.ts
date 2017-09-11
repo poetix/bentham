@@ -21,8 +21,7 @@ const fileChangeRepository = new DynamoFileChangeRepository(dynamo);
 // Dropbox integration
 const dropboxClient = new HttpDropboxClient(
   process.env.DROPBOX_CLIENT_ID,
-  process.env.DROPBOX_CLIENT_SECRET,
-  cursorRepository);
+  process.env.DROPBOX_CLIENT_SECRET);
 
 const fileUpdateRecorder = new DropboxFileUpdateRecorder(
   tokenRepository,

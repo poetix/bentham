@@ -1,22 +1,14 @@
 import { clientId, clientSecret, event, uri, accessCode, accountId, accessToken, cursor, fileInfo, accountAccessToken } from "../Api";
 import { doHttp, pathTo } from "./Http";
 import { CursorRepository } from "../Repositories";
-import { DropboxClient } from "./ClientApi";
+import { DropboxClient, FileFetchResult } from "./ClientApi";
 
 export class HttpDropboxClient implements DropboxClient {
 
-  clientId: clientId;
-  clientSecret: clientSecret;
-  cursorRepository: CursorRepository;
 
   constructor(
-    clientId: clientId,
-    clientSecret: clientSecret,
-    cursorRepository: CursorRepository) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-    this.cursorRepository = cursorRepository;
-  }
+    readonly clientId: clientId,
+    readonly clientSecret: clientSecret) {}
 
   getOAuthUri(event: event): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
@@ -47,7 +39,7 @@ export class HttpDropboxClient implements DropboxClient {
      };
    }
 
-  async fetchFiles(accountId: accountId, token: accessToken, cursor: cursor | null): Promise<Array<fileInfo>> {
+  async fetchFiles(accountId: accountId, token: accessToken, cursor: cursor | null): Promise<FileFetchResult> {
     console.log(`Fetching files for account ${accountId}, using token ${token}`);
 
     var result = await this.getInitial(token, cursor);
@@ -62,13 +54,10 @@ export class HttpDropboxClient implements DropboxClient {
 
     console.log("Fetched all files");
 
-    if (result.cursor != null) {
-      await this.cursorRepository.saveCursor(accountId, result.cursor);
-    } else {
-      console.log("Cursor is null");
-    }
-
-    return entries;
+    return {
+      files: entries,
+      newCursor: result.cursor
+    };
   }
 
   getInitial(token: accessToken, cursor: cursor | null): Promise<any> {

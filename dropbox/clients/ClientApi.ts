@@ -19,12 +19,17 @@ export interface DynamoClient {
 
 }
 
+export interface FileFetchResult {
+  files: Array<fileInfo>
+  newCursor: cursor | null
+}
+
 export interface DropboxClient {
 
   getOAuthUri(event: event): string;
 
   requestToken(code: accessCode, redirectUri: uri): Promise<accountAccessToken>
 
-  fetchFiles(accountId: accountId, token: accessToken, cursor: cursor | null): Promise<Array<fileInfo>>
+  fetchFiles(accountId: accountId, token: accessToken, cursor: cursor | null): Promise<FileFetchResult>
 
 }
