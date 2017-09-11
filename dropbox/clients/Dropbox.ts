@@ -39,8 +39,8 @@ export class HttpDropboxClient implements DropboxClient {
      };
    }
 
-  async fetchFiles(accountId: accountId, token: accessToken, cursor: cursor | null): Promise<FileFetchResult> {
-    console.log(`Fetching files for account ${accountId}, using token ${token}`);
+  async fetchFiles(accountId: accountId, token: accessToken, cursor?: cursor): Promise<FileFetchResult> {
+    console.log(`Fetching files for account ${accountId}`);
 
     var result = await this.getInitial(token, cursor);
 
@@ -60,8 +60,8 @@ export class HttpDropboxClient implements DropboxClient {
     };
   }
 
-  getInitial(token: accessToken, cursor: cursor | null): Promise<any> {
-    if (cursor == null) {
+  getInitial(token: accessToken, cursor?: cursor): Promise<any> {
+    if (!cursor) {
       return this.listFolder(token)
     } else {
       return this.listFolderContinue(token, cursor);

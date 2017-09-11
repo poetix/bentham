@@ -29,13 +29,13 @@ export class DropboxFileUpdateRecorder implements FileUpdateRecorder {
       this.cursorRepository.fetchCursor(accountId)
     ]);
 
-    if (token == null) {
+    if (!token) {
       console.log(`No token for account ${accountId}`);
       return; // bomb out early
     }
 
     const {files, newCursor} = await this.dropbox.fetchFiles(accountId, token, cursor);
-    if (newCursor != null) {
+    if (newCursor) {
       await this.cursorRepository.saveCursor(accountId, newCursor);
     }
 

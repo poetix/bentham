@@ -21,7 +21,7 @@ export interface DynamoClient {
 
 export interface FileFetchResult {
   files: Array<fileInfo>
-  newCursor: cursor | null
+  newCursor?: cursor
 }
 
 export interface DropboxClient {
@@ -30,6 +30,6 @@ export interface DropboxClient {
 
   requestToken(code: accessCode, redirectUri: uri): Promise<accountAccessToken>
 
-  fetchFiles(accountId: accountId, token: accessToken, cursor: cursor | null): Promise<FileFetchResult>
+  fetchFiles(accountId: accountId, token: accessToken, cursor?: cursor): Promise<FileFetchResult>
 
 }

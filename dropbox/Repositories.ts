@@ -32,7 +32,7 @@ export class DynamoTokenRepository implements TokenRepository {
       "account_id": accountId
     });
 
-    return result && result.access_token || null;
+    return result && result.access_token || undefined;
   }
 
 }
@@ -46,7 +46,7 @@ export class DynamoCursorRepository implements CursorRepository {
       "account_id": accountId
     });
 
-    return result && result.cursor || null;
+    return result && result.cursor || undefined;
   }
 
   saveCursor(accountId: string, cursor: string): Promise<void> {

@@ -14,14 +14,14 @@ export const redirectTo = (uri: uri) => ({
   export const doHttp = (options: any): Promise<any> => {
     return new Promise<any>((respond, reject) => {
       request(options, (err, res, body) => {
-        if (res != null && res.statusCode == 200) {
+        if (res && res.statusCode == 200) {
           respond(body);
         } else {
           console.log("Failure: " + body);
-          if (err == null) {
-            reject(body);
-          } else {
+          if (err) {
             reject(err);
+          } else {
+            reject(body);
           }
         }
       });

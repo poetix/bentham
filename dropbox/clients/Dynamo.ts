@@ -17,7 +17,7 @@ export class AWSDynamoClient implements DynamoClient {
       TableName: tableName,
       Key: key
     }, (p, cb) => AWSDynamoClient.dynamo.get(p, cb))
-      .then(result => result && result.Item || null);
+      .then(result => result && result.Item || undefined);
   }
 
   putAll(tableName: string, items: Array<any>): Promise<any> {
@@ -37,7 +37,7 @@ export class AWSDynamoClient implements DynamoClient {
   doOp(params: any, op: (params: any, cb: (err: any, res: any) => void) => void): Promise<any> {
     return new Promise<any>((respond, reject) => {
       op(params, (err, res) => {
-        if (err != null) {
+        if (err) {
           reject(err);
         } else {
           respond(res);
