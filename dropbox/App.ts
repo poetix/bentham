@@ -9,7 +9,8 @@ import { HttpDropboxClient } from "./clients/Dropbox";
 import { DropboxOAuthProcessor } from "./services/OAuth"
 import { FileUpdateRecordingNotificationProcessor, DropboxFileUpdateRecorder } from "./services/Notifications";
 
-import { WebhookEndpoint, OAuthEndpoint } from "./Endpoints";
+import { WebhookEndpoint } from "./endpoints/WebhookEndpoint";
+import { OAuthEndpoint } from "./endpoints/OAuthEndpoint";
 
 // Repositories
 const dynamo = new AWSDynamoClient();

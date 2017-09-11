@@ -16,7 +16,8 @@ export class AWSDynamoClient implements DynamoClient {
     return this.doOp({
       TableName: tableName,
       Key: key
-    }, (p, cb) => AWSDynamoClient.dynamo.get(p, cb));
+    }, (p, cb) => AWSDynamoClient.dynamo.get(p, cb))
+      .then(result => result && result.Item || null);
   }
 
   putAll(tableName: string, items: Array<any>): Promise<any> {
@@ -30,7 +31,7 @@ export class AWSDynamoClient implements DynamoClient {
       }
     }));
 
-    return this.doOp(params, (p, cb) => AWSDynamoClient.dynamo.writeBatch(p, cb));
+    return this.doOp(params, (p, cb) => AWSDynamoClient.dynamo.batchWrite(p, cb));
   }
 
   doOp(params: any, op: (params: any, cb: (err: any, res: any) => void) => void): Promise<any> {

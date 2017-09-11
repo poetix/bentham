@@ -58,8 +58,6 @@ export class DynamoCursorRepository implements CursorRepository {
   }
 
   saveCursor(accountId: string, cursor: string): Promise<void> {
-    console.log(`Saving cursor ${cursor} for account ${accountId}`);
-
     return this.dynamo.put('user_cursors', {
       account_id: accountId,
       cursor: cursor

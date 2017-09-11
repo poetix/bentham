@@ -12,7 +12,8 @@ export class FileUpdateRecordingNotificationProcessor implements NotificationPro
   }
 
   async processNotification(notification: Notification): Promise<void> {
-    await Promise.all(notification.list_folder.accounts.map(this.fileUpdateRecorder.recordUpdates));
+    console.log("Recording file updates for accounts: " + notification.list_folder.accounts);
+    await Promise.all(notification.list_folder.accounts.map(account => this.fileUpdateRecorder.recordUpdates(account)));
   }
 }
 
@@ -36,6 +37,7 @@ export class DropboxFileUpdateRecorder implements FileUpdateRecorder {
   }
 
   async recordUpdates(accountId: accountId): Promise<void> {
+    console.log(`Fetching updates for account ${accountId}`);
     const [token, cursor] = await Promise.all([
       this.tokenRepository.fetchToken(accountId),
       this.cursorRepository.fetchCursor(accountId)
