@@ -13,11 +13,11 @@ brew install node
 NPM installs
 
 ```bash
-npm install typescript
-npm install ts-loader
-npm install @types/node --save-dev
+npm install typescript -g
+npm install ts-loader -g
+npm install npm install mocha chai ts-node -g
+npm install @types/node @types/aws-sdk @types/mocha @types/chai
 npm install aws-sdk
 npm install -g serverless
-npm install serverless-webpack-plugin webpack --save-dev
-npm install --save dropbox
+npm install serverless-webpack-plugin webpack
 ```
