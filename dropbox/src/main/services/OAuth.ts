@@ -11,11 +11,9 @@ export class DropboxOAuthProcessor implements OAuthProcessor {
     return this.dropbox.getOAuthUri(event);
   }
 
-  async processCode(code: accessCode, redirectUri: uri): Promise<response> {
+  async processCode(code: accessCode, redirectUri: uri): Promise<void> {
     let token = await this.dropbox.requestToken(code, redirectUri);
     await this.oauthRepository.saveToken(token.accountId, token.accessToken);
-
-    return { statusCode: 200, body: "The application is now authorised" };
   };
 
 }

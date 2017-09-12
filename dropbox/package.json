@@ -4,21 +4,26 @@
   "description": "Dropbox integration for Bentham",
   "main": "handler.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -r ts-node/register src/test/**/*.ts"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
     "@types/node": "^6.0.88",
+    "aws-sdk": "^2.110.0",
+    "chai": "^4.1.2",
+    "mocha": "^3.5.3",
     "request": "^2.81.0",
     "serverless-webpack": "^2.2.2",
     "serverless-webpack-plugin": "^0.4.5",
     "ts-loader": "^2.3.4",
+    "ts-node": "^3.3.0",
     "typescript": "^2.4.2",
     "webpack": "^3.5.5"
   },
-  "author": "The serverless webpack authors (https://github.com/elastic-coders/serverless-webpack)",
+  "author": "Dominic Fox (dominic.fox@wipro.com)",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.110.0",
     "request": "^2.81.0"
   }
 }
