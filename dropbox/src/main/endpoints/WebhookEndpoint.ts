@@ -22,7 +22,6 @@ export class WebhookEndpoint {
   }
 
   notify(cb: callback, event: event) {
-    console.log(event.body);
     complete(cb, this.processAndReturn(JSON.parse(event.body)));
   }
 
