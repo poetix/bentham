@@ -99,6 +99,14 @@ export class HttpDropboxClient implements DropboxClient {
   }
 
   getUserDetails(accountId: string, token: string): Promise<UserDetails> {
-    throw new Error("Method not implemented.");
+    return doHttp({
+      url: 'https://api.dropboxapi.com/2/users/get_current_account',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(body => ({
+        userName: JSON.parse(body).name["display_name"]
+    }));
   }
 }

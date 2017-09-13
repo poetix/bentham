@@ -56,6 +56,18 @@ functions:
               querystrings:
                 code: true
 
+  user-report:
+    handler: src/main/handler.userReport
+    events:
+      - http:
+          method: get
+          path: dropbox-user-report
+
+          request:
+            parameters:
+              querystrings:
+                account_id: true
+
 resources:
   Resources:
     UserTokensTable:

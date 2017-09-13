@@ -19,6 +19,19 @@ export interface DynamoClient {
 
 }
 
+export class DynamoWritePager {
+  constructor(readonly client: DynamoClient) {}
+
+  async putAll(tableName: string, items: Array<any>): Promise<any[]> {
+    const results: any[] = [];
+    for (let i = 0; i < items.length; i += 25) {
+      const result = await this.client.putAll(tableName, items.slice(i, Math.min(items.length, i + 25)));
+      results.push(result);
+    }
+    return results;
+  }
+}
+
 export interface FileFetchResult {
   files: Array<fileInfo>
   newCursor?: cursor

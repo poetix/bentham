@@ -1,5 +1,5 @@
 import { accountId, accessToken, cursor } from "./Api";
-import { DynamoClient } from "./clients/ClientApi"
+import { DynamoClient, DynamoWritePager } from "./clients/ClientApi"
 
 export interface TokenRepository {
   fetchToken(accountId: accountId): Promise<string>
@@ -61,9 +61,13 @@ export class DynamoCursorRepository implements CursorRepository {
 
 export class DynamoFileChangeRepository {
 
-  constructor(readonly dynamo: DynamoClient) {}
+  pager: DynamoWritePager;
 
-  saveFileChanges(accountId: accountId, fileList: Array<any>): Promise<void> {
+  constructor(readonly dynamo: DynamoClient) {
+    this.pager = new DynamoWritePager(dynamo);
+  }
+
+  async saveFileChanges(accountId: accountId, fileList: Array<any>): Promise<void> {
     const items = fileList.map(entry => ({
       "account_id": accountId,
       timestamp: entry.client_modified,
@@ -71,10 +75,10 @@ export class DynamoFileChangeRepository {
     }));
 
     console.log("Writing items to DynamoDB");
-    return this.dynamo.putAll("file_changes", items);
+    this.pager.putAll("file_changes", items);
   }
 
-  getFileChanges(accountId: accountId): Promise<Array<any>> {
-    throw "do this";
+  async getFileChanges(accountId: accountId): Promise<Array<any>> {
+    return [];
   }
 }

@@ -22,6 +22,7 @@ class TestFileChangeRepository implements FileChangeRepository {
     }
 }
 
+// Maybe this would be a good time to investigate a mocking framework
 class TestDropboxClient implements DropboxClient {
     getOAuthUri(event: any): string {
         throw new Error("Method not implemented.");
