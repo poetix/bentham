@@ -1,8 +1,8 @@
 const request = require('request');
 
-import { event, uri } from "../Api";
+import { host, uri } from "../Api";
 
-export const pathTo = (event: event, path: string): uri => `https://${event.headers.Host}/dev/${path}`;
+export const pathTo = (host: host, path: string): uri => `https://${host}/dev/${path}`;
 
 export const redirectTo = (uri: uri) => ({
     statusCode: 302,

@@ -1,13 +1,10 @@
 /**
 Classes in this module handle the protocol-level tasks of handling Events and returning HTTP responses.
 */
-
+import { complete } from "./EndpointUtils";
 import { event, callback, challenge, uri } from "../Api";
 import { pathTo, redirectTo } from "../clients/Http";
 import { Notification, NotificationProcessor } from "../services/ServiceApi"
-
-const complete = <T>(cb: callback, p: Promise<T>) =>
-  p.then(res => cb(null, res)).catch(err => cb(err, null));
 
 export class WebhookEndpoint {
 

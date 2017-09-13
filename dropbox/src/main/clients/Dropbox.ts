@@ -10,10 +10,10 @@ export class HttpDropboxClient implements DropboxClient {
     readonly clientId: clientId,
     readonly clientSecret: clientSecret) {}
 
-  getOAuthUri(event: event): uri {
+  getOAuthUri(host: host): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
     `&client_id=${this.clientId}` +
-    `&redirect_uri=${pathTo(event, "dropbox-oauth-complete")}`;
+    `&redirect_uri=${pathTo(host, "dropbox-oauth-complete")}`;
   }
 
   async requestToken(code: accessCode, redirectUri: uri): Promise<accountAccessToken> {

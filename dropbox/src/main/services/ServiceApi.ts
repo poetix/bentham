@@ -25,3 +25,12 @@ export interface FileUpdateRecorder {
 export interface NotificationProcessor {
   processNotification(notification: Notification): Promise<void>
 }
+
+export interface UserReport {
+  userName: string,
+  interactions: Array<string>
+}
+
+export interface ReportService {
+  getReport(accountId: accountId): Promise<UserReport>
+}
