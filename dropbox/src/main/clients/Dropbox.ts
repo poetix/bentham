@@ -1,10 +1,9 @@
-import { clientId, clientSecret, event, uri, accessCode, accountId, accessToken, cursor, fileInfo, accountAccessToken } from "../Api";
+import { clientId, clientSecret, event, uri, accessCode, accountId, accessToken, cursor, fileInfo, accountAccessToken, host } from "../Api";
 import { doHttp, pathTo } from "./Http";
 import { CursorRepository } from "../Repositories";
-import { DropboxClient, FileFetchResult } from "./ClientApi";
+import { DropboxClient, FileFetchResult, UserDetails } from "./ClientApi";
 
 export class HttpDropboxClient implements DropboxClient {
-
 
   constructor(
     readonly clientId: clientId,
@@ -97,5 +96,9 @@ export class HttpDropboxClient implements DropboxClient {
         cursor: cursor
       }
     });
+  }
+
+  getUserDetails(accountId: string, token: string): Promise<UserDetails> {
+    throw new Error("Method not implemented.");
   }
 }

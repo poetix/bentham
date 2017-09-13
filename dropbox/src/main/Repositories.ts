@@ -1,17 +1,19 @@
+import { accountId, accessToken, cursor } from "./Api";
 import { DynamoClient } from "./clients/ClientApi"
 
 export interface TokenRepository {
-  fetchToken(accountId: string): Promise<string>
-  saveToken(accountId: string, accessToken: string): Promise<void>
+  fetchToken(accountId: accountId): Promise<string>
+  saveToken(accountId: accountId, accessToken: accessToken): Promise<void>
 }
 
 export interface CursorRepository {
-  fetchCursor(accountId: string): Promise<string>
-  saveCursor(accountId: string, cursor: string): Promise<void>
+  fetchCursor(accountId: accountId): Promise<string>
+  saveCursor(accountId: accountId, cursor: cursor): Promise<void>
 }
 
 export interface FileChangeRepository {
-  saveFileChanges(accountId: string, fileList: Array<any>): Promise<void>;
+  saveFileChanges(accountId: accountId, fileList: Array<any>): Promise<void>;
+  getFileChanges(accountId: accountId): Promise<Array<any>>
 }
 
 export class DynamoTokenRepository implements TokenRepository {
@@ -27,7 +29,7 @@ export class DynamoTokenRepository implements TokenRepository {
     });
   }
 
-  async fetchToken(accountId: string): Promise<string> {
+  async fetchToken(accountId: accountId): Promise<string> {
     const result = await this.dynamo.get("user_tokens", {
       "account_id": accountId
     });
@@ -41,7 +43,7 @@ export class DynamoCursorRepository implements CursorRepository {
 
   constructor(readonly dynamo: DynamoClient) {}
 
-  async fetchCursor(accountId: string): Promise<string> {
+  async fetchCursor(accountId: accountId): Promise<string> {
     const result = await this.dynamo.get("user_cursors", {
       "account_id": accountId
     });
@@ -49,7 +51,7 @@ export class DynamoCursorRepository implements CursorRepository {
     return result && result.cursor || undefined;
   }
 
-  saveCursor(accountId: string, cursor: string): Promise<void> {
+  saveCursor(accountId: accountId, cursor: cursor): Promise<void> {
     return this.dynamo.put('user_cursors', {
       account_id: accountId,
       cursor: cursor
@@ -61,7 +63,7 @@ export class DynamoFileChangeRepository {
 
   constructor(readonly dynamo: DynamoClient) {}
 
-  saveFileChanges(accountId: string, fileList: Array<any>): Promise<void> {
+  saveFileChanges(accountId: accountId, fileList: Array<any>): Promise<void> {
     const items = fileList.map(entry => ({
       "account_id": accountId,
       timestamp: entry.client_modified,
@@ -70,5 +72,9 @@ export class DynamoFileChangeRepository {
 
     console.log("Writing items to DynamoDB");
     return this.dynamo.putAll("file_changes", items);
+  }
+
+  getFileChanges(accountId: accountId): Promise<Array<any>> {
+    throw "do this";
   }
 }
