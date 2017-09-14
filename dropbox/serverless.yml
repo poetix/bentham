@@ -132,6 +132,7 @@ resources:
                 - dynamodb:GetItem
                 - dynamodb:PutItem
                 - dynamodb:BatchWriteItem
+                - dynamodb:Query
               Resource:
                 - arn:aws:dynamodb:*:*:table/user_tokens
                 - arn:aws:dynamodb:*:*:table/user_cursors

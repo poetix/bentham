@@ -79,6 +79,12 @@ export class DynamoFileChangeRepository {
   }
 
   async getFileChanges(accountId: accountId): Promise<Array<any>> {
-    return [];
+    return this.dynamo.query({
+      TableName: 'file_changes',
+      KeyConditionExpression: 'account_id = :hkey',
+      ExpressionAttributeValues: {
+        ':hkey': accountId
+      }
+    });
   }
 }

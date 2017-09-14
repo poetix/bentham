@@ -16,6 +16,10 @@ class TestDynamoClient implements DynamoClient {
       return items;
   }
 
+  query(params: any): Promise<any[]> {
+      throw new Error("Method not implemented.");
+  }
+
 }
 
 const dynamo = new TestDynamoClient();
@@ -25,7 +29,7 @@ describe("Dynamo Write Pager", () => {
   it("should break up writes into groups of 25", async () => {
     const items = Array.from({length: 60}, (value, key) => key);
     const result = await pager.putAll("table_name", items);
-    
+
     expect(result.map(subset => subset[0])).to.deep.equal([0, 25, 50]);
     expect(result.map(subset => subset.length)).to.deep.equal([25, 25, 10]);
   });

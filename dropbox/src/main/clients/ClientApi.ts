@@ -17,6 +17,11 @@ export interface DynamoClient {
   */
   putAll(tableName: string, items: Array<any>): Promise<any>
 
+  /**
+  Query for multiple items in DynamoDB.
+  */
+  query(params: any): Promise<any[]>
+
 }
 
 export class DynamoWritePager {
