@@ -33,7 +33,7 @@ const fileUpdateRecorder = new DropboxFileUpdateRecorder(
 
 // Services
 const notificationProcessor = new FileUpdateRecordingNotificationProcessor(fileUpdateRecorder);
-const oauthProcessor = new DropboxOAuthProcessor(dropboxClient, tokenRepository);
+const oauthProcessor = new DropboxOAuthProcessor(dropboxClient, tokenRepository, cursorRepository);
 const reportService = new ConnectedReportService(tokenRepository, dropboxClient, fileChangeRepository);
 
 // Endpoints

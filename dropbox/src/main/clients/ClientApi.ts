@@ -52,6 +52,8 @@ export interface DropboxClient {
 
   requestToken(code: accessCode, redirectUri: uri): Promise<accountAccessToken>
 
+  getLatestCursor(accountId: accountId, token: accessToken): Promise<cursor>
+
   fetchFiles(accountId: accountId, token: accessToken, cursor?: cursor): Promise<FileFetchResult>
 
   getUserDetails(accountId: accountId, token: accessToken): Promise<UserDetails>

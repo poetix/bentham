@@ -14,16 +14,23 @@ class TestTokenRepository implements TokenRepository {
 }
 
 class TestFileChangeRepository implements FileChangeRepository {
-    saveFileChanges(accountId: string, fileList: any[]): Promise<void> {
+    saveFileChanges(accountId: string, changeList: any[]): Promise<void> {
         throw new Error("Method not implemented.");
     }
     async getFileChanges(accountId: string): Promise<any[]> {
-        return [{ timestamp: "2017-09-10T15:44:23.789Z" }];
+        return [{
+          user_id: "the user id",
+          timestamp: "2017-09-10T15:44:23.789Z",
+          tag: "file"
+        }];
     }
 }
 
 // Maybe this would be a good time to investigate a mocking framework
 class TestDropboxClient implements DropboxClient {
+    getLatestCursor(accountId: string, token: string): Promise<string> {
+        throw new Error("Method not implemented.");
+    }
     getOAuthUri(event: any): string {
         throw new Error("Method not implemented.");
     }
@@ -51,6 +58,9 @@ describe("Connected Report Service", () => {
     const result = await service.getReport("the account id");
 
     expect(result.userName).to.equal("Arthur Putey");
-    expect(result.interactions).to.deep.equal(["2017-09-10T15:44:23.789Z"]);
+    expect(result.interactions).to.deep.equal([{
+      timestamp: "2017-09-10T15:44:23.789Z",
+      user_id: "the user id"
+    }]);
   });
 });

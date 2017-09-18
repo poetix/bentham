@@ -18,7 +18,10 @@ export class ConnectedReportService implements ReportService {
 
     return {
       userName: userDetails.userName,
-      interactions: changes.map(change => change.timestamp)
+      interactions: changes.map(change => ({
+        "user_id": change["user_id"],
+        "timestamp": change.timestamp
+      }))
     };
   }
 

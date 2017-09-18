@@ -38,10 +38,33 @@ export class HttpDropboxClient implements DropboxClient {
      };
    }
 
-  async fetchFiles(accountId: accountId, token: accessToken, cursor?: cursor): Promise<FileFetchResult> {
+  async getLatestCursor(accountId: accountId, token: accessToken): Promise<cursor> {
+    console.log(`Getting initial cursor for account ${accountId}`);
+
+    const response = await doHttp({
+      url: 'https://api.dropboxapi.com/2/files/list_folder/get_latest_cursor',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      json: {
+        path: "",
+        recursive: true,
+        include_media_info: true,
+        include_deleted: false,
+        include_has_explicit_shared_members: false,
+        include_mounted_folders: true
+      }
+    });
+
+    return response.cursor;
+  }
+
+  async fetchFiles(accountId: accountId, token: accessToken, cursor: cursor): Promise<FileFetchResult> {
     console.log(`Fetching files for account ${accountId}`);
 
-    var result = await this.getInitial(token, cursor);
+    var result = await this.listFolderContinue(token, cursor);
+    console.log(result);
 
     var entries = result.entries;
     while (result.has_more) {
@@ -57,32 +80,6 @@ export class HttpDropboxClient implements DropboxClient {
       files: entries,
       newCursor: result.cursor
     };
-  }
-
-  getInitial(token: accessToken, cursor?: cursor): Promise<any> {
-    if (!cursor) {
-      return this.listFolder(token)
-    } else {
-      return this.listFolderContinue(token, cursor);
-    }
-  }
-
-  listFolder(token: accessToken): Promise<any> {
-    return doHttp({
-      url: 'https://api.dropboxapi.com/2/files/list_folder',
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      json: {
-        path: "",
-        recursive: true,
-        include_media_info: true,
-        include_deleted: false,
-        include_has_explicit_shared_members: false,
-        include_mounted_folders: true
-      }
-    });
   }
 
   listFolderContinue(token: string, cursor: string): Promise<any> {

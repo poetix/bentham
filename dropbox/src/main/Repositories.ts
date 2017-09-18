@@ -12,7 +12,7 @@ export interface CursorRepository {
 }
 
 export interface FileChangeRepository {
-  saveFileChanges(accountId: accountId, fileList: Array<any>): Promise<void>;
+  saveFileChanges(accountId: accountId, changeList: Array<any>): Promise<void>;
   getFileChanges(accountId: accountId): Promise<Array<any>>
 }
 
@@ -67,14 +67,16 @@ export class DynamoFileChangeRepository {
     this.pager = new DynamoWritePager(dynamo);
   }
 
-  async saveFileChanges(accountId: accountId, fileList: Array<any>): Promise<void> {
-    const items = fileList.map(entry => ({
+  async saveFileChanges(accountId: accountId, changeList: Array<any>): Promise<void> {
+    const items = changeList.map(entry => ({
       "account_id": accountId,
-      timestamp: entry.client_modified,
-      type: entry[".tag"]
+      "user_id": entry.modifiedBy,
+      timestamp: entry.modifiedAt,
+      type: entry.tag
     }));
 
-    console.log("Writing items to DynamoDB");
+    console.log(`Writing items to DynamoDB for account ${accountId}`);
+    console.log(changeList);
     this.pager.putAll("file_changes", items);
   }
 

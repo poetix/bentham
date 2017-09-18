@@ -35,16 +35,22 @@ export class DropboxFileUpdateRecorder implements FileUpdateRecorder {
     }
 
     const {files, newCursor} = await this.dropbox.fetchFiles(accountId, token, cursor);
+    const promises: Promise<any>[] = [];
     if (newCursor) {
-      await this.cursorRepository.saveCursor(accountId, newCursor);
+      promises.push(this.cursorRepository.saveCursor(accountId, newCursor));
     }
 
-    const fileList = files.filter(entry => entry.client_modified);
+    const fileList = files.filter(entry => entry.client_modified).map(entry => ({
+      modifiedAt: entry.server_modified,
+      modifiedBy: entry["sharing_info"] && entry["sharing_info"]["modified_by"] || accountId,
+      tag: entry[".tag"]
+    }));
 
     if (fileList.length > 0) {
-      await this.fileChangeRepository.saveFileChanges(accountId, fileList);
+      promises.push(this.fileChangeRepository.saveFileChanges(accountId, fileList));
     }
 
+    await Promise.all(promises);
     console.log("Done");
   }
 }
