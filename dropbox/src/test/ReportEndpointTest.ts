@@ -6,7 +6,18 @@ import { ReportEndpoint } from "../main/endpoints/ReportEndpoint";
 
 const report = {
   userName: "Arthur Putey",
-  interactions: ["2017-09-10T13:36:03.123Z", "2017-09-10T13:37:02.456Z"]
+  interactions: [
+    {
+      user_id: "user 1",
+      timestamp: "2017-09-10T13:36:03.123Z",
+      tag: "file"
+    },
+    {
+      user_id: "user 2",
+      timestamp:"2017-09-10T13:37:02.456Z",
+      tag: "file"
+    }
+  ]
 };
 
 class TestService implements ReportService {
