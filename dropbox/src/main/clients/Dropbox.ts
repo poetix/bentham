@@ -95,7 +95,22 @@ export class HttpDropboxClient implements DropboxClient {
     });
   }
 
-  getUserDetails(accountId: string, token: string): Promise<UserDetails> {
+  getUserDetails(userId: string, token: string): Promise<UserDetails> {
+    return doHttp({
+      url: 'https://api.dropboxapi.com/2/users/get_account',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      json: {
+        account_id: userId
+      }
+    }).then(body => ({
+        userName: body.name["display_name"]
+    }));
+  }
+
+  getCurrentAccountDetails(token: string): Promise<UserDetails> {
     return doHttp({
       url: 'https://api.dropboxapi.com/2/users/get_current_account',
       method: 'POST',

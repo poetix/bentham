@@ -1,4 +1,4 @@
-import { accountAccessToken, event, accessCode, uri, accountId, accessToken, cursor, fileInfo } from "../Api";
+import { accountAccessToken, event, accessCode, uri, accountId, userId, accessToken, cursor, fileInfo } from "../Api";
 
 /**
 A class that either is, or is pretending to be, DynamoDB, wrapping callbacks as Promises.
@@ -56,6 +56,7 @@ export interface DropboxClient {
 
   fetchFiles(accountId: accountId, token: accessToken, cursor?: cursor): Promise<FileFetchResult>
 
-  getUserDetails(accountId: accountId, token: accessToken): Promise<UserDetails>
+  getUserDetails(userId: userId, token: accessToken): Promise<UserDetails>
 
+  getCurrentAccountDetails(token: string): Promise<UserDetails>
 }

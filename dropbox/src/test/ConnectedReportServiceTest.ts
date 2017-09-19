@@ -17,6 +17,7 @@ class TestFileChangeRepository implements FileChangeRepository {
     saveFileChanges(accountId: string, changeList: any[]): Promise<void> {
         throw new Error("Method not implemented.");
     }
+
     async getFileChanges(accountId: string): Promise<any[]> {
         return [{
           user_id: "user id 1",
@@ -38,6 +39,14 @@ class TestFileChangeRepository implements FileChangeRepository {
 
 // Maybe this would be a good time to investigate a mocking framework
 class TestDropboxClient implements DropboxClient {
+    async getCurrentAccountDetails(token: string): Promise<UserDetails> {
+      return {
+        userName: "Super Friends"
+      };
+    }
+
+    constructor(private userNames: { [key:string]: string }) {}
+
     getLatestCursor(accountId: string, token: string): Promise<string> {
         throw new Error("Method not implemented.");
     }
@@ -50,16 +59,19 @@ class TestDropboxClient implements DropboxClient {
     fetchFiles(accountId: string, token: string, cursor?: string): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    async getUserDetails(accountId: string, token: string): Promise<UserDetails> {
+    async getUserDetails(userId: string, token: string): Promise<UserDetails> {
         return {
-          userName: "Arthur Putey"
+          userName: this.userNames[userId]
         };
     }
 }
 
 const tokens = new TestTokenRepository();
 const fileChanges = new TestFileChangeRepository();
-const dropbox = new TestDropboxClient();
+const dropbox = new TestDropboxClient({
+  "user id 1": "Arthur Putey",
+  "user id 2": "Arthur Daley"
+});
 
 const service = new ConnectedReportService(tokens, dropbox, fileChanges);
 
@@ -67,17 +79,17 @@ describe("Connected Report Service", () => {
   it("should combine the user's name and file change history", async () => {
     const result = await service.getReport("the account id");
 
-    expect(result.accountName).to.equal("Arthur Putey");
+    expect(result.accountName).to.equal("Super Friends");
     expect(result.interactions).to.deep.equal({
       "user id 1": {
-          userName: "tbd",
+          userName: "Arthur Putey",
           interactions: [
             { timestamp: "2017-09-10T15:44:23.789Z" },
             { timestamp: "2017-09-11T15:44:23.789Z" }
           ]
       },
       "user id 2": {
-          userName: "tbd",
+          userName: "Arthur Daley",
           interactions: [
             { timestamp: "2017-09-12T15:44:23.789Z" }
           ]

@@ -1,25 +1,98 @@
+var router = new VueRouter({
+    mode: 'history',
+    routes: []
+});
+
 var userReport = new Vue({
+  router,
   el: '#user-report',
   data: {
-    userName: "[Loading]"
+    accountId: function() {
+      return this.$route.query["account_id"];
+    },
+    accountName: "[Loading]",
+    users: [],
+    selected: undefined,
+    interactions: {}
+  },
+  methods: {
+    showBarChart: function(interactions) {
+      var hoursWorked = getHoursWorked(interactions),
+          dayRange = getDayRange(hoursWorked),
+          chartData = getChartData(hoursWorked, dayRange);
+
+      buildBarChart(chartData);
+    }
   }
 });
 
-var reportUrl = "https://wggsztwel6.execute-api.eu-west-2.amazonaws.com/dev/dropbox-user-report?account_id=dbid:AAAWRT0RYQj5Zq1cnPqZwU4rC6CNjCkpXzY";
+function getHoursWorked(interactions) {
+  var hoursWorked = {};
+  interactions.forEach(function(interaction) {
+    var day = interaction.timestamp.substring(0, 10),
+        hour = interaction.timestamp.substring(11, 13);
+    if (!hoursWorked[day]) {
+      hoursWorked[day] = {};
+    }
+    hoursWorked[day][hour] = true;
+  });
+  return hoursWorked;
+}
+
+function getDayRange(hoursWorked) {
+  var daysWorked = Object.keys(hoursWorked),
+      firstDay,
+      lastDay,
+      cursor,
+      dayRange = [];
+
+  daysWorked.sort();
+
+  firstDay = new Date(daysWorked[0] + "T00:00:00.000Z");
+  lastDay = new Date(daysWorked[daysWorked.length - 1] + "T00:00:00.000Z");
+  cursor = firstDay;
+
+  while (cursor <= lastDay) {
+    dayRange.push(cursor.toISOString().substring(0, 10));
+    cursor = new Date(Date.UTC(
+      cursor.getFullYear(),
+      cursor.getMonth(),
+      cursor.getDate() + 1,
+      0, 0, 0
+    ));
+  }
+  return dayRange;
+}
+
+function getChartData(hoursWorked, dayRange) {
+  return dayRange.map(function(day) {
+    var hoursRecorded = hoursWorked[day];
+    return hoursRecorded && Object.keys(hoursRecorded).length || 0;
+  })
+}
+
+var reportUrl = "https://wggsztwel6.execute-api.eu-west-2.amazonaws.com/dev/dropbox-user-report?account_id="
+  + userReport.accountId();
 
 axios.get(reportUrl)
   .then(function (response) {
-    userReport.userName = response.data.userName;
+    var interactions = response.data.interactions;
+    userReport.interactions = interactions;
+    userReport.accountName = response.data.accountName;
+    userReport.users = Object.keys(interactions).map(function(key) {
+      return {
+        id: key,
+        name: interactions[key].userName
+      }
+    });
+
     console.log(response);
   })
   .catch(function (error) {
     console.log(error);
   });
 
-var chartdata = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120,
-    135, 150, 165, 180, 200, 220, 240, 270, 300, 330, 370, 410];
-
-function buildBarChart(chartData) {
+function buildBarChart(chartdata) {
   var margin = {top: 30, right: 10, bottom: 30, left: 50}
 
   var height = 400 - margin.top - margin.bottom,
@@ -40,6 +113,11 @@ function buildBarChart(chartData) {
   var colors = d3.scaleLinear()
       .domain([0, chartdata.length * .33, chartdata.length * .66, chartdata.length])
       .range(['#d6e9c6', '#bce8f1', '#faebcc', '#ebccd1']);
+
+  var existing = d3.select('#bar-chart').select('svg');
+  if (existing) {
+    existing.remove();
+  }
 
   var awesome = d3.select('#bar-chart').append('svg')
       .attr('width', width + margin.left + margin.right)
@@ -81,16 +159,14 @@ function buildBarChart(chartData) {
       .delay(function (data, i) {
           return i * 20;
       })
-      .duration(2000)
-      .ease('elastic');
+      .duration(2000);
 
-  var verticalGuideScale = d3.scale.linear()
+  var verticalGuideScale = d3.scaleLinear()
       .domain([0, d3.max(chartdata)])
       .range([height, 0]);
 
-  var vAxis = d3.svg.axis()
+  var vAxis = d3.axisLeft()
       .scale(verticalGuideScale)
-      .orient('left')
       .ticks(10);
 
   var verticalGuide = d3.select('svg').append('g');
@@ -102,9 +178,8 @@ function buildBarChart(chartData) {
   verticalGuide.selectAll('line')
       .style({stroke: "#3c763d"});
 
-  var hAxis = d3.svg.axis()
+  var hAxis = d3.axisBottom()
       .scale(xScale)
-      .orient('bottom')
       .ticks(chartdata.size);
 
   var horizontalGuide = d3.select('svg').append('g');

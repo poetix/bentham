@@ -5,6 +5,7 @@ export type host = string
 
 export type accessCode = string
 export type accountId = string
+export type userId = string
 export type accessToken = string
 
 export interface accountAccessToken {

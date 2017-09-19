@@ -36,12 +36,22 @@ export class ConnectedReportService implements ReportService {
   async getReport(accountId: accountId): Promise<UserReport> {
     const token = await this.tokens.fetchToken(accountId);
     const [userDetails, changes] = await Promise.all([
-      this.dropbox.getUserDetails(accountId, token),
+      this.dropbox.getCurrentAccountDetails(token),
       this.fileChanges.getFileChanges(accountId)]);
 
     const changesByUserId = groupBy(changes, (change => change["user_id"]));
+    const userIds = Object.keys(changesByUserId);
+    const userNames = await Promise.all(userIds.map(userId =>
+       this.dropbox.getUserDetails(userId, token)
+       .then(details => details.userName)));
+
+    const userNameLookup = {};
+    for (let i = 0; i < userIds.length; i++) {
+      userNameLookup[userIds[i]] = userNames[i];
+    }
+
     const interactions = mapValues<any, UserInteractions>(changesByUserId, (k, v) => (
-      { userName: "tbd", interactions: v.map(change => ({
+      { userName: userNameLookup[k], interactions: v.map(change => ({
         timestamp: change.timestamp
       }))}
     ));
