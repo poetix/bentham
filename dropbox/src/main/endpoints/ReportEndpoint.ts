@@ -13,6 +13,9 @@ export class ReportEndpoint {
     complete(cb, this.service.getReport(event.queryStringParameters["account_id"])
     .then((report) => ({
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      },
       body: JSON.stringify(report)
     })));
   }

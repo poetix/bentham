@@ -26,14 +26,14 @@ export interface NotificationProcessor {
   processNotification(notification: Notification): Promise<void>
 }
 
-export interface Interaction {
-  user_id: string,
-  timestamp: string
+export interface UserInteractions {
+  userName: string,
+  interactions: string[]
 }
 
 export interface UserReport {
-  userName: string,
-  interactions: Array<Interaction>
+  accountName: string,
+  interactions: { [key: string]: UserInteractions }
 }
 
 export interface ReportService {

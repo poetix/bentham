@@ -19,8 +19,18 @@ class TestFileChangeRepository implements FileChangeRepository {
     }
     async getFileChanges(accountId: string): Promise<any[]> {
         return [{
-          user_id: "the user id",
+          user_id: "user id 1",
           timestamp: "2017-09-10T15:44:23.789Z",
+          tag: "file"
+        },
+        {
+          user_id: "user id 1",
+          timestamp: "2017-09-11T15:44:23.789Z",
+          tag: "file"
+        },
+        {
+          user_id: "user id 2",
+          timestamp: "2017-09-12T15:44:23.789Z",
           tag: "file"
         }];
     }
@@ -57,10 +67,21 @@ describe("Connected Report Service", () => {
   it("should combine the user's name and file change history", async () => {
     const result = await service.getReport("the account id");
 
-    expect(result.userName).to.equal("Arthur Putey");
-    expect(result.interactions).to.deep.equal([{
-      timestamp: "2017-09-10T15:44:23.789Z",
-      user_id: "the user id"
-    }]);
+    expect(result.accountName).to.equal("Arthur Putey");
+    expect(result.interactions).to.deep.equal({
+      "user id 1": {
+          userName: "tbd",
+          interactions: [
+            { timestamp: "2017-09-10T15:44:23.789Z" },
+            { timestamp: "2017-09-11T15:44:23.789Z" }
+          ]
+      },
+      "user id 2": {
+          userName: "tbd",
+          interactions: [
+            { timestamp: "2017-09-12T15:44:23.789Z" }
+          ]
+      },
+    });
   });
 });
