@@ -4,20 +4,18 @@ import 'mocha';
 import { ReportService, UserReport } from "../main/services/ServiceApi";
 import { ReportEndpoint } from "../main/endpoints/ReportEndpoint";
 
-const report = {
-  userName: "Arthur Putey",
-  interactions: [
-    {
-      user_id: "user 1",
-      timestamp: "2017-09-10T13:36:03.123Z",
-      tag: "file"
+const report: UserReport = {
+  accountName: "My Awesome Team",
+  interactions: {
+    "user 1": {
+      userName: "My Awesome Colleague 1",
+      interactions: ["2017-09-10T13:36:03.123Z"]
     },
-    {
-      user_id: "user 2",
-      timestamp:"2017-09-10T13:37:02.456Z",
-      tag: "file"
+    "user 2": {
+      userName: "My Awesome Colleague 2",
+      interactions: ["2017-09-10T13:37:02.456Z"]
     }
-  ]
+  }
 };
 
 class TestService implements ReportService {

@@ -1,30 +1,8 @@
-import { accountId } from "../Api";
+import { accountId, userId, accessToken } from "../Api";
 import { ReportService, UserReport, UserInteractions } from "./ServiceApi";
 import { TokenRepository, FileChangeRepository } from "../Repositories";
 import { DropboxClient } from "../clients/ClientApi";
-
-function groupBy<V>(arr: V[], f: (value: V) => string): { [key: string]: V[] } {
-  const result: { [key: string]: V[] } = {};
-  arr.forEach(v => {
-    const index = f(v);
-    if (!(result[index])) {
-      result[index] = [];
-    }
-    result[index].push(v);
-  });
-  return result;
-}
-
-function mapValues<I, O>(m: { [key: string]: I }, f: (key: string, value: I) => O): { [key: string]: O } {
-  const result: { [key: string]: O } = {};
-
-  for (let key in m) {
-    console.log(key);
-    result[key] = f(key, m[key]);
-  };
-
-  return result;
-}
+import { groupBy, mapValues } from "../CollectionUtils";
 
 export class ConnectedReportService implements ReportService {
 
@@ -34,32 +12,48 @@ export class ConnectedReportService implements ReportService {
     readonly fileChanges: FileChangeRepository) {}
 
   async getReport(accountId: accountId): Promise<UserReport> {
-    const token = await this.tokens.fetchToken(accountId);
-    const [userDetails, changes] = await Promise.all([
-      this.dropbox.getCurrentAccountDetails(token),
+    const [token, changes] = await Promise.all([
+      this.tokens.fetchToken(accountId),
       this.fileChanges.getFileChanges(accountId)]);
 
+    const [accountDetails, interactions] = await Promise.all([
+      this.dropbox.getCurrentAccountDetails(token),
+      this.getInteractions(changes, token)
+    ]);
+
+    return {
+      accountName: accountDetails.userName,
+      interactions: interactions
+    };
+  }
+
+  private async getInteractions(changes: any[], token: accessToken): Promise<{ [key:string]: UserInteractions }> {
     const changesByUserId = groupBy(changes, (change => change["user_id"]));
-    const userIds = Object.keys(changesByUserId);
-    const userNames = await Promise.all(userIds.map(userId =>
-       this.dropbox.getUserDetails(userId, token)
-       .then(details => details.userName)));
+
+    const userNameLookup = await this.getUserNameLookup(Object.keys(changesByUserId), token);
+
+    return mapValues<any, UserInteractions>(changesByUserId, (k, v) => (
+      { userName: userNameLookup[k], interactions: v.map(change => ({
+        timestamp: change.timestamp
+      }))}
+    ));
+  }
+
+  private async getUserNameLookup(userIds: userId[], token: accessToken): Promise<{ [key:string]: string }> {
+    const userNames = await this.getUserNames(userIds, token);
 
     const userNameLookup = {};
     for (let i = 0; i < userIds.length; i++) {
       userNameLookup[userIds[i]] = userNames[i];
     }
 
-    const interactions = mapValues<any, UserInteractions>(changesByUserId, (k, v) => (
-      { userName: userNameLookup[k], interactions: v.map(change => ({
-        timestamp: change.timestamp
-      }))}
-    ));
+    return userNameLookup;
+  }
 
-    return {
-      accountName: userDetails.userName,
-      interactions: interactions
-    };
+  private getUserNames(userIds: userId[], token: accessToken): Promise<string[]> {
+    return Promise.all(userIds.map(userId =>
+       this.dropbox.getUserDetails(userId, token)
+       .then(details => details.userName)));
   }
 
 }
