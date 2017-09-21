@@ -1,0 +1,12 @@
+service: icarus
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+plugins:
+  - serverless-webpack
+  
+functions:
+  hello:
+    handler: handler.hello
