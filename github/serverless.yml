@@ -1,0 +1,79 @@
+service:
+  name: github-integration
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  state: dev
+  region: eu-west-2
+  environment:
+    GITHUB_WEBHOOK_SECRET: ${env:GITHUB_WEBHOOK_SECRET}
+    EVENT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-events
+
+functions:
+  receiveWebhookEvents:
+    handler: src/main/handler.receiveWebhookEvent
+    memorySize: 128
+    description: Bentham Github webhook integration - Receive Github Events (webhook endpoint)
+    events:
+      - http:
+          path: events
+          method: post
+
+resources:
+  Resources:
+    EventsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.EVENT_TABLE}
+        AttributeDefinitions:
+          - AttributeName: "id"
+            AttributeType: S
+          - AttributeName: "username"
+            AttributeType: S
+          - AttributeName: "timestamp"
+            AttributeType: S
+        KeySchema:
+          - AttributeName: "id"
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: "events_by_user"
+            KeySchema:
+            - AttributeName: "username"
+              KeyType: HASH
+            - AttributeName: "timestamp"
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              # TODO Tweak these provisioned capacity
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          # TODO Tweak these provisioned capacity
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn:
+        - EventsDynamoDbTable
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:BatchWriteItem
+                - dynamodb:Query
+              Resource:
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.EVENT_TABLE}
+        Roles:
+          - Ref: IamRoleLambdaExecution

@@ -1,0 +1,21 @@
+{
+  "name": "bentham-github",
+  "version": "1.0.0",
+  "description": "Github webhook integration for Bemtham",
+  "main": "src/main/handler.js",
+  "dependencies": {
+    "bluebird": "^3.5.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.121.0",
+    "chai": "^4.1.2",
+    "chai-match-json": "^0.1.2",
+    "mocha": "^3.5.3",
+    "sinon": "^3.3.0"
+  },
+  "scripts": {
+    "test": "mocha src/test/**/*Test.js"
+  },
+  "author": "Lorenzo Nicora (lorenzo.nicora@wipro.com)",
+  "license": "MIT"
+}
