@@ -1,15 +1,25 @@
 import { complete } from "./EndpointUtils";
-import { event, callback } from "../Api";
+import { event, callback, slackAuthCode } from "../Api";
 import { pathTo, redirectTo } from "../clients/Http";
-import { SlackClient } from "../clients/ClientApi"
+import { LoginService } from "../services/ServiceApi"
 
 export class SlackLoginEndpoint {
 
-  constructor(private slack: SlackClient) {}
+  constructor(private service: LoginService) {}
 
   login(cb: callback, evt: event) {
-    return complete(cb, this.slack.getToken(evt.queryStringParameters.code)
-      .then(token => ({ statusCode: 200 })));
+    return complete(cb, this.service.login(evt.queryStringParameters.code)
+      .then(userToken => ({
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: {
+          userName: userToken.identities.slack.userName,
+          accessToken: userToken.accessToken,
+          hasDropboxAuthorisation: userToken.identities.dropbox != undefined
+        }
+      })));
   }
 
 }
