@@ -1,7 +1,7 @@
 import { complete } from "./EndpointUtils";
 import { event, callback, slackAuthCode } from "../Api";
 import { pathTo, redirectTo } from "../clients/Http";
-import { LoginService } from "../services/ServiceApi"
+import { LoginService } from "../services/Login"
 
 export class SlackLoginEndpoint {
 

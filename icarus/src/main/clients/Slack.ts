@@ -1,8 +1,8 @@
-import { slackAuthCode, slackToken } from "../Api"
-import { doHttp } from './Http'
-import { SlackClient } from './ClientApi'
+import { event, uri, slackAuthCode, slackToken } from "../Api";
 
-export class HttpSlackClient implements SlackClient {
+import { doHttp } from './Http';
+
+export class SlackClient {
 
   constructor(private clientId: string, private clientSecret: string) {}
 

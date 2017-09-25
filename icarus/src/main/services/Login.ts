@@ -1,8 +1,9 @@
-import { slackAuthCode } from "../Api"
-import { SlackClient } from "../clients/ClientApi"
-import { LoginService, IdentityService, UserToken } from "./ServiceApi"
+import { slackAuthCode } from "../Api";
+import { SlackClient } from "../clients/Slack";
+import { UserToken } from "./ServiceApi";
+import { IdentityService } from "./Identity";
 
-export class ConnectedLoginService implements LoginService {
+export class LoginService {
 
   constructor(private slack: SlackClient, private identity: IdentityService) {}
 
