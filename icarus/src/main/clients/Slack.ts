@@ -1,15 +1,15 @@
 import { event, uri, slackAuthCode, slackToken } from "../Api";
 
-import { doHttp } from './Http';
+import { HttpClient } from './Http';
 
 export class SlackClient {
 
-  constructor(private clientId: string, private clientSecret: string) {}
+  constructor(private http: HttpClient, private clientId: string, private clientSecret: string) {}
 
   async getToken(code: slackAuthCode): Promise<slackToken> {
     console.log(`Fetching token with code ${code}`);
 
-    const response = await doHttp({
+    const response = await this.http.doHttp({
       url: "https://slack.com/api/oauth.access",
       method: "get",
       qs: {
@@ -25,7 +25,7 @@ export class SlackClient {
   async getUserDetails(token: slackToken): Promise<any> {
     console.log(`Fetching user details with token ${token}`);
 
-    const responseBody = await doHttp({
+    const responseBody = await this.http.doHttp({
       url: "https://slack.com/api/users.identity",
       method: "get",
       qs: {

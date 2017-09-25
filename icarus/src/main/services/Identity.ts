@@ -1,12 +1,22 @@
-import { icarusAccessToken, SlackIdentity, IdentitySet, UserToken } from "./ServiceApi";
+import { icarusAccessToken, SlackIdentity, IdentitySet, UserToken, DropboxIdentity } from "./ServiceApi";
+import { IdentityRepository } from "../repositories/Identity";
+import { v4 as uuid } from 'uuid';
 
 export class IdentityService {
+
+  constructor(private repo: IdentityRepository) {}
+
   /**
   If you have logged in via Slack, you can create or retrieve a UserToken,
   which includes an access token.
   */
   async grantUserToken(slackIdentity: SlackIdentity): Promise<UserToken> {
-    throw new Error("Not implemented yet");
+    const accessToken = uuid();
+
+    await this.repo.saveSlackIdentity(accessToken, slackIdentity);
+    const dropboxIdentity = await this.repo.getDropboxIdentity(slackIdentity.id);
+
+    return this.constructUserToken(accessToken, slackIdentity, dropboxIdentity);
   }
 
   /**
@@ -14,7 +24,25 @@ export class IdentityService {
   for as long as it is valid.
   */
   async getUserToken(accessToken: icarusAccessToken): Promise<UserToken> {
-    throw new Error("Not implemented yet");
+    const slackIdentity = await this.repo.getSlackIdentity(accessToken);
+    const dropboxIdentity = await this.repo.getDropboxIdentity(slackIdentity.id);
+
+    return this.constructUserToken(accessToken, slackIdentity, dropboxIdentity);
+  }
+
+  private constructUserToken(accessToken: icarusAccessToken, slackIdentity: SlackIdentity, dropboxIdentity?: DropboxIdentity): UserToken {
+    const userToken: UserToken = {
+      accessToken: accessToken,
+      identities: {
+        slack: slackIdentity
+      }
+    };
+
+    if (dropboxIdentity) {
+      userToken.identities.dropbox = dropboxIdentity;
+    }
+
+    return userToken;
   }
 
   /**
