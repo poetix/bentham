@@ -24,4 +24,4 @@ Load the keypair `.pem` file into ssh agent.
 ## Webhook Setup
 
 At the moment, the GiutHub Webhook has to set up manually,
-pointing the `/events` (*receiveGithubEvent*) endpoint.
+pointing the `/events` (*receiveWebhookEvents*) endpoint.

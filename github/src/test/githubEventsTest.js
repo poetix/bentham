@@ -35,7 +35,7 @@ describe('GithubEvents', () => {
           const dbClient = new MockDynamoDbClient();
           const dbSpyPut = sinon.spy(dbClient, 'put'); // Spy on db put calls
 
-          const unit = new GithubEvents(dbClient, 'a-table');
+          const unit = new GithubEvents(dbClient, 'secret');
 
           const eventPayload = testEvents.pushWithOneCommit;
 
@@ -53,7 +53,7 @@ describe('GithubEvents', () => {
           const dbClient = new MockDynamoDbClient();
           const dbSpyPut = sinon.spy(dbClient, 'put'); // Spy on db put calls
 
-          const unit = new GithubEvents(dbClient, 'a-table');
+          const unit = new GithubEvents(dbClient, 'secret');
           const eventPayload = testEvents.pushWithTwoCommits;
 
           unit.processWebhookEvent(eventType, eventPayload)
@@ -68,7 +68,7 @@ describe('GithubEvents', () => {
           const dbClient = new MockDynamoDbClient();
           const dbSpyPut = sinon.spy(dbClient, 'put');
 
-          const unit = new GithubEvents(dbClient, 'a-table');
+          const unit = new GithubEvents(dbClient, 'secret');
           const eventPayload = testEvents.malformedEvent;
 
           unit.processWebhookEvent(eventType, eventPayload)
@@ -89,7 +89,7 @@ describe('GithubEvents', () => {
           const dbClient = new MockDynamoDbClient();
           const dbSpyPut = sinon.spy(dbClient, 'put'); // Spy on db put calls
 
-          const unit = new GithubEvents(dbClient, 'a-table');
+          const unit = new GithubEvents(dbClient, 'secret');
           const eventPayload = {};
 
           unit.processWebhookEvent(eventType, eventPayload)
@@ -103,5 +103,22 @@ describe('GithubEvents', () => {
 
   });
 
-  // TODO Test signature verification
+  describe('verifySignature', () => {
+    const secret = 'secret';
+    const unit = new GithubEvents(new MockDynamoDbClient(), secret );
+
+
+    const jsonPayload = testEvents.sampleJsonPayload;
+
+    it('should accept valid signature', () => {
+      const validSignature = testEvents.sampleJsonPayloadSignature;
+      assert(unit.verifySignature(jsonPayload, validSignature));
+    });
+
+    it('should reject invalid signature', () => {
+      assert(!unit.verifySignature(jsonPayload, 'sha1=not-valid'));
+    });
+  });
+
+
 });

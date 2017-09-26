@@ -4,7 +4,9 @@
   "description": "Github webhook integration for Bemtham",
   "main": "src/main/handler.js",
   "dependencies": {
-    "bluebird": "^3.5.0"
+    "bluebird": "^3.5.0",
+    "buffer-equal-constant-time": "^1.0.1",
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
     "aws-sdk": "^2.121.0",

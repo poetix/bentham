@@ -1,6 +1,10 @@
 // Handle GitHub webhook events
 'use strict';
 
+const crypto = require('crypto'),
+      bufferEq = require('buffer-equal-constant-time');
+
+
 // Hande Github Events
 //
 // Note that "Github events" we save, do not necessarily coincide with the events
@@ -50,9 +54,9 @@ class GithubEvents {
   }
 
 
-  verifySignature(payloadBody, signature) {
-    // TODO Verify Event Signature
-    return true;
+  verifySignature(jsonBody, signature) {
+    const computedSignature = 'sha1=' + crypto.createHmac('sha1', this.secret).update(jsonBody).digest('hex');
+    return bufferEq(new Buffer(signature), new Buffer(computedSignature));
   }
 }
 
@@ -61,10 +65,12 @@ const extractCommitsFromPush = (pushEvent) => {
     return pushEvent.commits
   } else {
     // Just logs, if payload is not valid
-    console.log('Invalid payload: no commits in the push');
+    console.log("Invalid 'push' payload");
     return [];
   }
 };
+
+module.exports = GithubEvents;
 
 // Generate Commit event
 const commitEvent = (commit) => {
@@ -80,7 +86,7 @@ const commitEvent = (commit) => {
         timestamp: commit.timestamp,
       };
     } else {
-        console.log('Invalid payload: not a commits')
+        console.log("Invalid payload: not a 'commit'")
         return null;
     };
 };
@@ -93,5 +99,3 @@ const saveCommit = (commit, eventDb) => {
   return eventDb.put(gitHubEvent)
     .then( gitHubEvent.id );
 };
-
-module.exports = GithubEvents;
