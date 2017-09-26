@@ -16,9 +16,26 @@ provider:
     DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
     DROPBOX_CLIENT_SECRET: ${env:DROPBOX_CLIENT_SECRET}
 
+    SLACK_CLIENT_ID: ${env:SLACK_CLIENT_ID}
+    SLACK_CLIENT_SECRET: ${env:SLACK_CLIENT_SECRET}
+
 functions:
+  # Slack
+  slack-login:
+    handler: src/main/slack/handler.slackLogin
+    events:
+      - http:
+          method: get
+          path: slack-login
+
+          request:
+            parameters:
+              querystrings:
+                code: true
+
+  # Dropbox
   webhook-challenge:
-    handler: src/main/handler.webhookChallenge
+    handler: src/main/dropbox/handler.webhookChallenge
     events:
       - http:
           method: get
@@ -30,7 +47,7 @@ functions:
                 challenge: true
 
   webhook-notify:
-    handler: src/main/handler.webhookNotify
+    handler: src/main/dropbox/handler.webhookNotify
     events:
       - http:
           method: post
@@ -38,14 +55,14 @@ functions:
           integration: lambda-proxy
 
   oauth-initiate:
-    handler: src/main/handler.oauthInitiate
+    handler: src/main/dropbox/handler.oauthInitiate
     events:
       - http:
           method: get
           path: dropbox-oauth-initiate
 
   oauth-complete:
-    handler: src/main/handler.oauthComplete
+    handler: src/main/dropbox/handler.oauthComplete
     events:
       - http:
           method: get
@@ -57,7 +74,7 @@ functions:
                 code: true
 
   user-report:
-    handler: src/main/handler.userReport
+    handler: src/main/dropbox/handler.userReport
     events:
       - http:
           method: get
@@ -142,4 +159,4 @@ resources:
 
 custom:
     client:
-        bucketName: icarus-dropbox-site
+        bucketName: icarus-site
