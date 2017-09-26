@@ -1,5 +1,7 @@
 # GitHub WebHook integration
 
+Receives and store Github webhook events related to users activity.
+
 ## Prerequisites
 
 Node:
@@ -21,13 +23,6 @@ Also set `GITHUB_WEBHOOK_SECRET` for GitHub webhook OAuth.
 
 Load the keypair `.pem` file into ssh agent.
 
-## Serverless deployment
-
-At the moment, only `dev` stage is configured, using `eu-west-2` (London) Region.
-
-
-Remove all (ex)
-
 ## Webhook Setup
 
 At the moment, the GiutHub Webhook has to be set up manually:
@@ -38,6 +33,8 @@ At the moment, the GiutHub Webhook has to be set up manually:
 * *Which events would you like to trigger this webhook?*: Send me everything (or select individual events)
 
 ## Webhook supported events
+
+Webhook events are not stored *raw*, as received.
 
 * `push`: stores individual `commit`s (not the push itself!). Implicitly de-duplicate commits.
 * Any other event is ignored at the moment
