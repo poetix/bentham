@@ -1,20 +1,16 @@
 import { toPromise } from './Utils';
 import { expect } from 'chai';
 import 'mocha';
-import { NotificationProcessor, Notification } from "../main/services/ServiceApi";
+import { NotificationService } from "../main/services/Notifications";
+import { Notification } from '../main/services/ServiceApi';
 import { WebhookEndpoint } from "../main/endpoints/WebhookEndpoint";
+import { mock, instance, when, anything, verify, deepEqual } from 'ts-mockito';
 
-class TestProcessor implements NotificationProcessor {
+const mockedNotificationService = mock(NotificationService);
+const notificationService = instance(mockedNotificationService);
+when(mockedNotificationService.processNotification(anything())).thenReturn(Promise.resolve());
 
-    public receivedNotification: Notification
-
-    async processNotification(notification: Notification): Promise<void> {
-        this.receivedNotification = notification;
-    }
-}
-
-const processor = new TestProcessor();
-const endpoint = new WebhookEndpoint(processor);
+const endpoint = new WebhookEndpoint(notificationService);
 
 const _challenge = (cb, e) => endpoint.challenge(cb, e);
 const _notify = (cb, e) => endpoint.notify(cb, e);
@@ -44,6 +40,6 @@ describe("Webhook Endpoint", () => {
     });
 
     expect(result.statusCode).to.equal(200);
-    expect(processor.receivedNotification).to.deep.equal(notification);
+    verify(mockedNotificationService.processNotification(deepEqual(notification))).once();
   });
 });

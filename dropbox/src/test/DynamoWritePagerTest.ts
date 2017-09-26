@@ -1,29 +1,13 @@
 import { expect } from 'chai';
 import 'mocha';
-import { DynamoClient, DynamoWritePager } from "../main/clients/ClientApi";
+import { DynamoClient, DynamoWritePager } from "../main/clients/Dynamo";
+import { mock, instance, when, verify, anyString, anything } from 'ts-mockito';
 
-class TestDynamoClient implements DynamoClient {
+const mockedDynamoClient = mock(DynamoClient);
+const dynamoClient = instance(mockedDynamoClient);
+when(mockedDynamoClient.putAll(anyString(), anything())).thenCall((tableName, items) => Promise.resolve(items));
 
-  put(tableName: string, item: any): Promise<any> {
-      throw new Error("Method not implemented.");
-  }
-
-  get(tableName: string, key: any): Promise<any> {
-      throw new Error("Method not implemented.");
-  }
-
-  async putAll(tableName: string, items: any[]): Promise<any> {
-      return items;
-  }
-
-  query(params: any): Promise<any[]> {
-      throw new Error("Method not implemented.");
-  }
-
-}
-
-const dynamo = new TestDynamoClient();
-const pager = new DynamoWritePager(dynamo);
+const pager = new DynamoWritePager(dynamoClient);
 
 describe("Dynamo Write Pager", () => {
   it("should break up writes into groups of 25", async () => {

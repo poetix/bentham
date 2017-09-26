@@ -1,7 +1,19 @@
 const AWS = require('aws-sdk');
-import { DynamoClient } from "./ClientApi"
 
-export class AWSDynamoClient implements DynamoClient {
+export class DynamoWritePager {
+  constructor(readonly client: DynamoClient) {}
+
+  async putAll(tableName: string, items: Array<any>): Promise<any[]> {
+    const results: any[] = [];
+    for (let i = 0; i < items.length; i += 25) {
+      const result = await this.client.putAll(tableName, items.slice(i, Math.min(items.length, i + 25)));
+      results.push(result);
+    }
+    return results;
+  }
+}
+
+export class DynamoClient {
 
   static dynamo = new AWS.DynamoDB.DocumentClient();
 
@@ -9,14 +21,14 @@ export class AWSDynamoClient implements DynamoClient {
     return this.doOp({
       TableName: tableName,
       Item: item
-    }, (p, cb) => AWSDynamoClient.dynamo.put(p, cb));
+    }, (p, cb) => DynamoClient.dynamo.put(p, cb));
   }
 
   get(tableName: string, key: any): Promise<any> {
     return this.doOp({
       TableName: tableName,
       Key: key
-    }, (p, cb) => AWSDynamoClient.dynamo.get(p, cb))
+    }, (p, cb) => DynamoClient.dynamo.get(p, cb))
       .then(result => result && result.Item || undefined);
   }
 
@@ -31,11 +43,11 @@ export class AWSDynamoClient implements DynamoClient {
       }
     }));
 
-    return this.doOp(params, (p, cb) => AWSDynamoClient.dynamo.batchWrite(p, cb));
+    return this.doOp(params, (p, cb) => DynamoClient.dynamo.batchWrite(p, cb));
   }
 
   query(params: any): Promise<any[]> {
-    return this.doOp(params, (p, cb) => AWSDynamoClient.dynamo.query(p, cb))
+    return this.doOp(params, (p, cb) => DynamoClient.dynamo.query(p, cb))
       .then(data => data.Items);
   }
 

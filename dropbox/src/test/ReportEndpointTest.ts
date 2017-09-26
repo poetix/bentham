@@ -1,8 +1,10 @@
 import { toPromise } from './Utils';
 import { expect } from 'chai';
 import 'mocha';
-import { ReportService, UserReport } from "../main/services/ServiceApi";
+import { ReportService } from "../main/services/Report";
 import { ReportEndpoint } from "../main/endpoints/ReportEndpoint";
+import { UserReport } from "../main/services/ServiceApi";
+import { mock, instance, when, anyString, verify } from 'ts-mockito';
 
 const report: UserReport = {
   accountName: "My Awesome Team",
@@ -18,19 +20,11 @@ const report: UserReport = {
   }
 };
 
-class TestService implements ReportService {
+const mockedReportService = mock(ReportService);
+const reportService = instance(mockedReportService);
+when(mockedReportService.getReport(anyString())).thenReturn(Promise.resolve(report));
 
-  public receivedAccountId: string;
-
-  async getReport(accountId: string): Promise<UserReport> {
-    this.receivedAccountId = accountId;
-    return report;
-  }
-
-}
-
-const service = new TestService();
-const endpoint = new ReportEndpoint(service);
+const endpoint = new ReportEndpoint(reportService);
 
 const _getReport = (cb, e) => endpoint.getReport(cb, e);
 
@@ -42,7 +36,7 @@ describe("Report Endpoint", () => {
         }
       });
 
-      expect(service.receivedAccountId).to.equal("the account id");
+      verify(mockedReportService.getReport("the account id")).once();
 
       expect(result.statusCode).to.equal(200);
       expect(result.body).to.equal(JSON.stringify(report));

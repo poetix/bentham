@@ -1,13 +1,14 @@
 import { clientId, clientSecret, event, uri, accessCode, accountId, accessToken, cursor, fileInfo, accountAccessToken, host } from "../Api";
-import { doHttp, pathTo } from "./Http";
+import { HttpClient, pathTo } from "./Http";
 import { CursorRepository } from "../Repositories";
-import { DropboxClient, FileFetchResult, UserDetails } from "./ClientApi";
+import { FileFetchResult, UserDetails } from "./ClientApi";
 
-export class HttpDropboxClient implements DropboxClient {
+export class DropboxClient {
 
   constructor(
-    readonly clientId: clientId,
-    readonly clientSecret: clientSecret) {}
+    private readonly http: HttpClient,
+    private readonly clientId: clientId,
+    private readonly clientSecret: clientSecret) {}
 
   getOAuthUri(host: host): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
@@ -17,7 +18,7 @@ export class HttpDropboxClient implements DropboxClient {
 
   async requestToken(code: accessCode, redirectUri: uri): Promise<accountAccessToken> {
     console.log(`Requesting user token for code ${code}`);
-    const responseBody = await doHttp({
+    const responseBody = await this.http.doHttp({
       url: 'https://api.dropboxapi.com/oauth2/token',
       method: 'POST',
       form: {
@@ -41,7 +42,7 @@ export class HttpDropboxClient implements DropboxClient {
   async getLatestCursor(accountId: accountId, token: accessToken): Promise<cursor> {
     console.log(`Getting initial cursor for account ${accountId}`);
 
-    const response = await doHttp({
+    const response = await this.http.doHttp({
       url: 'https://api.dropboxapi.com/2/files/list_folder/get_latest_cursor',
       method: 'POST',
       headers: {
@@ -83,7 +84,7 @@ export class HttpDropboxClient implements DropboxClient {
   }
 
   listFolderContinue(token: string, cursor: string): Promise<any> {
-    return doHttp({
+    return this.http.doHttp({
       url: 'https://api.dropboxapi.com/2/files/list_folder/continue',
       method: 'POST',
       headers: {
@@ -96,7 +97,7 @@ export class HttpDropboxClient implements DropboxClient {
   }
 
   getUserDetails(userId: string, token: string): Promise<UserDetails> {
-    return doHttp({
+    return this.http.doHttp({
       url: 'https://api.dropboxapi.com/2/users/get_account',
       method: 'POST',
       headers: {
@@ -111,7 +112,7 @@ export class HttpDropboxClient implements DropboxClient {
   }
 
   getCurrentAccountDetails(token: string): Promise<UserDetails> {
-    return doHttp({
+    return this.http.doHttp({
       url: 'https://api.dropboxapi.com/2/users/get_current_account',
       method: 'POST',
       headers: {

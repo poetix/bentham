@@ -1,22 +1,7 @@
 import { accountId, accessToken, cursor } from "./Api";
-import { DynamoClient, DynamoWritePager } from "./clients/ClientApi"
+import { DynamoClient, DynamoWritePager } from "./clients/Dynamo"
 
-export interface TokenRepository {
-  fetchToken(accountId: accountId): Promise<string>
-  saveToken(accountId: accountId, accessToken: accessToken): Promise<void>
-}
-
-export interface CursorRepository {
-  fetchCursor(accountId: accountId): Promise<string>
-  saveCursor(accountId: accountId, cursor: cursor): Promise<void>
-}
-
-export interface FileChangeRepository {
-  saveFileChanges(accountId: accountId, changeList: Array<any>): Promise<void>;
-  getFileChanges(accountId: accountId): Promise<Array<any>>
-}
-
-export class DynamoTokenRepository implements TokenRepository {
+export class TokenRepository {
 
   constructor(readonly dynamo: DynamoClient) {}
 
@@ -39,7 +24,7 @@ export class DynamoTokenRepository implements TokenRepository {
 
 }
 
-export class DynamoCursorRepository implements CursorRepository {
+export class CursorRepository {
 
   constructor(readonly dynamo: DynamoClient) {}
 
@@ -59,7 +44,7 @@ export class DynamoCursorRepository implements CursorRepository {
   }
 }
 
-export class DynamoFileChangeRepository {
+export class FileChangeRepository {
 
   pager: DynamoWritePager;
 

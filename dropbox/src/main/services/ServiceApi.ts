@@ -1,9 +1,4 @@
-import { accountId, event, accessCode, uri, response } from "../Api";
-
-export interface OAuthProcessor {
-  getOAuthUri(event: event): string
-  processCode(code: accessCode, redirectUri: uri): Promise<response>
-}
+import { accountId, event, accessCode, uri, response, slackAuthCode } from "../Api";
 
 export interface ListFolder {
   accounts: Array<string>
@@ -18,14 +13,6 @@ export interface Notification {
   delta: Delta
 }
 
-export interface FileUpdateRecorder {
-  recordUpdates(accountId: accountId): Promise<void>
-}
-
-export interface NotificationProcessor {
-  processNotification(notification: Notification): Promise<void>
-}
-
 export interface UserInteractions {
   userName: string,
   interactions: string[]
@@ -36,6 +23,25 @@ export interface UserReport {
   interactions: { [key: string]: UserInteractions }
 }
 
-export interface ReportService {
-  getReport(accountId: accountId): Promise<UserReport>
+export interface AppIdentity {
+  id: string,
+  accessToken: string
+}
+
+export interface SlackIdentity extends AppIdentity {
+  teamId: string,
+  userName: string
+}
+
+export type DropboxIdentity = AppIdentity;
+
+export interface IdentitySet {
+  slack: SlackIdentity,
+  dropbox?: DropboxIdentity,
+  // Other app identities go here
+}
+
+export interface UserToken {
+  accessToken: string,
+  identities: IdentitySet
 }

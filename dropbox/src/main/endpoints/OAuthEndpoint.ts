@@ -4,11 +4,11 @@ Classes in this module handle the protocol-level tasks of handling Events and re
 import { complete } from "./EndpointUtils";
 import { event, callback } from "../Api";
 import { pathTo, redirectTo } from "../clients/Http";
-import { OAuthProcessor } from "../services/ServiceApi"
+import { OAuthService } from "../services/OAuth"
 
 export class OAuthEndpoint {
 
-  constructor(readonly service: OAuthProcessor) {}
+  constructor(private readonly service: OAuthService) {}
 
   initiate(cb: callback, event: event) {
     cb(null, redirectTo(this.service.getOAuthUri(event.headers.Host)));

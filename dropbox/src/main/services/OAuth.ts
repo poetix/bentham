@@ -1,14 +1,13 @@
 import { accessCode, uri, accountId, host, accessToken, cursor } from "../Api";
-import { OAuthProcessor } from "./ServiceApi";
-import { DropboxClient } from "../clients/ClientApi";
+import { DropboxClient } from "../clients/Dropbox";
 import { TokenRepository, CursorRepository } from "../Repositories";
 
-export class DropboxOAuthProcessor implements OAuthProcessor {
+export class OAuthService {
 
   constructor(
-    readonly dropbox: DropboxClient,
-    readonly oauthRepository: TokenRepository,
-    readonly cursorRepository: CursorRepository) {}
+    private readonly dropbox: DropboxClient,
+    private readonly oauthRepository: TokenRepository,
+    private readonly cursorRepository: CursorRepository) {}
 
   getOAuthUri(host: host): uri {
     return this.dropbox.getOAuthUri(host);
@@ -16,7 +15,7 @@ export class DropboxOAuthProcessor implements OAuthProcessor {
 
   async processCode(code: accessCode, redirectUri: uri): Promise<accountId> {
     let token = await this.dropbox.requestToken(code, redirectUri);
-    
+
     return Promise.all([
       this.oauthRepository.saveToken(token.accountId, token.accessToken),
       this.storeInitialCursor(token.accountId, token.accessToken)

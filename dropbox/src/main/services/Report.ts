@@ -1,15 +1,15 @@
 import { accountId, userId, accessToken } from "../Api";
-import { ReportService, UserReport, UserInteractions } from "./ServiceApi";
+import { UserReport, UserInteractions } from "./ServiceApi";
 import { TokenRepository, FileChangeRepository } from "../Repositories";
-import { DropboxClient } from "../clients/ClientApi";
+import { DropboxClient } from "../clients/Dropbox";
 import { groupBy, mapValues } from "../CollectionUtils";
 
-export class ConnectedReportService implements ReportService {
+export class ReportService {
 
   constructor(
-    readonly tokens: TokenRepository,
-    readonly dropbox: DropboxClient,
-    readonly fileChanges: FileChangeRepository) {}
+    private readonly tokens: TokenRepository,
+    private readonly dropbox: DropboxClient,
+    private readonly fileChanges: FileChangeRepository) {}
 
   async getReport(accountId: accountId): Promise<UserReport> {
     const [token, changes] = await Promise.all([

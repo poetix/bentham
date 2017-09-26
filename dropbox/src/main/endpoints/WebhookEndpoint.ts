@@ -4,11 +4,12 @@ Classes in this module handle the protocol-level tasks of handling Events and re
 import { complete } from "./EndpointUtils";
 import { event, callback, challenge, uri } from "../Api";
 import { pathTo, redirectTo } from "../clients/Http";
-import { Notification, NotificationProcessor } from "../services/ServiceApi"
+import { Notification } from "../services/ServiceApi"
+import { NotificationService } from "../services/Notifications";
 
 export class WebhookEndpoint {
 
-  constructor(readonly service: NotificationProcessor) {}
+  constructor(private readonly service: NotificationService) {}
 
   challenge(cb: callback, event: event) {
     cb(null,

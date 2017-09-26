@@ -3,7 +3,7 @@ Classes in this module handle the protocol-level tasks of handling Events and re
 */
 import { complete } from "./EndpointUtils";
 import { event, callback } from "../Api";
-import { ReportService } from "../services/ServiceApi"
+import { ReportService } from "../services/Report"
 
 export class ReportEndpoint {
 

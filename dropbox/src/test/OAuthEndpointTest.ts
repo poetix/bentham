@@ -1,28 +1,16 @@
 import { toPromise } from './Utils';
 import { expect } from 'chai';
 import 'mocha';
-import { OAuthProcessor } from "../main/services/ServiceApi";
+import { OAuthService } from "../main/services/OAuth";
 import { OAuthEndpoint } from "../main/endpoints/OAuthEndpoint";
+import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
-class TestProcessor implements OAuthProcessor {
-  public receivedHost: string;
-  public receivedCode: string;
-  public receivedRedirectUri: string;
+const mockedOauthService = mock(OAuthService);
+const oauthService = instance(mockedOauthService);
+when(mockedOauthService.getOAuthUri(anyString())).thenReturn("http://oauth-uri");
+when(mockedOauthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve("the-account-id"));
 
-  getOAuthUri(host: string) {
-    this.receivedHost = host;
-    return "http://oauth-uri";
-  }
-
-  async processCode(code: string, redirectUri: string): Promise<string> {
-    this.receivedCode = code;
-    this.receivedRedirectUri = redirectUri;
-    return "the-account-id";
-  }
-}
-
-const processor = new TestProcessor();
-const endpoint = new OAuthEndpoint(processor);
+const endpoint = new OAuthEndpoint(oauthService);
 
 const _initiate = (cb, e) => endpoint.initiate(cb, e);
 const _complete = (cb, e) => endpoint.complete(cb, e);
@@ -34,7 +22,7 @@ describe("OAuth Endpoint", () => {
           Host: "aws-api"
         }
       });
-      expect(processor.receivedHost).to.equal("aws-api");
+      verify(mockedOauthService.getOAuthUri("aws-api")).once();
 
       expect(result.statusCode).to.equal(302);
       expect(result.headers.Location).to.equal("http://oauth-uri");
@@ -50,8 +38,8 @@ describe("OAuth Endpoint", () => {
       }
     });
 
-    expect(processor.receivedCode).to.equal("the code");
-    
+    verify(mockedOauthService.processCode("the code", anyString())).once();
+
     expect(result.statusCode).to.equal(302);
     expect(result.headers.Location).to.equal("https://aws-api/dev/dropbox-user-report?account_id=the-account-id");
   });

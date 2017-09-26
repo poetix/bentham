@@ -1,11 +1,11 @@
 import { accountId } from "../Api";
-import { NotificationProcessor, FileUpdateRecorder, Notification } from "./ServiceApi";
+import { Notification } from "./ServiceApi";
 import { TokenRepository, CursorRepository, FileChangeRepository } from "../Repositories";
-import { DropboxClient } from "../clients/ClientApi";
+import { DropboxClient } from "../clients/Dropbox";
 
-export class FileUpdateRecordingNotificationProcessor implements NotificationProcessor {
+export class NotificationService {
 
-  constructor(readonly fileUpdateRecorder: FileUpdateRecorder) {}
+  constructor(private readonly fileUpdateRecorder: FileUpdateRecorder) {}
 
   async processNotification(notification: Notification): Promise<void> {
     console.log("Recording file updates for accounts: " + notification.list_folder.accounts);
@@ -13,13 +13,13 @@ export class FileUpdateRecordingNotificationProcessor implements NotificationPro
   }
 }
 
-export class DropboxFileUpdateRecorder implements FileUpdateRecorder {
+export class FileUpdateRecorder {
 
   constructor(
-    readonly tokenRepository: TokenRepository,
-    readonly cursorRepository: CursorRepository,
-    readonly dropbox: DropboxClient,
-    readonly fileChangeRepository: FileChangeRepository
+    private readonly tokenRepository: TokenRepository,
+    private readonly cursorRepository: CursorRepository,
+    private readonly dropbox: DropboxClient,
+    private readonly fileChangeRepository: FileChangeRepository
   ) {}
 
   async recordUpdates(accountId: accountId): Promise<void> {
