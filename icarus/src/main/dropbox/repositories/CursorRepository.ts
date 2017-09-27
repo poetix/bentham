@@ -3,10 +3,10 @@ import { dropboxAccountId, cursor } from "../Api";
 
 export class CursorRepository {
 
-  constructor(readonly dynamo: DynamoClient) {}
+  constructor(readonly dynamo: DynamoClient, readonly tablename: string) {}
 
   async fetchCursor(accountId: dropboxAccountId): Promise<string> {
-    const result = await this.dynamo.get("user_cursors", {
+    const result = await this.dynamo.get(this.tablename, {
       "account_id": accountId
     });
 
@@ -14,7 +14,7 @@ export class CursorRepository {
   }
 
   saveCursor(accountId: dropboxAccountId, cursor: cursor): Promise<void> {
-    return this.dynamo.put('user_cursors', {
+    return this.dynamo.put(this.tablename, {
       account_id: accountId,
       cursor: cursor
     });

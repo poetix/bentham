@@ -21,9 +21,9 @@ import { IdentityService } from "../common/services/IdentityService";
 
 // Repositories
 const dynamo = new DynamoClient();
-const tokenRepository = new TokenRepository(dynamo);
-const cursorRepository = new CursorRepository(dynamo);
-const fileChangeRepository = new FileChangeRepository(dynamo);
+const tokenRepository = new TokenRepository(dynamo, process.env.USERTOKENS_TABLE);
+const cursorRepository = new CursorRepository(dynamo, process.env.USERCURSORS_TABLE);
+const fileChangeRepository = new FileChangeRepository(dynamo, process.env.FILECHANGES_TABLE);
 const identityRepository = new IdentityRepository();
 
 const httpClient = new HttpClient();
