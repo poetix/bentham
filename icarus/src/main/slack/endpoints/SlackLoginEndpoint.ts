@@ -12,13 +12,14 @@ export class SlackLoginEndpoint {
       .then(userToken => ({
         statusCode: 200,
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
         },
-        body: {
+        body: JSON.stringify({
           userName: userToken.identities.slack.userName,
           accessToken: userToken.accessToken,
           hasDropboxAuthorisation: userToken.identities.dropbox != undefined
-        }
+        })
       })));
   }
 

@@ -12,6 +12,7 @@ export class LoginService {
     const token = await this.slack.getToken(slackCode);
     const userDetails = await this.slack.getUserDetails(token);
 
+    console.log(userDetails);
     // Obtain a user token from the identity service, and return it.
     const userToken = await this.identity.grantUserToken({
       id: userDetails.user.id,
@@ -19,6 +20,8 @@ export class LoginService {
       userName: userDetails.user.name,
       accessToken: token
     });
+
+    console.log(userToken);
 
     return userToken;
   }
