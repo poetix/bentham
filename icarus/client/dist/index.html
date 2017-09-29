@@ -2,6 +2,8 @@
 <html>
   <head>
     <title>Icarus</title>
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"/>
+    <link href="main.css" rel="stylesheet"/>
   </head>
   <body>
     <div id="landing-page">
@@ -15,7 +17,15 @@
         </a>
       </div>
       <div v-if="hasAccessToken" id="application">
-        <h1>The amazing application!</h1>
+        <h1 class="title">Icarus</h1>
+        <div class="greeting">Welcome, {{ accessToken.userName }}</div>
+        <div id="external-apps">
+          <div class="external-app" id="dropbox">
+            <h1 class="app-name">Dropbox</h1>
+            <div v-if="accessToken.hasDropboxAuthorisation">View Dropbox Report</div>
+            <div v-else>Link to Dropbox</div>
+          </div>
+        </div>
       </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>

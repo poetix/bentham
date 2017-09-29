@@ -22,8 +22,14 @@ provider:
 
     GITHUB_WEBHOOK_SECRET: ${env:GITHUB_WEBHOOK_SECRET}
 
-    USERTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user_tokens
-    USERCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user_cursors
+    TABLE_PREFIX: ${self:service}-${opt:stage, self:provider.stage}-
+
+    ACCESSTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-access_tokens
+    SLACKACCOUNTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-slack_accounts
+
+    DROPBOXACCOUNTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_accounts
+    DROPBOXTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_tokens
+    DROPBOXCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_cursors
     FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
     GITHUB_EVENT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
 custom:
@@ -109,10 +115,52 @@ functions:
 
 resources:
   Resources:
-    UserTokensTable:
+    AccessTokensTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.USERTOKENS_TABLE}
+        TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: access_token
+            AttributeType: S
+        KeySchema:
+          - AttributeName: access_token
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 10
+          
+    SlackAccountsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: slack_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    DropboxAccountsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: slack_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    DropboxTokensTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DROPBOXTOKENS_TABLE}
         AttributeDefinitions:
           - AttributeName: account_id
             AttributeType: S
@@ -123,10 +171,10 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
 
-    UserCursorsTable:
+    DropboxCursorsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.USERCURSORS_TABLE}
+        TableName: ${self:provider.environment.DROPBOXCURSORS_TABLE}
         AttributeDefinitions:
           - AttributeName: account_id
             AttributeType: S
@@ -155,7 +203,7 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
 
-    GithubEventsTable:
+    GithubEventTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: ${self:provider.environment.GITHUB_EVENT_TABLE}
@@ -188,10 +236,13 @@ resources:
     DynamoDBIamPolicy:
       Type: AWS::IAM::Policy
       DependsOn:
-        - UserTokensTable
-        - UserCursorsTable
+        - GithubEventTable
+        - DropboxTokensTable
+        - DropboxCursorsTable
         - FileChangesTable
-        - GithubEventsTable
+        - AccessTokensTable
+        - SlackAccountsTable
+        - DropboxAccountsTable
       Properties:
         PolicyName: lambda-dynamodb
         PolicyDocument:
@@ -204,10 +255,12 @@ resources:
                 - dynamodb:BatchWriteItem
                 - dynamodb:Query
               Resource:
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.USERTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.USERCURSORS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUB_EVENT_TABLE}
-
         Roles:
           - Ref: IamRoleLambdaExecution

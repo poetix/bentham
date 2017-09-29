@@ -35,11 +35,11 @@ describe("Slack Login Endpoint", () => {
       });
 
       expect(result.statusCode).to.equal(200);
-      expect(result.body).to.deep.equal({
+      expect(result.body).to.equal(JSON.stringify({
         userName: "Arthur Putey",
         accessToken: "the access token",
         hasDropboxAuthorisation: false
-      });
+      }));
   });
 
   it("should report on whether the user has Dropbox authorisation", async () => {
@@ -67,10 +67,10 @@ describe("Slack Login Endpoint", () => {
     });
 
     expect(result.statusCode).to.equal(200);
-    expect(result.body).to.deep.equal({
+    expect(result.body).to.equal(JSON.stringify({
       userName: "Arthur Putey",
       accessToken: "the access token",
       hasDropboxAuthorisation: true
-    });
+    }));
   })
 });

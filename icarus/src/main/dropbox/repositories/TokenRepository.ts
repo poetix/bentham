@@ -3,19 +3,19 @@ import { DynamoClient } from "../../common/clients/DynamoClient"
 
 export class TokenRepository {
 
-  constructor(readonly dynamo: DynamoClient, readonly tablename: string) {}
+  constructor(readonly dynamo: DynamoClient) {}
 
   saveToken(accountId: dropboxAccountId, accessToken: dropboxAccessToken): Promise<void> {
     console.log("Writing account access token to Dynamo");
 
-    return this.dynamo.put(this.tablename, {
+    return this.dynamo.put("dropbox_tokens", {
       account_id: accountId,
       access_token: accessToken
     });
   }
 
   async fetchToken(accountId: dropboxAccountId): Promise<dropboxAccessToken> {
-    const result = await this.dynamo.get(this.tablename, {
+    const result = await this.dynamo.get("dropbox_tokens", {
       "account_id": accountId
     });
 

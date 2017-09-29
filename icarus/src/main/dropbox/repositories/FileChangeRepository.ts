@@ -5,7 +5,7 @@ export class FileChangeRepository {
 
   private readonly pager: DynamoWritePager;
 
-  constructor(private readonly dynamo: DynamoClient, readonly tablename: string) {
+  constructor(private readonly dynamo: DynamoClient) {
     this.pager = new DynamoWritePager(dynamo);
   }
 
@@ -19,12 +19,12 @@ export class FileChangeRepository {
 
     console.log(`Writing items to DynamoDB for account ${accountId}`);
     console.log(changeList);
-    this.pager.putAll(this.tablename, items);
+    this.pager.putAll("file_changes", items);
   }
 
   async getFileChanges(accountId: dropboxAccountId): Promise<Array<any>> {
     return this.dynamo.query({
-      TableName: this.tablename,
+      TableName: "file_changes",
       KeyConditionExpression: 'account_id = :hkey',
       ExpressionAttributeValues: {
         ':hkey': accountId
