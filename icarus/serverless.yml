@@ -25,6 +25,7 @@ provider:
     USERTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user_tokens
     USERCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-user_cursors
     FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
+    GITHUB_EVENT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
 custom:
   client:
       # TODO in use?
@@ -97,6 +98,15 @@ functions:
               querystrings:
                 account_id: true
 
+  # Github
+  gihub-webhook-receive:
+    handler: src/main/github/handler.webhookReceive
+    events:
+      - http:
+          method: post
+          path: github-webhook
+          integration: lambda-proxy
+
 resources:
   Resources:
     UserTokensTable:
@@ -145,12 +155,43 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
 
+    GithubEventsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.GITHUB_EVENT_TABLE}
+        AttributeDefinitions:
+          - AttributeName: "id"
+            AttributeType: S
+          - AttributeName: "username"
+            AttributeType: S
+          - AttributeName: "timestamp"
+            AttributeType: S
+        KeySchema:
+          - AttributeName: "id"
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: "events_by_user"
+            KeySchema:
+            - AttributeName: "username"
+              KeyType: HASH
+            - AttributeName: "timestamp"
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 10
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 10
+
     DynamoDBIamPolicy:
       Type: AWS::IAM::Policy
       DependsOn:
         - UserTokensTable
         - UserCursorsTable
         - FileChangesTable
+        - GithubEventsTable
       Properties:
         PolicyName: lambda-dynamodb
         PolicyDocument:
@@ -166,5 +207,7 @@ resources:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.USERTOKENS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.USERCURSORS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUB_EVENT_TABLE}
+
         Roles:
           - Ref: IamRoleLambdaExecution
