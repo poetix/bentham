@@ -58,9 +58,9 @@ At the moment, the GiutHub Webhook has to be set up manually:
 ### Supported webhook events
 
 Webhook events are not stored *raw*, as received from Github.
-The integration extracts *user events* from supported *Github webhook events* and store them individually.
+Icarus extracts *user events* from supported *webhook events* and store them individually.
 
-Every *user event* references to an object. The URI of the object is saved with the event.
+Every *user event* refers to an object. The event includes the object URI.
 
 * `push`: stores individual commits; refers to the commit (implicitly de-duplicate commits)
 * `issues`: stores the action; refers to the issue

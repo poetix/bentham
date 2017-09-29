@@ -73,9 +73,10 @@ function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
 
 
 function pushToCommits(webhookEvent:WebhookEvent): UserEvent[] {
-  const commits:any[] = webhookEvent.payload.commits;
+  const repository = webhookEvent.payload.repository
+  const commits:any[] = webhookEvent.payload.commits
   return commits.map( commit => ({
-    id: `commit-${commit.id}`, // This ID de-duplicate commits, as the same commit may be included in multiple pushes
+    id: `${commit.committer.username}-${commit.id}`, // The same commit may be included in multiple pushes but get de-duplicated
     username: commit.committer.username,
     eventType: 'commit',
     objectType: 'commit',
