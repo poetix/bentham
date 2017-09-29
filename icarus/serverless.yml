@@ -31,7 +31,7 @@ provider:
     DROPBOXTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_tokens
     DROPBOXCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_cursors
     FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
-    GITHUB_EVENTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
+    GITHUBEVENTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
 custom:
   client:
       # TODO in use?
@@ -206,7 +206,7 @@ resources:
     GithubEventsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.GITHUB_EVENTS_TABLE}
+        TableName: ${self:provider.environment.GITHUBEVENTS_TABLE}
         AttributeDefinitions:
           - AttributeName: "id"
             AttributeType: S
@@ -261,6 +261,6 @@ resources:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUB_EVENTS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
         Roles:
           - Ref: IamRoleLambdaExecution
