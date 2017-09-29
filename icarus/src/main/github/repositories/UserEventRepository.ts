@@ -23,7 +23,7 @@ const baseTablename  = 'github_events'
 // Repository for UserEvent: Github user related events, handled by Icarus
 // (these are different from events delivered by GitHub webhook)
 export class UserEventRepository {
-  constructor(readonly dynamo: DynamoClient) {}
+  constructor(private readonly dynamo: DynamoClient) {}
 
   async store(event: UserEvent): Promise<void> {
     const storedEvent = {
