@@ -20,7 +20,9 @@ export class SlackClient {
       }
     });
 
-    return JSON.parse(response).access_token;
+    console.log(response);
+
+    return JSON.parse(response)['access_token'];
   }
 
   async getUserDetails(token: slackToken): Promise<any> {
@@ -36,6 +38,7 @@ export class SlackClient {
       }
     });
 
+    console.log(responseBody);
     const response = JSON.parse(responseBody);
     if (!response.ok) {
       throw new Error("Response not OK");
