@@ -4,65 +4,84 @@ import { mock, instance, when, verify, resetCalls, anyString, anything } from 't
 
 import { WebhookEventService } from "../../../main/github/services/WebhookEventService";
 import { UserEventRepository } from "../../../main/github/repositories/UserEventRepository";
-import { WebhookEvent, WebhookEventType } from "../../../main/github/Api";
+import { WebhookEvent } from "../../../main/github/services/WebhookEventService";
 
-const userEventRepositoryMock = mock(UserEventRepository);
-const userEventRepository = instance(userEventRepositoryMock);
-import * as sampleEvents from "./sampleEvents"
+import * as sampleEvents from "../sampleEvents"
 
-when(userEventRepositoryMock.store(anything())).thenReturn(Promise.resolve());
+const userEventRepositoryMock = mock(UserEventRepository)
+const userEventRepository = instance(userEventRepositoryMock)
+
+when(userEventRepositoryMock.store(anything())).thenReturn(Promise.resolve())
 
 beforeEach(() => {
   resetCalls(userEventRepositoryMock)
 })
 
-describe('Webhook Event Service', () =>{
-
-  const unit = new WebhookEventService(userEventRepository);
-
-  it('should save one event processing a push containing a single commit' , async () => {
-    const webhookEvent:WebhookEvent = {
-      eventType: WebhookEventType.push,
-      deliveryId: 'delivery-id',
-      payload: sampleEvents.pushWithOneCommit
-    }
-    await unit.processWebhookEvent(webhookEvent); // should not fail
-
-    verify(userEventRepositoryMock.store(anything())).once();
-  } )
+describe('GitHub Webhook Event Service', () =>{
 
 
-  it('should save two events processing a push containing two commits' , async () => {
-    const webhookEvent:WebhookEvent = {
-      eventType: WebhookEventType.push,
-      deliveryId: 'delivery-id',
-      payload: sampleEvents.pushWithTwoCommits
-    }
-    await unit.processWebhookEvent(webhookEvent); // should not fail
+  describe('Process Webhook Event', () =>{
+    const unit = new WebhookEventService(userEventRepository, 'secret')
 
-    verify(userEventRepositoryMock.store(anything())).twice();
-  } )
+      it('should save one event processing a push containing a single commit' , async () => {
+        const webhookEvent:WebhookEvent = {
+          eventType: 'push',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.pushWithOneCommit
+        }
+        await unit.processWebhookEvent(webhookEvent); // should not fail
 
-  it('should save no event processing a ping' , async () => {
-    const webhookEvent:WebhookEvent = {
-      eventType: WebhookEventType.ping,
-      deliveryId: 'delivery-id',
-      payload: sampleEvents.ping
-    }
-    await unit.processWebhookEvent(webhookEvent); // should not fail
+        verify(userEventRepositoryMock.store(anything())).once();
+      } )
 
-    verify(userEventRepositoryMock.store(anything())).never();
-  } )
 
-  it('should save no event processing an unknown event type' , async () => {
-    const webhookEvent:WebhookEvent = {
-      eventType: 'unknown-type',
-      deliveryId: 'delivery-id',
-      payload: { foo: 'bar' }
-    }
-    await unit.processWebhookEvent(webhookEvent); // should not fail
+      it('should save two events processing a push containing two commits' , async () => {
+        const webhookEvent:WebhookEvent = {
+          eventType: 'push',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.pushWithTwoCommits
+        }
+        await unit.processWebhookEvent(webhookEvent); // should not fail
 
-    verify(userEventRepositoryMock.store(anything())).never();
-  } )
+        verify(userEventRepositoryMock.store(anything())).twice();
+      } )
 
+      it('should save no event processing a ping' , async () => {
+        const webhookEvent:WebhookEvent = {
+          eventType: 'ping',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.ping
+        }
+        await unit.processWebhookEvent(webhookEvent); // should not fail
+
+        verify(userEventRepositoryMock.store(anything())).never();
+      } )
+
+      it('should save no event processing an unknown event type' , async () => {
+        const webhookEvent:WebhookEvent = {
+          eventType: 'unknown-type',
+          deliveryId: 'delivery-id',
+          payload: { foo: 'bar' }
+        }
+        await unit.processWebhookEvent(webhookEvent); // should not fail
+
+        verify(userEventRepositoryMock.store(anything())).never();
+      } )
+  })
+
+  describe('Verify Webhook payload signature', () => {
+    const unit = new WebhookEventService(userEventRepository, sampleEvents.sampleJsonPayloadSecret)
+
+    it('should successfully verify a valid signature', ()=>{
+      const result = unit.verifySignature( sampleEvents.sampleJsonPayload, sampleEvents.sampleJsonPayloadSignature )
+
+      expect(result).is.true
+    })
+
+    it('should reject an invalid signature', () => {
+      const result = unit.verifySignature( sampleEvents.sampleJsonPayload, 'invalidsignature' )
+
+      expect(result).is.false
+    })
+  })
 })

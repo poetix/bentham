@@ -1,18 +1,29 @@
-import { WebhookEventType, WebhookEvent, UserEventType, UserEvent } from "../Api";
-import { githubWebhookSecret, webhookPayloadSignature, json } from "../Api";
-import { UserEventRepository } from "../repositories/UserEventRepository";
-
-
 import * as crypto from "crypto"
+
+import { githubWebhookSecret, json } from "../Api";
+import { UserEventRepository, UserEventType, UserEvent } from "../repositories/UserEventRepository";
+
+export type webhookDeliveryId = string;
+export type webhookPayloadSignature = string;
+export type webhookPayload = any;
+export type webhookEventType = string
+
+// Webhook event (i.e. event delivered by Github webhook)
+export interface WebhookEvent {
+  eventType: webhookEventType;
+  deliveryId: webhookDeliveryId;
+  payload: webhookPayload;
+}
+
 
 
 // Service for processing Github webhook events
 export class WebhookEventService {
-  constructor(private readonly eventRepository:UserEventRepository){}
+  constructor(private readonly eventRepository:UserEventRepository, private readonly secret:githubWebhookSecret){}
 
   // Verify webhook delivery payload signature
-  verifySignature(jsonPayload:json, signature:webhookPayloadSignature, secret:githubWebhookSecret): Boolean {
-    const computedSignature:string = 'sha1=' + crypto.createHmac('sha1', secret).update(jsonPayload).digest('hex');
+  verifySignature(jsonPayload:json, signature:webhookPayloadSignature,): Boolean {
+    const computedSignature:string = 'sha1=' + crypto.createHmac('sha1', this.secret).update(jsonPayload).digest('hex');
     return (computedSignature == signature)
   }
 
@@ -20,7 +31,7 @@ export class WebhookEventService {
   async processWebhookEvent(webhookEvent:WebhookEvent): Promise<void> {
     console.log(`Processing a '${webhookEvent.eventType}' webhook event`)
 
-    if( webhookEvent.eventType ==  WebhookEventType.ping ) {
+    if( webhookEvent.eventType ==  'ping' ) {
       console.log("Received a 'ping'")
       return Promise.resolve();
     } else {
@@ -34,7 +45,7 @@ export class WebhookEventService {
 
 function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
   switch(webhookEvent.eventType) {
-    case WebhookEventType.push:
+    case 'push':
       return pushToCommits(webhookEvent)
     // ... handle more event types ...
     default:

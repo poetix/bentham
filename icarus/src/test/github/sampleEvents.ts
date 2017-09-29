@@ -1,4 +1,5 @@
 export const sampleJsonPayloadSignature = 'sha1=e9104ab9e5a9917614a6b5878f3cfe241c7fa714';
+export const sampleJsonPayloadSecret = 'secret';
 export const sampleJsonPayload = `{
   "ref": "refs/heads/master",
   "before": "db08862aa3e6c3825045c18d0c8b537664805ee0",
