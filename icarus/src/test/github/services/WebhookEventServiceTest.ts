@@ -69,6 +69,72 @@ describe('GitHub Webhook Event Service', () =>{
         verify(userEventRepositoryMock.store(anything())).once();
       })
 
+      it('should store one event processing a "pull_request" event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'pull_request',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.pullRequestOpenedEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
+      it('should store one event processing a "pull_request_review" event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'pull_request_review',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.pullRequestReviewSubmittedEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
+      it('should store one event processing a "pull_request_review_comment" event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'pull_request_review_comment',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.pullRequestReviewCommentCreatedEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
+      it('should store one event processing a "create" tag event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'create',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.createTagEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
+      it('should store one event processing a "create" repository event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'create',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.createRepositoryEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
+      it('should store one event processing a "delete" tag event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'delete',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.deleteTagEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
       it('should save no event processing a ping' , async () => {
         const webhookEvent:WebhookEvent = {
           eventType: 'ping',

@@ -54,7 +54,17 @@ function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
       return [ issuesEvent(webhookEvent) ]
     case 'commit_comment':
       return [ commitCommentEvent(webhookEvent) ]
-    // ... handle more event types ...
+    case 'pull_request':
+      return [ pullRequestEvent(webhookEvent) ]
+    case 'pull_request_review':
+      return [ pullRequestReviewEvent(webhookEvent) ]
+    case 'pull_request_review_comment':
+      return [ pullRequestReviewCommentEvent(webhookEvent) ]
+    case 'create':
+      return [ createEvent(webhookEvent) ]
+    case 'delete':
+      return [ deleteEvent(webhookEvent) ]
+
     default:
       console.log(`Unknowns webhook event type: '${webhookEvent.eventType}'`)
       return [];
@@ -95,6 +105,74 @@ function commitCommentEvent(webhookEvent:WebhookEvent): UserEvent {
     eventType: `commit_comment-${payload.action}`,
     objectType: 'commit_comment',
     objectUri: payload.comment.url,
-    timestamp: isoNow() // No timestamp in the payload
+    timestamp: isoNow()
+  }
+}
+
+function pullRequestEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `pull_request-${payload.action}`,
+    objectType: 'pull_request',
+    objectUri: payload.pull_request.url,
+    timestamp: isoNow()
+  }
+}
+
+function pullRequestReviewEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `pull_request_review-${payload.action}`,
+    objectType: 'pull_request_review',
+    objectUri: payload.review.html_url,
+    timestamp: isoNow()
+  }
+}
+
+function pullRequestReviewCommentEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `pull_request_review_comment-${payload.action}`,
+    objectType: 'pull_request_review_comment',
+    objectUri: payload.comment.url,
+    timestamp: isoNow()
+  }
+}
+
+function createEvent(webhookEvent:WebhookEvent): UserEvent {
+  // Create a repository, branch or tag
+  const payload = webhookEvent.payload
+  const refType = payload.ref_type // 'repository', 'branch' or 'tag'
+  const ref = payload.ref // null if ref_type == 'repository'
+  const url = payload.repository.url + ( ref ? `/tree/${ref}` : '' ) // Repo URi or Tag/Branch tree URL
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `create-${refType}`,
+    objectType: refType,
+    objectUri: url,
+    timestamp: isoNow()
+  }
+}
+
+function deleteEvent(webhookEvent:WebhookEvent): UserEvent {
+  // Create a branch or tag
+  const payload = webhookEvent.payload
+  const refType = payload.ref_type // 'branch' or 'tag'
+  const ref = payload.ref
+  const url = `${payload.repository.url}/tree/${ref}` // Tag/Branch tree URL
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `delete-${refType}`,
+    objectType: refType,
+    objectUri: url,
+    timestamp: isoNow()
   }
 }

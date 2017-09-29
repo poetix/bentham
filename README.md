@@ -60,9 +60,15 @@ At the moment, the GiutHub Webhook has to be set up manually:
 Webhook events are not stored *raw*, as received from Github.
 The integration extracts *user events* from supported *Github webhook events* and store them individually.
 
-Unsupported events are silently ignored.
+Every *user event* references to an object. The URI of the object is saved with the event.
 
-* `push`: stores individual `commit`s. Implicitly de-duplicate commits.
-* `issues`: store the action (no de-duplication required)
-* `commit_comment`: store the action (no de-duplication required)
-* Any other event is ignored at the moment
+* `push`: stores individual commits; refers to the commit (implicitly de-duplicate commits)
+* `issues`: stores the action; refers to the issue
+* `commit_comment`: stores the action; refers to the commit comment
+* `pull_request`: stores the action; refers to the PR
+* `pull_request_review`: stores the action; refers to the review html content
+* `pull_request_review_comment`: stores the action; refers to the comment
+* `create`: stores the creation of a repository, branch or tag; refers to the repo or to the branch/tag tree
+* `delete`: stores the creation of a branch or tag; refers to the branch/tag tree
+
+Any other event is ignored at the moment
