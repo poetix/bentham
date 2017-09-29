@@ -17,7 +17,7 @@ beforeEach(() => {
 
 describe('The Github User Event Repository', () => {
 
-  const unit = new UserEventRepository(dynamoClient, 'a-table')
+  const unit = new UserEventRepository(dynamoClient)
 
   describe('Store user event', () => {
     it('should put an event to DynamoDB table on saving a user event', async () => {
@@ -35,7 +35,7 @@ describe('The Github User Event Repository', () => {
       verify(dynamoClientMock.put(anyString(), anything()) ).once()
       const [actualTableName, actualDbEvent] = capture(dynamoClientMock.put).last()
 
-      expect(actualTableName).is.equal('a-table')
+
       expect(actualDbEvent.id).is.equal('user-event-id')
       expect(actualDbEvent.event_id).is.equal('commit-id')
       expect(actualDbEvent.username).is.equal('github-username')
