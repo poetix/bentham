@@ -45,3 +45,22 @@ serverless config credentials --provider aws --key <aws-access-key-id> --secret 
 
 The `ICARUS_DEV` environment variable is prefixed to `dev` stage, unless `stage` is overwritten by command line.
 Note that `ICARUS_DEV` only allows **a-zA-Z0-9** (no hyphen, no underscore)
+
+## Github webhook setup
+
+At the moment, the GiutHub Webhook has to be set up manually:
+
+* *Payload URL*: `<service-endpoint>/github-webhook`
+* *Content type*: `application/json`
+* *Secret*: your `GITHUB_WEBHOOK_SECRET`
+* *Which events would you like to trigger this webhook?*: "Send me everything" (or "Select individual events")
+
+### Supported webhook events
+
+Webhook events are not stored *raw*, as received from Github.
+The integration extracts *user events* from supported *Github webhook events* and store them individually.
+
+Unsupported events are silently ignored.
+
+* `push`: stores individual `commit`s. Implicitly de-duplicate commits.
+* Any other event is ignored at the moment

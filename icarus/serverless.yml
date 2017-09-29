@@ -31,7 +31,7 @@ provider:
     DROPBOXTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_tokens
     DROPBOXCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_cursors
     FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
-
+    GITHUB_EVENT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
 custom:
   client:
       # TODO in use?
@@ -104,6 +104,15 @@ functions:
               querystrings:
                 account_id: true
 
+  # Github
+  gihub-webhook-receive:
+    handler: src/main/github/handler.webhookReceive
+    events:
+      - http:
+          method: post
+          path: github-webhook
+          integration: lambda-proxy
+
 resources:
   Resources:
     DropboxTokensTable:
@@ -152,51 +161,40 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
 
-    AccessTokensTable:
+    GithubEventTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
+        TableName: ${self:provider.environment.GITHUB_EVENT_TABLE}
         AttributeDefinitions:
-          - AttributeName: access_token
+          - AttributeName: "id"
+            AttributeType: S
+          - AttributeName: "username"
+            AttributeType: S
+          - AttributeName: "timestamp"
             AttributeType: S
         KeySchema:
-          - AttributeName: access_token
+          - AttributeName: "id"
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: "events_by_user"
+            KeySchema:
+            - AttributeName: "username"
+              KeyType: HASH
+            - AttributeName: "timestamp"
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 10
         ProvisionedThroughput:
-          ReadCapacityUnits: 10
-          WriteCapacityUnits: 5
-
-    SlackAccountsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
-        AttributeDefinitions:
-          - AttributeName: slack_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: slack_id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 10
-          WriteCapacityUnits: 5
-
-    DropboxAccountsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
-        AttributeDefinitions:
-          - AttributeName: slack_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: slack_id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 10
-          WriteCapacityUnits: 5
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 10
 
     DynamoDBIamPolicy:
       Type: AWS::IAM::Policy
       DependsOn:
+        - GithubEventTable
         - DropboxTokensTable
         - DropboxCursorsTable
         - FileChangesTable
@@ -221,5 +219,6 @@ resources:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUB_EVENT_TABLE}
         Roles:
           - Ref: IamRoleLambdaExecution
