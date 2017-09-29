@@ -115,6 +115,48 @@ functions:
 
 resources:
   Resources:
+    AccessTokensTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: access_token
+            AttributeType: S
+        KeySchema:
+          - AttributeName: access_token
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 10
+          
+    SlackAccountsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: slack_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    DropboxAccountsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: slack_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
       Properties:

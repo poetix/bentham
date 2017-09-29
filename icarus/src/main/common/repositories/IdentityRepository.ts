@@ -6,8 +6,12 @@ export class IdentityRepository {
   constructor(
     private readonly dynamo: DynamoClient) {}
 
-  saveDropboxIdentity(accessToken: icarusAccessToken, dropboxIdentity: DropboxIdentity): any {
-    throw new Error("Method not implemented.");
+  async saveDropboxIdentity(slackId: string, dropboxIdentity: DropboxIdentity): Promise<void> {
+    await this.dynamo.put("dropbox_accounts", {
+      slack_id: slackId,
+      dropboxId: dropboxIdentity.id,
+      access_token: dropboxIdentity.accessToken
+    });
   }
 
   async saveSlackIdentity(accessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<void> {
@@ -50,8 +54,19 @@ export class IdentityRepository {
     };
   }
 
-  getDropboxIdentity(slackId: string): Promise<DropboxIdentity | undefined> {
-    throw new Error("Not implemented yet");
+  async getDropboxIdentity(slackId: string): Promise<DropboxIdentity | undefined> {
+    const dropboxIdLookupResult = await this.dynamo.get("dropbox_accounts", {
+      slack_id: slackId
+    });
+
+    if (!dropboxIdLookupResult) {
+      return undefined;
+    }
+
+    return {
+      id: dropboxIdLookupResult.dropbox_id,
+      accessToken: dropboxIdLookupResult.access_token
+    }
   }
 
 }
