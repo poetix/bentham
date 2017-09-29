@@ -3,7 +3,7 @@ import 'mocha';
 import { mock, instance, when, verify, capture, resetCalls, anyString, anything } from 'ts-mockito';
 
 import { DynamoClient } from "../../../main/common/clients/DynamoClient";
-import { UserEventRepository, UserEvent, UserEventType } from "../../../main/github/repositories/UserEventRepository";
+import { UserEventRepository, UserEvent } from "../../../main/github/repositories/UserEventRepository";
 
 const dynamoClientMock = mock(DynamoClient);
 const dynamoClient = instance(dynamoClientMock);
@@ -24,8 +24,9 @@ describe('The Github User Event Repository', () => {
       const userEvent:UserEvent = {
         id: 'user-event-id',
         username: 'github-username',
-        eventType: UserEventType.commit,
-        eventId: 'commit-id',
+        eventType: 'commit',
+        objectType: 'commit',
+        objectUri: 'http://an.url',
         timestamp: '2017-09-26T14:54:38+01:00',
       }
 
@@ -37,7 +38,8 @@ describe('The Github User Event Repository', () => {
 
 
       expect(actualDbEvent.id).is.equal('user-event-id')
-      expect(actualDbEvent.event_id).is.equal('commit-id')
+      expect(actualDbEvent.object_type).is.equal('commit')
+      expect(actualDbEvent.object_uri).is.equal('http://an.url')
       expect(actualDbEvent.username).is.equal('github-username')
       expect(actualDbEvent.timestamp).is.equal('2017-09-26T14:54:38+01:00')
 

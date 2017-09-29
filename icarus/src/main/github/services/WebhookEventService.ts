@@ -1,7 +1,9 @@
 import * as crypto from "crypto"
+const uuidv4 = require('uuid/v4');
+const moment = require('moment');
 
 import { githubWebhookSecret, json } from "../Api";
-import { UserEventRepository, UserEventType, UserEvent } from "../repositories/UserEventRepository";
+import { UserEventRepository, UserEvent } from "../repositories/UserEventRepository";
 
 export type webhookDeliveryId = string;
 export type webhookPayloadSignature = string;
@@ -47,6 +49,8 @@ function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
   switch(webhookEvent.eventType) {
     case 'push':
       return pushToCommits(webhookEvent)
+    case 'issues':
+      return [ issuesEvent(webhookEvent) ]
     // ... handle more event types ...
     default:
       console.log(`Unknowns webhook event type: '${webhookEvent.eventType}'`)
@@ -58,10 +62,25 @@ function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
 function pushToCommits(webhookEvent:WebhookEvent): UserEvent[] {
   const commits:any[] = webhookEvent.payload.commits;
   return commits.map( commit => ({
-    id: `commit-${commit.id}`,
+    id: `commit-${commit.id}`, // This ID de-duplicate commits, as the same commit may be included in multiple pushes
     username: commit.committer.username,
-    eventType: UserEventType.commit,
-    eventId: commit.id,
+    eventType: 'commit',
+    objectType: 'commit',
+    objectUri: commit.url,
     timestamp: commit.timestamp
   }))
+}
+
+
+
+function issuesEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `issues-${payload.action}`,
+    objectType: 'issue',
+    objectUri: payload.issue.url,
+    timestamp: moment().toISOString() // No timestamp in the payload: we assume the action happened when notified
+  }
 }

@@ -63,4 +63,5 @@ The integration extracts *user events* from supported *Github webhook events* an
 Unsupported events are silently ignored.
 
 * `push`: stores individual `commit`s. Implicitly de-duplicate commits.
+* `issues`: store the action. No de-duplication required
 * Any other event is ignored at the moment

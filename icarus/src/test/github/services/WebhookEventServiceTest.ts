@@ -57,6 +57,17 @@ describe('GitHub Webhook Event Service', () =>{
         verify(userEventRepositoryMock.store(anything())).never();
       } )
 
+      it('should store one event processing a "issues" event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'issues',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.issueOpenedEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
       it('should save no event processing an unknown event type' , async () => {
         const webhookEvent:WebhookEvent = {
           eventType: 'unknown-type',

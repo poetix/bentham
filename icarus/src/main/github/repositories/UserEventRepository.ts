@@ -1,19 +1,20 @@
 import { DynamoClient } from "../../common/clients/DynamoClient";
+import { uri } from "../../common/Api"
 import { timestamp } from "../Api";
 
+
 export type userEventId = string; // Globally unique ID of a UserEvent
-export type githubEventId = string; // Unique ID of the event on Github, unique among events with the same UserEventType
 export type githubUsername = string;
-export enum UserEventType {
-    commit,
-}
+export type githubObjectType = string;
+export type userEventType = string;
 
 // User event (i.e. event= tracked by Icarus)
 export interface UserEvent {
   id: userEventId;
   username: githubUsername;
-  eventType: UserEventType;
-  eventId: githubEventId;
+  eventType: userEventType;
+  objectType: githubObjectType; // Type of the object referenced by event
+  objectUri: uri; // URL of the object referenced by the event
   timestamp: timestamp;
 }
 
@@ -25,16 +26,16 @@ export class UserEventRepository {
   constructor(readonly dynamo: DynamoClient) {}
 
   async store(event: UserEvent): Promise<void> {
-    const eventType:string = UserEventType[event.eventType]
     const storedEvent = {
       id: event.id,
-      event_type: <string>eventType,
-      event_id: event.eventId,
+      event_type: event.eventType,
+      object_type: event.objectType,
+      object_uri: event.objectUri,
       username: event.username,
       timestamp: event.timestamp,
     }
 
-    console.log(`Storing a '${eventType}'`)
+    console.log(`Storing a '${event.eventType}'`)
     return this.dynamo.put(baseTablename, storedEvent);
   }
 }
