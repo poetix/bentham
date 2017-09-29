@@ -46,16 +46,6 @@ describe('GitHub Webhook Event Service', () =>{
         verify(userEventRepositoryMock.store(anything())).twice();
       } )
 
-      it('should save no event processing a ping' , async () => {
-        const webhookEvent:WebhookEvent = {
-          eventType: 'ping',
-          deliveryId: 'delivery-id',
-          payload: sampleEvents.ping
-        }
-        await unit.processWebhookEvent(webhookEvent); // should not fail
-
-        verify(userEventRepositoryMock.store(anything())).never();
-      } )
 
       it('should store one event processing a "issues" event', async () =>{
         const webhookEvent:WebhookEvent = {
@@ -67,6 +57,28 @@ describe('GitHub Webhook Event Service', () =>{
 
         verify(userEventRepositoryMock.store(anything())).once();
       })
+
+      it('should store one event processing a "commit_comment" event', async () =>{
+        const webhookEvent:WebhookEvent = {
+          eventType: 'commit_comment',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.commitCommentEvent
+        }
+        await unit.processWebhookEvent(webhookEvent);
+
+        verify(userEventRepositoryMock.store(anything())).once();
+      })
+
+      it('should save no event processing a ping' , async () => {
+        const webhookEvent:WebhookEvent = {
+          eventType: 'ping',
+          deliveryId: 'delivery-id',
+          payload: sampleEvents.ping
+        }
+        await unit.processWebhookEvent(webhookEvent); // should not fail
+
+        verify(userEventRepositoryMock.store(anything())).never();
+      } )
 
       it('should save no event processing an unknown event type' , async () => {
         const webhookEvent:WebhookEvent = {

@@ -44,6 +44,7 @@ export class WebhookEventService {
   }
 }
 
+const isoNow = () => moment().toISOString();
 
 function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
   switch(webhookEvent.eventType) {
@@ -51,6 +52,8 @@ function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
       return pushToCommits(webhookEvent)
     case 'issues':
       return [ issuesEvent(webhookEvent) ]
+    case 'commit_comment':
+      return [ commitCommentEvent(webhookEvent) ]
     // ... handle more event types ...
     default:
       console.log(`Unknowns webhook event type: '${webhookEvent.eventType}'`)
@@ -72,7 +75,6 @@ function pushToCommits(webhookEvent:WebhookEvent): UserEvent[] {
 }
 
 
-
 function issuesEvent(webhookEvent:WebhookEvent): UserEvent {
   const payload = webhookEvent.payload;
   return {
@@ -81,6 +83,18 @@ function issuesEvent(webhookEvent:WebhookEvent): UserEvent {
     eventType: `issues-${payload.action}`,
     objectType: 'issue',
     objectUri: payload.issue.url,
-    timestamp: moment().toISOString() // No timestamp in the payload: we assume the action happened when notified
+    timestamp: isoNow() // No timestamp in the payload
+  }
+}
+
+function commitCommentEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `commit_comment-${payload.action}`,
+    objectType: 'commit_comment',
+    objectUri: payload.comment.url,
+    timestamp: isoNow() // No timestamp in the payload
   }
 }
