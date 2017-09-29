@@ -1,0 +1,39 @@
+div#application {
+  margin-left: 30%;
+  margin-right: 30%;
+  background-color: #EEEEFF;
+}
+
+h1.title {
+  margin-top: 0px;
+  margin-bottom: 8px;
+  text-align: center;
+  padding: 4px;
+  font-family: 'Raleway', serif;
+  font-size: 64px;
+  color: #0000CD;
+  background-color: #B0C4DE;
+}
+
+h1.app-name {
+  text-align: center;
+  margin-top: 0px;
+  padding: 4px;
+  font-family: 'Raleway', serif;
+  font-size: 32px;
+  color: #0000CD;
+  background-color: #B0C4DE;
+}
+
+div.greeting {
+  text-align: center;
+  font-family: 'Raleway', serif;
+  font-size: large;
+  padding: 8px;
+}
+
+div.external-app {
+  background-color: #F8F8F8;
+  border-top: 2px solid #AAAADDD;
+  margin-top: 8px;
+}

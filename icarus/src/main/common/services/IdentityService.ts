@@ -13,7 +13,7 @@ export class IdentityService {
   async grantUserToken(slackIdentity: SlackIdentity): Promise<UserToken> {
     const accessToken = v4();
 
-    //await this.repo.saveSlackIdentity(accessToken, slackIdentity);
+    await this.repo.saveSlackIdentity(accessToken, slackIdentity);
     //const dropboxIdentity = await this.repo.getDropboxIdentity(slackIdentity.id);
 
     const dropboxIdentity = undefined;

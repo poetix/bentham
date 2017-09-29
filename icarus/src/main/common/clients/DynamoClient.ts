@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 
 export class DynamoWritePager {
-  constructor(readonly client: DynamoClient) {}
+  constructor(private readonly client: DynamoClient) {}
 
   async putAll(tableName: string, items: Array<any>): Promise<any[]> {
     const results: any[] = [];
@@ -17,16 +17,18 @@ export class DynamoClient {
 
   static dynamo = new AWS.DynamoDB.DocumentClient();
 
+  constructor(private readonly tablePrefix: string) {}
+
   put(tableName: string, item: any): Promise<any> {
     return this.doOp({
-      TableName: tableName,
+      TableName: `${this.tablePrefix}${tableName}`,
       Item: item
     }, (p, cb) => DynamoClient.dynamo.put(p, cb));
   }
 
   get(tableName: string, key: any): Promise<any> {
     return this.doOp({
-      TableName: tableName,
+      TableName: `${this.tablePrefix}${tableName}`,
       Key: key
     }, (p, cb) => DynamoClient.dynamo.get(p, cb))
       .then(result => result && result.Item || undefined);
@@ -37,7 +39,7 @@ export class DynamoClient {
       RequestItems: {}
     };
 
-    params.RequestItems[tableName] = items.map(item => ({
+    params.RequestItems[`${this.tablePrefix}${tableName}`] = items.map(item => ({
       PutRequest: {
         Item: item
       }
