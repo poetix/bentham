@@ -20,10 +20,12 @@ export interface SlackIdentity extends AppIdentity {
 }
 
 export type DropboxIdentity = AppIdentity;
+export type GithubIdentity = AppIdentity;
 
 export interface IdentitySet {
   slack: SlackIdentity,
   dropbox?: DropboxIdentity,
+  github?: GithubIdentity,
   // Other app identities go here
 }
 

@@ -1,4 +1,4 @@
-import { DropboxIdentity, icarusAccessToken, SlackIdentity } from "../Api";
+import { GithubIdentity, DropboxIdentity, icarusAccessToken, SlackIdentity } from "../Api";
 import { DynamoClient } from "../clients/DynamoClient";
 
 export class IdentityRepository {
@@ -11,6 +11,14 @@ export class IdentityRepository {
       slack_id: slackId,
       dropboxId: dropboxIdentity.id,
       access_token: dropboxIdentity.accessToken
+    });
+  }
+
+  async saveGithubIdentity(slackId: string, githubIdentity: GithubIdentity): Promise<void> {
+    await this.dynamo.put("github_accounts", {
+      slack_id: slackId,
+      githubId: githubIdentity.id,
+      access_token: githubIdentity.accessToken
     });
   }
 
@@ -69,4 +77,18 @@ export class IdentityRepository {
     }
   }
 
+  async getGithubIdentity(slackId: string): Promise<GithubIdentity | undefined> {
+    const githubIdLookupResult = await this.dynamo.get("github_accounts", {
+      slack_id: slackId
+    });
+
+    if (!githubIdLookupResult) {
+      return undefined;
+    }
+
+    return {
+      id: githubIdLookupResult.github_id,
+      accessToken: githubIdLookupResult.access_token
+    }
+  }
 }
