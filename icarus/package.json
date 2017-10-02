@@ -26,6 +26,7 @@
   "author": "Dominic Fox (dominic.fox@wipro.com)",
   "license": "MIT",
   "dependencies": {
+    "moment": "^2.18.1",
     "request": "^2.81.0",
     "serverless-finch": "^1.1.1"
   }

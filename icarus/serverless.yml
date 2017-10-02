@@ -31,7 +31,7 @@ provider:
     DROPBOXTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_tokens
     DROPBOXCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_cursors
     FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
-    GITHUB_EVENT_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
+    GITHUBEVENTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
 custom:
   client:
       # TODO in use?
@@ -128,7 +128,7 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
-          
+
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -203,10 +203,10 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
 
-    GithubEventTable:
+    GithubEventsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.GITHUB_EVENT_TABLE}
+        TableName: ${self:provider.environment.GITHUBEVENTS_TABLE}
         AttributeDefinitions:
           - AttributeName: "id"
             AttributeType: S
@@ -236,7 +236,7 @@ resources:
     DynamoDBIamPolicy:
       Type: AWS::IAM::Policy
       DependsOn:
-        - GithubEventTable
+        - GithubEventsTable
         - DropboxTokensTable
         - DropboxCursorsTable
         - FileChangesTable
@@ -261,6 +261,6 @@ resources:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUB_EVENT_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
         Roles:
           - Ref: IamRoleLambdaExecution

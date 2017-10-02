@@ -1,7 +1,9 @@
 import * as crypto from "crypto"
+const uuidv4 = require('uuid/v4');
+const moment = require('moment');
 
 import { githubWebhookSecret, json } from "../Api";
-import { UserEventRepository, UserEventType, UserEvent } from "../repositories/UserEventRepository";
+import { UserEventRepository, UserEvent } from "../repositories/UserEventRepository";
 
 export type webhookDeliveryId = string;
 export type webhookPayloadSignature = string;
@@ -42,12 +44,27 @@ export class WebhookEventService {
   }
 }
 
+const isoNow = () => moment().toISOString();
 
 function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
   switch(webhookEvent.eventType) {
     case 'push':
       return pushToCommits(webhookEvent)
-    // ... handle more event types ...
+    case 'issues':
+      return [ issuesEvent(webhookEvent) ]
+    case 'commit_comment':
+      return [ commitCommentEvent(webhookEvent) ]
+    case 'pull_request':
+      return [ pullRequestEvent(webhookEvent) ]
+    case 'pull_request_review':
+      return [ pullRequestReviewEvent(webhookEvent) ]
+    case 'pull_request_review_comment':
+      return [ pullRequestReviewCommentEvent(webhookEvent) ]
+    case 'create':
+      return [ createEvent(webhookEvent) ]
+    case 'delete':
+      return [ deleteEvent(webhookEvent) ]
+
     default:
       console.log(`Unknowns webhook event type: '${webhookEvent.eventType}'`)
       return [];
@@ -56,12 +73,107 @@ function toUserEvents(webhookEvent:WebhookEvent): UserEvent[] {
 
 
 function pushToCommits(webhookEvent:WebhookEvent): UserEvent[] {
-  const commits:any[] = webhookEvent.payload.commits;
+  const repository = webhookEvent.payload.repository
+  const commits:any[] = webhookEvent.payload.commits
   return commits.map( commit => ({
-    id: `commit-${commit.id}`,
+    id: `${commit.committer.username}-${commit.id}`, // The same commit may be included in multiple pushes but get de-duplicated
     username: commit.committer.username,
-    eventType: UserEventType.commit,
-    eventId: commit.id,
+    eventType: 'commit',
+    objectType: 'commit',
+    objectUri: commit.url,
     timestamp: commit.timestamp
   }))
+}
+
+
+function issuesEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `issues-${payload.action}`,
+    objectType: 'issue',
+    objectUri: payload.issue.url,
+    timestamp: isoNow() // No timestamp in the payload
+  }
+}
+
+function commitCommentEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `commit_comment-${payload.action}`,
+    objectType: 'commit_comment',
+    objectUri: payload.comment.url,
+    timestamp: isoNow()
+  }
+}
+
+function pullRequestEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `pull_request-${payload.action}`,
+    objectType: 'pull_request',
+    objectUri: payload.pull_request.url,
+    timestamp: isoNow()
+  }
+}
+
+function pullRequestReviewEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `pull_request_review-${payload.action}`,
+    objectType: 'pull_request_review',
+    objectUri: payload.review.html_url,
+    timestamp: isoNow()
+  }
+}
+
+function pullRequestReviewCommentEvent(webhookEvent:WebhookEvent): UserEvent {
+  const payload = webhookEvent.payload;
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `pull_request_review_comment-${payload.action}`,
+    objectType: 'pull_request_review_comment',
+    objectUri: payload.comment.url,
+    timestamp: isoNow()
+  }
+}
+
+function createEvent(webhookEvent:WebhookEvent): UserEvent {
+  // Create a repository, branch or tag
+  const payload = webhookEvent.payload
+  const refType = payload.ref_type // 'repository', 'branch' or 'tag'
+  const ref = payload.ref // null if ref_type == 'repository'
+  const url = payload.repository.url + ( ref ? `/tree/${ref}` : '' ) // Repo URi or Tag/Branch tree URL
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `create-${refType}`,
+    objectType: refType,
+    objectUri: url,
+    timestamp: isoNow()
+  }
+}
+
+function deleteEvent(webhookEvent:WebhookEvent): UserEvent {
+  // Create a branch or tag
+  const payload = webhookEvent.payload
+  const refType = payload.ref_type // 'branch' or 'tag'
+  const ref = payload.ref
+  const url = `${payload.repository.url}/tree/${ref}` // Tag/Branch tree URL
+  return {
+    id: uuidv4(),
+    username: payload.sender.login,
+    eventType: `delete-${refType}`,
+    objectType: refType,
+    objectUri: url,
+    timestamp: isoNow()
+  }
 }
