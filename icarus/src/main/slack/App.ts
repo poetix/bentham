@@ -23,4 +23,4 @@ const identityService = new IdentityService(identityRepo);
 const loginService = new LoginService(slackClient, identityService);
 
 // Endpoints
-export const slackLoginEndpoint = new SlackLoginEndpoint(loginService);
+export const slackLoginEndpoint = new SlackLoginEndpoint(loginService, process.env.SLACK_LOGIN_REDIRECT_URI);

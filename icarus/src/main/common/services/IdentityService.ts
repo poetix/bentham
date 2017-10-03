@@ -1,5 +1,5 @@
 import { IdentityRepository } from "../repositories/IdentityRepository";
-import { icarusAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, UserToken } from "../API";
+import { icarusAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, UserToken } from "../Api";
 const v4 = require('uuid/v4');
 
 export class IdentityService {

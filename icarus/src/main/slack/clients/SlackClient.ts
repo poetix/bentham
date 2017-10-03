@@ -5,9 +5,12 @@ import { slackAuthCode, slackToken } from "../Api";
 
 export class SlackClient {
 
-  constructor(private http: HttpClient, private clientId: string, private clientSecret: string) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly clientId: string,
+    private readonly clientSecret: string) {}
 
-  async getToken(code: slackAuthCode): Promise<slackToken> {
+  async getToken(code: slackAuthCode, loginRedirectUri: uri): Promise<slackToken> {
     console.log(`Fetching token with code ${code}`);
 
     const response = await this.http.doHttp({
@@ -16,7 +19,8 @@ export class SlackClient {
       qs: {
         client_id: this.clientId,
         client_secret: this.clientSecret,
-        code: code
+        code: code,
+        redirect_uri: loginRedirectUri,
       }
     });
 
