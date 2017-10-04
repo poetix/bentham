@@ -19,8 +19,12 @@ provider:
 
     SLACK_CLIENT_ID: ${env:SLACK_CLIENT_ID}
     SLACK_CLIENT_SECRET: ${env:SLACK_CLIENT_SECRET}
+    # FIXME Parametrise the redirect URI
+    SLACK_LOGIN_REDIRECT_URI: https://s3.eu-west-2.amazonaws.com/lorenzodev-icarus-site/post-login.html
 
     GITHUB_WEBHOOK_SECRET: ${env:GITHUB_WEBHOOK_SECRET}
+    GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
+    GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
 
     TABLE_PREFIX: ${self:service}-${opt:stage, self:provider.stage}-
 
@@ -31,10 +35,13 @@ provider:
     DROPBOXTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_tokens
     DROPBOXCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_cursors
     FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
+
     GITHUBEVENTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
+    GITHUBACCOUNTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_accounts
+    GITHUBTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_tokens
 custom:
+  # Used by serverless-finch plugin
   client:
-      # TODO in use?
       bucketName: ${opt:stage, self:provider.stage}-icarus-site
 
 
@@ -53,7 +60,7 @@ functions:
                 code: true
 
   # Dropbox
-  webhook-challenge:
+  dropbox-webhook-challenge:
     handler: src/main/dropbox/handler.webhookChallenge
     events:
       - http:
@@ -65,7 +72,7 @@ functions:
               querystrings:
                 challenge: true
 
-  webhook-notify:
+  dropbox-webhook-notify:
     handler: src/main/dropbox/handler.webhookNotify
     events:
       - http:
@@ -73,14 +80,14 @@ functions:
           path: dropbox-webhook
           integration: lambda-proxy
 
-  oauth-initiate:
+  dropbox-oauth-initiate:
     handler: src/main/dropbox/handler.oauthInitiate
     events:
       - http:
           method: get
           path: dropbox-oauth-initiate
 
-  oauth-complete:
+  dropbox-oauth-complete:
     handler: src/main/dropbox/handler.oauthComplete
     events:
       - http:
@@ -92,7 +99,7 @@ functions:
               querystrings:
                 code: true
 
-  user-report:
+  dropbox-user-report:
     handler: src/main/dropbox/handler.userReport
     events:
       - http:
@@ -113,10 +120,31 @@ functions:
           path: github-webhook
           integration: lambda-proxy
 
+  github-oauth-initiate:
+    handler: src/main/github/handler.oauthInitiate
+    events:
+      - http:
+          method: get
+          path: github-oauth-initiate
+
+  github-oauth-complete:
+    handler: src/main/github/handler.oauthComplete
+    events:
+      - http:
+          method: get
+          path: github-oauth-complete
+
+          request:
+            parameters:
+              querystrings:
+                code: true
+
 resources:
   Resources:
     AccessTokensTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
         AttributeDefinitions:
@@ -131,6 +159,8 @@ resources:
 
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -145,6 +175,8 @@ resources:
 
     DropboxAccountsTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -159,6 +191,8 @@ resources:
 
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.DROPBOXTOKENS_TABLE}
         AttributeDefinitions:
@@ -173,6 +207,8 @@ resources:
 
     DropboxCursorsTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.DROPBOXCURSORS_TABLE}
         AttributeDefinitions:
@@ -187,6 +223,8 @@ resources:
 
     FileChangesTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.FILECHANGES_TABLE}
         AttributeDefinitions:
@@ -205,6 +243,8 @@ resources:
 
     GithubEventsTable:
       Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.GITHUBEVENTS_TABLE}
         AttributeDefinitions:
@@ -233,9 +273,43 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
 
+    GithubAccountsTable:
+      Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.GITHUBACCOUNTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: slack_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    GithubTokensTable:
+      Type: AWS::DynamoDB::Table
+      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.GITHUBTOKENS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
     DynamoDBIamPolicy:
       Type: AWS::IAM::Policy
       DependsOn:
+        - GithubTokensTable
+        - GithubAccountsTable
         - GithubEventsTable
         - DropboxTokensTable
         - DropboxCursorsTable
@@ -262,5 +336,7 @@ resources:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
         Roles:
           - Ref: IamRoleLambdaExecution

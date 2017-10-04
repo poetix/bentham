@@ -1,5 +1,3 @@
-var lambdaPath = "https://xosr9hs3bh.execute-api.eu-west-2.amazonaws.com/domdev";
-
 options = {
   namespace: 'vuejs__'
 };
@@ -19,24 +17,24 @@ var postLogin = new Vue({
     hasAccessToken: false
   },
   mounted: function() {
-    var slackCode = this.$route.query.code;
+    var slackAuthorisationCode = this.$route.query.code;
 
-    console.log("Slack access code obtained: " + slackCode);
+    console.log("Slack authorisation code obtained: " + slackAuthorisationCode);
 
     this.$nextTick(function() {
-      getIcarusToken(slackCode);
+      getIcarusToken(slackAuthorisationCode);
     });
   },
   methods: {
-    processToken(icarusAccessToken) {
+    processToken: function(icarusAccessToken) {
       Vue.ls.set("icarus_access_token", icarusAccessToken);
       window.location.href="index.html";
-    }
+    },
   }
 });
 
-function getIcarusToken(slackAccessCode) {
-  axios.get(lambdaPath + "/slack-login?code=" + slackAccessCode)
+function getIcarusToken(slackAuthorisationCode) {
+  axios.get(lambdaPath + "/slack-login?code=" + slackAuthorisationCode)
     .then(function(response) {
       console.log(response);
       postLogin.processToken(response.data);

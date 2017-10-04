@@ -33,6 +33,7 @@ Expects the following environment variables:
 * `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: Dropbox integration credentials
 * `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`: Slack integration credentials
 * `GITHUB_WEBHOOK_SECRET`: GitHub webhook SLACK_CLIENT_SECRET
+* `GITHB_CLIENT_SECRET` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
 
 ### AWS credentials
 
