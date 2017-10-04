@@ -11,11 +11,11 @@
     "@types/mocha": "^2.2.43",
     "@types/node": "^6.0.88",
     "@types/uuid": "^3.4.2",
-    "aws-sdk": "^2.123.0",
+    "aws-sdk": "^2.126.0",
     "chai": "^4.1.2",
     "mocha": "^3.5.3",
     "request": "^2.81.0",
-    "serverless-webpack": "^2.2.2",
+    "serverless-webpack": "^2.2.3",
     "serverless-webpack-plugin": "^0.4.5",
     "ts-loader": "^2.3.4",
     "ts-mockito": "^2.1.1",
@@ -26,6 +26,7 @@
   "author": "Dominic Fox (dominic.fox@wipro.com)",
   "license": "MIT",
   "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "moment": "^2.18.1",
     "request": "^2.81.0",
     "serverless-finch": "^1.1.1"
