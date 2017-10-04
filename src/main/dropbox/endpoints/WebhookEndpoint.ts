@@ -4,7 +4,7 @@ Classes in this module handle the protocol-level tasks of handling Events and re
 import { complete } from "../../common/endpoints/EndpointUtils";
 import { event, callback, uri } from "../../common/Api";
 import { challenge } from "../Api";
-import { pathTo, redirectTo } from "../../common/clients/HttpClient";
+import { redirectTo } from "../../common/clients/HttpClient";
 import { Notification, NotificationService } from "../services/NotificationService";
 
 export class WebhookEndpoint {

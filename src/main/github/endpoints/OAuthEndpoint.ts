@@ -1,6 +1,6 @@
 import { complete } from "../../common/endpoints/EndpointUtils";
 import { event, callback } from "../../common/Api";
-import { pathTo, redirectTo } from "../../common/clients/HttpClient";
+import { pathToLambda, redirectTo } from "../../common/clients/HttpClient";
 import { OAuthService } from "../services/OAuthService";
 
 /*
@@ -13,16 +13,20 @@ export class OAuthEndpoint {
 
   // Initiate OAuth flow sending the user to the GithHub Authorise endpoint
   initiate(callback: callback, event: event) {
-    callback(null, redirectTo(this.service.getOAuthUri(
-      event.headers.Host,
-      event.queryStringParameters.icarusAccessToken)));
+    const host = event.headers.Host
+    const stage = event.requestContext.stage
+
+    callback(null, redirectTo(this.service.getOAuthUri(host, stage, event.queryStringParameters.slackAccessToken)));
   }
 
   complete(cb: callback, event: event) {
+    const host = event.headers.Host
+    const stage = event.requestContext.stage
+
     return complete(cb, this.service.processCode(
       event.queryStringParameters.state,
       event.queryStringParameters.code,
-      pathTo(event.headers.Host, "github-oauth-complete"))
+      pathToLambda(host, stage, "github-oauth-complete"))
       .then( (username) => ({
         statusCode: 200,
 
@@ -32,6 +36,6 @@ export class OAuthEndpoint {
       // .then((username) => redirectTo(
       //   pathTo(
       //     event.headers.Host,
-      //     `github-user-report?icarusAccessToken=${event.queryStringParameters.state}`))))
+      //     `github-user-report?githubUsername=${event.queryStringParameters.state}`))))
   }
 }

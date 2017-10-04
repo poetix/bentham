@@ -1,7 +1,7 @@
 import { cursor, fileInfo, dropboxClientId, dropboxClientSecret, dropboxAccessCode, DropboxAccessDetails, dropboxAccountId, dropboxAccessToken } from "../Api";
-import { HttpClient, pathTo } from "../../common/clients/HttpClient";
+import { HttpClient, pathToLambda } from "../../common/clients/HttpClient";
 import { CursorRepository } from "../repositories/CursorRepository";
-import { icarusAccessToken, host, uri } from "../../common/Api";
+import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
 
 export interface FileFetchResult {
   files: Array<fileInfo>
@@ -19,11 +19,11 @@ export class DropboxClient {
     private readonly clientId: dropboxClientId,
     private readonly clientSecret: dropboxClientSecret) {}
 
-  getOAuthUri(host: host, icarusAccessToken: icarusAccessToken): uri {
+  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
     `&client_id=${this.clientId}` +
-    `&redirect_uri=${pathTo(host, "dropbox-oauth-complete")}` +
-    `&state=${icarusAccessToken}`;
+    `&redirect_uri=${pathToLambda(host, stage, "dropbox-oauth-complete")}` + // FIXME Path is missing stage!
+    `&state=${slackAccessToken}`;
   }
 
   async requestToken(code: dropboxAccessCode, redirectUri: uri): Promise<DropboxAccessDetails> {

@@ -6,8 +6,9 @@ export type callback = (result: any, error: any) => void;
 
 export type host = string;
 export type uri = string;
+export type lambdaStage = string;
 
-export type icarusAccessToken = string;
+export type slackAccessToken = string;
 
 export interface AppIdentity {
   id: string,

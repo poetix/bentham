@@ -1,9 +1,9 @@
 const request = require('request');
 
-import { host, uri } from "../Api";
+import { host, uri, lambdaStage } from "../Api";
 
-export function pathTo(host: host, path: string): uri {
-  return `https://${host}/dev/${path}`;
+export function pathToLambda(host: host, stage:lambdaStage, path: string): uri {
+  return `https://${host}/${stage}/${path}`;
 }
 
 export function redirectTo(uri: uri) {

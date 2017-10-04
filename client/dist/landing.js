@@ -38,12 +38,13 @@ var landing = new Vue({
     },
     githubLogin: function() {
       var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
-      console.log("Slack Access Token: " + slackAccessToken);
-
-      // TODO GET github-oauth-initiate passing 'icarusAccessToken'; update the object in LS with the result
+      console.log('TBD Call Github OAuth initiate lambda');
     },
     dropboxLogin: function() {
-      // TODO GET dropbox-oauth-initiate passing 'icarusAccessToken'; update the object in LS with the result
+      var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
+      var returnPageUri = lambdaPath + '/dropbox-oauth-complete';
+      var authInitiateUri = lambdaPath + '/dropbox-oauth-initiate?slackAccessToken=' + slackAccessToken;
+      window.location.href = authInitiateUri;
     },
   }
 });

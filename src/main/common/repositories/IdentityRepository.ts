@@ -1,4 +1,4 @@
-import { GithubIdentity, DropboxIdentity, icarusAccessToken, SlackIdentity } from "../Api";
+import { GithubIdentity, DropboxIdentity, slackAccessToken, SlackIdentity } from "../Api";
 import { DynamoClient } from "../clients/DynamoClient";
 
 export class IdentityRepository {
@@ -22,10 +22,10 @@ export class IdentityRepository {
     });
   }
 
-  async saveSlackIdentity(accessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<void> {
+  async saveSlackIdentity(slackAccessToken: slackAccessToken, slackIdentity: SlackIdentity): Promise<void> {
     await Promise.all([
       this.dynamo.put("access_tokens", {
-        access_token: accessToken,
+        access_token: slackAccessToken,
         slack_id: slackIdentity.id,
       }),
       this.dynamo.put("slack_accounts", {
@@ -37,13 +37,13 @@ export class IdentityRepository {
     ]);
   }
 
-  async getSlackIdentity(accessToken: icarusAccessToken): Promise<SlackIdentity> {
+  async getSlackIdentity(slackAccessToken: slackAccessToken): Promise<SlackIdentity> {
     const slackIdLookupResult = await this.dynamo.get("access_tokens", {
-      access_token: accessToken
+      access_token: slackAccessToken
     });
 
     if (!slackIdLookupResult) {
-      throw new Error(`Unable to retrieve Slack ID for access token ${accessToken}`);
+      throw new Error(`Unable to retrieve Slack ID for access token ${slackAccessToken}`);
     }
 
     const slackIdentityResult = await this.dynamo.get("slack_accounts", {
