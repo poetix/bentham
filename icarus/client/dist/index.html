@@ -8,7 +8,8 @@
   <body>
     <div id="landing-page">
       <div v-if="mustLogIn" id="signin">
-        <a href="https://aidesigners.slack.com/oauth/authorize?scope=identity.basic&client_id=186339815891.244635191219">
+        <a v-on:click="slackLogin">
+        <!-- <a href="https://aidesigners.slack.com/oauth/authorize?scope=identity.basic&client_id=186339815891.250008717313&redirect_uri=https://s3.eu-west-2.amazonaws.com/lorenzodev-icarus-site/post-login.html"> -->
           <img  alt="Sign in with Slack"
                 height="40"
                 width="172"
@@ -23,7 +24,12 @@
           <div class="external-app" id="dropbox">
             <h1 class="app-name">Dropbox</h1>
             <div v-if="accessToken.hasDropboxAuthorisation">View Dropbox Report</div>
-            <div v-else>Link to Dropbox</div>
+            <div v-else><a v-on:click="dropboxLogin()">Link to Dropbox</a></div>
+          </div>
+          <div class="external-app" id="github">
+            <h1 class="app-name">GitHub</h1>
+            <div v-if="accessToken.hasGithubAuthorisation">View GitHub Report</div>
+            <div v-else><a v-on:click="githubLogin()">Link to GitHub</a></div>
           </div>
         </div>
       </div>
@@ -33,6 +39,7 @@
     <script src="https://unpkg.com/vue"></script>
     <script src="https://unpkg.com/vue-ls"></script>
     <script src="https://unpkg.com/vue-router"></script>
+    <script src="config.js"></script>
     <script src="landing.js"></script>
   </body>
 </html>

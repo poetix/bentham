@@ -6,13 +6,8 @@
   <body>
     <div id="user-report">
       <div id="header">
-        <h1>Dropbox usage report for account: {{ accountName }}</h1>
-        <p>Select user to show report for: <select required="true" v-model="selected" v-on:change="showBarChart(interactions[selected].interactions)">
-          <option disabled="disabled" selected="true">Please select a user</option>
-          <option v-for="user in users" v-bind:value="user.id">
-            {{user.name}}
-          </option>
-        </select>
+        <h1>Github usage report for account: {{ accountName }}</h1>
+        <h3>No report implemented yet</h3>
       </p>
         <div id="bar-chart">
 

@@ -30,7 +30,7 @@ export class SlackClient {
   }
 
   async getUserDetails(token: slackToken): Promise<any> {
-    console.log(`Fetching user details with token ${token}`);
+    console.log(`Fetching user details with access token ${token}`);
 
     const responseBody = await this.http.doHttp({
       url: "https://slack.com/api/users.identity",

@@ -1,3 +1,4 @@
+
 var router = new VueRouter({
     mode: 'history',
     routes: []
@@ -71,8 +72,7 @@ function getChartData(hoursWorked, dayRange) {
   })
 }
 
-var reportUrl = "https://wggsztwel6.execute-api.eu-west-2.amazonaws.com/dev/dropbox-user-report?account_id="
-  + userReport.accountId();
+var reportUrl = lambdaPath + "/dropbox-user-report?account_id=" + userReport.accountId();
 
 axios.get(reportUrl)
   .then(function (response) {

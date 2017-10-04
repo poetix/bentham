@@ -1,5 +1,3 @@
-var lambdaPath = "https://xosr9hs3bh.execute-api.eu-west-2.amazonaws.com/domdev";
-
 options = {
   namespace: 'vuejs__'
 };
@@ -31,6 +29,22 @@ var landing = new Vue({
         showLoginButton();
       }
     });
+  },
+  methods: {
+    slackLogin: function() {
+      var returnPageUri = window.location.href.substr(0, window.location.href.lastIndexOf("/")) + '/post-login.html';
+      var slackLoginUri = slackTeamUrl + '/oauth/authorize?scope=identity.basic&client_id=' + slackClientId + '&redirect_uri=' + returnPageUri;
+      window.location.href = slackLoginUri;
+    },
+    githubLogin: function() {
+      var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
+      console.log("Slack Access Token: " + slackAccessToken);
+
+      // TODO GET github-oauth-initiate passing 'icarusAccessToken'; update the object in LS with the result
+    },
+    dropboxLogin: function() {
+      // TODO GET dropbox-oauth-initiate passing 'icarusAccessToken'; update the object in LS with the result
+    },
   }
 });
 
