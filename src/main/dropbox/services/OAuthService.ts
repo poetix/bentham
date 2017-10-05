@@ -2,7 +2,7 @@ import { IdentityService } from "../../common/services/IdentityService";
 import { DropboxClient } from "../clients/DropboxClient";
 import { TokenRepository } from "../repositories/TokenRepository";
 import { CursorRepository } from "../repositories/CursorRepository";
-import { icarusAccessToken, host, uri } from "../../common/Api";
+import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
 import { dropboxAccessCode, dropboxAccountId, dropboxAccessToken, cursor } from "../Api";
 
 export class OAuthService {
@@ -13,8 +13,8 @@ export class OAuthService {
     private readonly tokenRepository: TokenRepository,
     private readonly cursorRepository: CursorRepository) {}
 
-  getOAuthUri(host: host, icarusAccessToken: icarusAccessToken): uri {
-    return this.dropbox.getOAuthUri(host, icarusAccessToken);
+  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
+    return this.dropbox.getOAuthUri(host, stage, slackAccessToken);
   }
 
   /**
@@ -26,13 +26,13 @@ export class OAuthService {
     existed before registration are not scanned for their update timestamps.
   - it associates the Dropbox account id and access token with the Icarus account.
    */
-  async processCode(icarusAccessToken: icarusAccessToken, dropboxAccessCode: dropboxAccessCode, redirectUri: uri): Promise<dropboxAccountId> {
+  async processCode(slackAccessToken: slackAccessToken, dropboxAccessCode: dropboxAccessCode, redirectUri: uri): Promise<dropboxAccountId> {
     const token = await this.dropbox.requestToken(dropboxAccessCode, redirectUri);
 
     return Promise.all([
       this.tokenRepository.saveToken(token.accountId, token.accessToken),
       this.storeInitialCursor(token.accountId, token.accessToken),
-      this.identity.addIdentity(icarusAccessToken, 'dropbox', {
+      this.identity.addIdentity(slackAccessToken, 'dropbox', {
         id: token.accountId,
         accessToken: token.accessToken
       })

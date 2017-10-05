@@ -1,5 +1,5 @@
-import { HttpClient, pathTo } from "../../common/clients/HttpClient";
-import { icarusAccessToken, host, uri } from "../../common/Api";
+import { HttpClient, pathToLambda } from "../../common/clients/HttpClient";
+import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
 import { githubClientId, gihubClientSecret, githubAccessCode, githubAccessToken, githubUsername } from "../Api"
 
 export class GithubClient {
@@ -8,11 +8,11 @@ export class GithubClient {
     private readonly clientId: githubClientId,
     private readonly clientSecret: gihubClientSecret) {}
 
-    getOAuthUri(host: host, icarusAccessToken: icarusAccessToken): uri {
+    getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
       return  'https://github.com/login/oauth/authorize' +
       `&client_id=${this.clientId}` +
-      `&redirect_uri=${pathTo(host, "github-oauth-complete")}` +
-      `&state=${icarusAccessToken}`;
+      `&redirect_uri=${pathToLambda(host, stage, "github-oauth-complete")}` +
+      `&state=${slackAccessToken}`;
     }
 
     async requestAccessToken(code: githubAccessCode, redirectUri: uri): Promise<githubAccessToken> {

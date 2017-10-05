@@ -2,7 +2,7 @@
 import { IdentityService } from "../../common/services/IdentityService";
 import { GithubClient } from "../clients/GithubClient";
 import { TokenRepository } from "../repositories/TokenRepository";
-import { icarusAccessToken, host, uri } from "../../common/Api";
+import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
 import { githubAccessCode, githubUsername, githubAccessToken } from "../Api";
 
 export class OAuthService {
@@ -11,8 +11,8 @@ export class OAuthService {
     private readonly github: GithubClient,
     private readonly tokenRepository: TokenRepository) {}
 
-  getOAuthUri(host: host, icarusAccessToken: icarusAccessToken): uri {
-    return this.github.getOAuthUri(host, icarusAccessToken);
+  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
+    return this.github.getOAuthUri(host, stage, slackAccessToken);
   }
 
   /*
@@ -22,14 +22,14 @@ export class OAuthService {
   - stores the Github Access Token along with the Username
   - associates the Github Access Token and Username with the Icarus account
   */
-  async processCode(icarusAccessToken: icarusAccessToken, githubAccessCode: githubAccessCode, redirectUri: uri): Promise<githubUsername> {
+  async processCode(slackAccessToken: slackAccessToken, githubAccessCode: githubAccessCode, redirectUri: uri): Promise<githubUsername> {
     const accessToken = await this.github.requestAccessToken(githubAccessCode, redirectUri);
 
     const username = await this.github.getUsername(accessToken);
 
     return Promise.all([
       this.tokenRepository.saveToken(username, accessToken),
-      this.identity.addIdentity(icarusAccessToken, 'github', {
+      this.identity.addIdentity(slackAccessToken, 'github', {
         id: username,
         accessToken: accessToken
       })

@@ -16,12 +16,12 @@ NPM installs
 npm install typescript -g
 npm install ts-loader -g
 npm install serverless -g
-npm install serverless-webpack -g
 npm install ts-node -g
-npm install mocha chai -g
 npm install @types/node @types/aws-sdk @types/mocha @types/chai
 npm install aws-sdk
 npm install serverless-webpack-plugin webpack serverless-webpack serverless-finch
+npm install ts-loader typescript mocha chai ts-mockito
+npm install request moment
 ```
 **TODO Not sure this list is final**
 
@@ -32,8 +32,8 @@ Expects the following environment variables:
 
 * `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: Dropbox integration credentials
 * `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`: Slack integration credentials
-* `GITHUB_WEBHOOK_SECRET`: GitHub webhook SLACK_CLIENT_SECRET
-* `GITHB_CLIENT_SECRET` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
+* `GITHUB_WEBHOOK_SECRET`: GitHub webhook application secret
+* `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
 
 ### AWS credentials
 

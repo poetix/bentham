@@ -7,7 +7,7 @@ import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
 const mockedOauthService = mock(OAuthService);
 const oauthService = instance(mockedOauthService);
-when(mockedOauthService.getOAuthUri(anyString(), anyString())).thenReturn("http://oauth-uri");
+when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
 when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve("the-account-id"));
 
 const endpoint = new OAuthEndpoint(oauthService);
@@ -15,17 +15,20 @@ const endpoint = new OAuthEndpoint(oauthService);
 const _initiate = (cb, e) => endpoint.initiate(cb, e);
 const _complete = (cb, e) => endpoint.complete(cb, e);
 
-describe("OAuth Endpoint", () => {
+describe("Github OAuth Endpoint", () => {
   it("should redirect an 'initiate' request to the GitHub API", async () => {
       const result = await toPromise(_initiate, {
         headers: {
           Host: "aws-api"
         },
+        requestContext: {
+          stage: 'lambda-stage'
+        },
         queryStringParameters: {
-          icarusAccessToken: "icarus-access-token"
+          slackAccessToken: "slack-access-token"
         }
       });
-      verify(mockedOauthService.getOAuthUri("aws-api", "icarus-access-token")).once();
+      verify(mockedOauthService.getOAuthUri("aws-api", "lambda-stage", "slack-access-token")).once();
 
       expect(result.statusCode).to.equal(302);
       expect(result.headers.Location).to.equal("http://oauth-uri");
@@ -36,13 +39,16 @@ describe("OAuth Endpoint", () => {
       headers: {
         Host: "aws-api"
       },
+      requestContext: {
+        stage: 'lambda-stage'
+      },
       queryStringParameters: {
         code: "github-access-code",
-        state: "icarus-access-token"
+        state: "slack-access-token"
       }
     });
 
-    verify(mockedOauthService.processCode("icarus-access-token", "github-access-code", anyString())).once();
+    verify(mockedOauthService.processCode("slack-access-token", "github-access-code", anyString())).once();
 
     // TODO Test it redirects to user report, when implemented
   })

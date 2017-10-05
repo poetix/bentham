@@ -31,7 +31,7 @@ describe("Report Endpoint", () => {
   it("should obtain a report from the report service", async () => {
       const result = await toPromise(_getReport, {
         queryStringParameters: {
-          "account_id": "the account id"
+          "dropbox_account_id": "the account id"
         }
       });
 

@@ -10,7 +10,7 @@ export class ReportEndpoint {
   constructor(readonly service: ReportService) {}
 
   getReport(cb: callback, event: event) {
-    complete(cb, this.service.getReport(event.queryStringParameters["account_id"])
+    complete(cb, this.service.getReport(event.queryStringParameters["dropbox_account_id"])
     .then((report) => ({
       statusCode: 200,
       headers: {

@@ -86,6 +86,10 @@ functions:
       - http:
           method: get
           path: dropbox-oauth-initiate
+          request:
+            parameters:
+              querystrings:
+                slackAccessToken: true
 
   dropbox-oauth-complete:
     handler: src/main/dropbox/handler.oauthComplete
@@ -109,7 +113,7 @@ functions:
           request:
             parameters:
               querystrings:
-                account_id: true
+                dropbox_account_id: true
 
   # Github
   gihub-webhook-receive:
