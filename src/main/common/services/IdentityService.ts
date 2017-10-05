@@ -1,5 +1,5 @@
 import { IdentityRepository } from "../repositories/IdentityRepository";
-import { slackAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, UserToken } from "../Api";
+import { slackAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, UserToken, IcarusAccessToken } from "../Api";
 const v4 = require('uuid/v4');
 
 export class IdentityService {
@@ -30,6 +30,34 @@ export class IdentityService {
     const githubIdentity = await this.repo.getGithubIdentity(slackIdentity.id);
 
     return this.constructUserToken(slackAccessToken, slackIdentity, dropboxIdentity);
+  }
+
+  /**
+  Maps a UserToken to an IcarusAccessToken
+  */
+  toIcarusAccessToken(userToken:UserToken) : IcarusAccessToken {
+    return {
+      accessToken: userToken.accessToken,
+      userName: userToken.identities.slack.userName,
+      dropboxAccountId: (userToken.identities.dropbox != undefined ? userToken.identities.dropbox.id : undefined),
+      githubUsername: (userToken.identities.github != undefined ? userToken.identities.github.id : undefined)
+    }
+  }
+
+  /**
+  Retrieves an Icarus Access Token having the Slack access token
+  */
+  async getIcarusAccessToken(slackAccessToken: slackAccessToken): Promise<IcarusAccessToken> {
+    const slackIdentity = await this.repo.getSlackIdentity(slackAccessToken);
+    const dropboxIdentity = await this.repo.getDropboxIdentity(slackIdentity.id);
+    const githubIdentity = await this.repo.getGithubIdentity(slackIdentity.id);
+
+    return {
+      accessToken: slackIdentity.accessToken,
+      userName: slackIdentity.userName,
+      dropboxAccountId: dropboxIdentity ? dropboxIdentity.id : undefined,
+      githubUsername: githubIdentity ? githubIdentity.id : undefined,
+    }
   }
 
   /**
@@ -79,4 +107,5 @@ export class IdentityService {
       }
     }
   }
+
 }

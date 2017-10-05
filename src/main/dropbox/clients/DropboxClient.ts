@@ -22,7 +22,7 @@ export class DropboxClient {
   getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
     `&client_id=${this.clientId}` +
-    `&redirect_uri=${pathToLambda(host, stage, "dropbox-oauth-complete")}` + // FIXME Path is missing stage!
+    `&redirect_uri=${pathToLambda(host, stage, "dropbox-oauth-complete")}` + // FIXME
     `&state=${slackAccessToken}`;
   }
 

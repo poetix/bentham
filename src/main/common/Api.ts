@@ -8,7 +8,9 @@ export type host = string;
 export type uri = string;
 export type lambdaStage = string;
 
+export type slackUsername = string;
 export type slackAccessToken = string;
+
 
 export interface AppIdentity {
   id: string,
@@ -30,7 +32,15 @@ export interface IdentitySet {
   // Other app identities go here
 }
 
+// TODO Do we still need this object?
 export interface UserToken {
   accessToken: string,
   identities: IdentitySet
+}
+
+export interface IcarusAccessToken {
+  accessToken: slackAccessToken,
+  userName: slackUsername,
+  dropboxAccountId: string|undefined, // TODO Fix type
+  githubUsername: string|undefined, // TODO Fix type
 }

@@ -1,7 +1,7 @@
 import { slackAuthCode } from "../Api";
 import { SlackClient } from "../clients/SlackClient";
 import { IdentityService } from "../../common/services/IdentityService";
-import { UserToken, uri } from "../../common/Api";
+import { UserToken, IcarusAccessToken, uri } from "../../common/Api";
 
 export class LoginService {
 
@@ -15,7 +15,7 @@ export class LoginService {
   - retrieves user's details
   - gets a UserToken from the Identity Service and returns it
   */
-  async login(slackCode: slackAuthCode, loginRedirectUri: uri): Promise<UserToken> {
+  async login(slackCode: slackAuthCode, loginRedirectUri: uri): Promise<IcarusAccessToken> {
     // Redeem the slack authorization code to get slack token and id.
     const token = await this.slack.getToken(slackCode, loginRedirectUri);
     // Requires `identity.basic` auth scope
@@ -30,9 +30,10 @@ export class LoginService {
       accessToken: token
     });
 
+    // TODO We still need to pass through the UserToken?
     console.log(userToken);
 
-    return userToken;
+    return this.identity.toIcarusAccessToken(userToken);
   }
 
 }

@@ -11,18 +11,13 @@ export class SlackLoginEndpoint {
 
   login(cb: callback, evt: event) {
     return complete(cb, this.service.login(evt.queryStringParameters.code, this.loginRedirectUri)
-      .then(userToken => ({
+      .then(icarusAccessToken => ({
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*"
         },
-        body: JSON.stringify({
-          userName: userToken.identities.slack.userName,
-          accessToken: userToken.accessToken,
-          hasDropboxAuthorisation: userToken.identities.dropbox != undefined,
-          hasGithubAuthorisation: userToken.identities.github != undefined,
-        })
+        body: JSON.stringify(icarusAccessToken)
       })));
   }
 

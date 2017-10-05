@@ -2,7 +2,9 @@ import { toPromise } from '../../common/TestUtils';
 import { expect } from 'chai';
 import 'mocha';
 import { OAuthService } from "../../../main/dropbox/services/OAuthService";
+import { IdentityService } from "../../../main/common/services/IdentityService";
 import { OAuthEndpoint } from "../../../main/dropbox/endpoints/OAuthEndpoint";
+import { IcarusAccessToken } from "../../../main/common/Api";
 import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
 const mockedOauthService = mock(OAuthService);
@@ -10,7 +12,17 @@ const oauthService = instance(mockedOauthService);
 when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
 when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve("dropbox-account-id"));
 
-const endpoint = new OAuthEndpoint(oauthService);
+const mockedIdentityService = mock(IdentityService)
+const identityService = instance(mockedIdentityService)
+
+const endpoint = new OAuthEndpoint(oauthService, identityService);
+const icarusAccessToken:IcarusAccessToken = {
+  accessToken: 'slack-access-token',
+  userName: 'slack-username',
+  dropboxAccountId: 'dropbox-account-id',
+  githubUsername: undefined,
+}
+when(mockedIdentityService.getIcarusAccessToken(anyString())).thenReturn(Promise.resolve( icarusAccessToken  ))
 
 const _initiate = (cb, e) => endpoint.initiate(cb, e);
 const _complete = (cb, e) => endpoint.complete(cb, e);
@@ -34,7 +46,7 @@ describe("Dropbox OAuth Endpoint", () => {
       expect(result.headers.Location).to.equal("http://oauth-uri");
   });
 
-  it("should redirect to the user's Dropbox report on completion", async () => {
+  it("should return an Icarus Access Token including Dropbox ID on completion", async () => {
     const result = await toPromise(_complete, {
       headers: {
         Host: "aws-api"
@@ -49,8 +61,9 @@ describe("Dropbox OAuth Endpoint", () => {
     });
 
     verify(mockedOauthService.processCode("slack-access-token", "the code", anyString())).once();
+    verify(mockedIdentityService.getIcarusAccessToken("slack-access-token")).once()
 
-    expect(result.statusCode).to.equal(302);
-    expect(result.headers.Location).to.equal("https://aws-api/lambda-stage/dropbox-user-report?dropbox_account_id=dropbox-account-id");
+    expect(result.statusCode).to.equal(200);
+    expect(result.body).to.equal(JSON.stringify(icarusAccessToken));
   });
 });
