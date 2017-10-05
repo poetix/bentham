@@ -23,11 +23,12 @@ export class FileChangeRepository {
   }
 
   async getFileChanges(accountId: dropboxAccountId): Promise<Array<any>> {
-    return this.dynamo.query({
-      TableName: "file_changes",
-      KeyConditionExpression: 'account_id = :hkey',
-      ExpressionAttributeValues: {
-        ':hkey': accountId
+    return this.dynamo.query(
+      'file_changes',
+      {
+        KeyConditionExpression: 'account_id = :hkey',
+        ExpressionAttributeValues: {
+          ':hkey': accountId
       }
     });
   }
