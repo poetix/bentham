@@ -6,7 +6,7 @@ import { OAuthService } from "../../../main/github/services/OAuthService";
 import { TokenRepository } from "../../../main/github/repositories/TokenRepository";
 import { IdentityService } from "../../../main/common/services/IdentityService"
 import { GithubClient } from "../../../main/github/clients/GithubClient";
-import { GithubIdentity, UserToken } from "../../../main/common/Api"
+import { GithubIdentity } from "../../../main/common/Api"
 
 const tokenRepositoryMock = mock(TokenRepository)
 const tokenRepository = instance(tokenRepositoryMock)
@@ -23,18 +23,9 @@ when(tokenRepositoryMock.saveToken(anyString(), anyString())).thenReturn(Promise
 when(identityServiceMock.addIdentity(anyString(), 'github', anything() )).thenReturn(Promise.resolve(
   {
     accessToken: '',
-    identities: {
-      slack: {
-        id: '',
-        accessToken: '',
-        teamId: '',
-        userName: '',
-      },
-      github: {
-        id:'github-username',
-        accessToken: 'github-access-token',
-      }
-    }
+    userName: '',
+    dropboxAccountId: undefined,
+    githubUsername: 'github-username',
   }
  ))
 when(githubClientMock.getUsername(anyString())).thenReturn(Promise.resolve('github-username'))
@@ -49,9 +40,9 @@ beforeEach(() => {
 describe('GitHub OAuth Service', () => {
   describe('Process Auth Code', async () => {
 
-    it('should return the username', async () => {
+    it('should return the Icarus access token containing the github username', async () => {
       const result = await unit.processCode('icarus-access-token', 'github-access-code', 'http://return.uri')
-      expect(result).is.equal('github-username')
+      expect(result.githubUsername).is.equal('github-username')
     })
 
     it('should exchange Access Code for Access Token', async () => {

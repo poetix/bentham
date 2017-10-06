@@ -32,11 +32,6 @@ export interface IdentitySet {
   // Other app identities go here
 }
 
-// TODO Do we still need this object?
-export interface UserToken {
-  accessToken: string,
-  identities: IdentitySet
-}
 
 export interface IcarusAccessToken {
   accessToken: slackAccessToken,

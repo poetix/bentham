@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import 'mocha';
 import { slackAuthCode, slackToken } from "../../../main/slack/Api";
 import { SlackClient } from "../../../main/slack/clients/SlackClient";
-import { DropboxIdentity, SlackIdentity, IdentitySet, UserToken, IcarusAccessToken } from "../../../main/common/Api";
+import { DropboxIdentity, SlackIdentity, IdentitySet, IcarusAccessToken } from "../../../main/common/Api";
 import { IdentityService} from "../../../main/common/services/IdentityService";
 import { LoginService } from "../../../main/slack/services/LoginService";
 import { mock, instance, when, verify, anyString, anything } from "ts-mockito";
@@ -26,28 +26,14 @@ when(mockSlackClient.getUserDetails(anyString())).thenReturn(Promise.resolve({
 const mockIdentityService: IdentityService = mock(IdentityService);
 const identityService: IdentityService = instance(mockIdentityService);
 
-when(mockIdentityService.grantUserToken(anything())).thenCall(slackIdentity => {
-  const result: UserToken = {
-    accessToken: slackIdentity.accessToken,
-    identities: {
-      slack: slackIdentity
-    }
-  };
-
-  if (this.dropboxIdentity) {
-    result.identities.dropbox = this.dropboxIdentity;
-  }
-
-  return Promise.resolve(result);
-});
+when(mockIdentityService.grantIcarusAccessToken(anything())).thenCall(slackIdentity => ({
+  accessToken: slackIdentity.accessToken,
+  userName: slackIdentity.userName,
+  dropboxAccountId: undefined,
+  githubUsername: undefined,
+}));
 
 
-when(mockIdentityService.toIcarusAccessToken(anything())).thenCall(userToken => ({
-  accessToken: userToken.accessToken,
-  userName: userToken.identities.slack.userName,
-  dropboxAccountId: (userToken.identities.dropbox != undefined ? userToken.identities.dropbox.id : undefined),
-  githubUsername: (userToken.identities.github != undefined ? userToken.identities.github.id : undefined)
-}) )
 
 const loginService = new LoginService(slackClient, identityService);
 

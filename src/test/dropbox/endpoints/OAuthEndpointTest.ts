@@ -7,22 +7,23 @@ import { OAuthEndpoint } from "../../../main/dropbox/endpoints/OAuthEndpoint";
 import { IcarusAccessToken } from "../../../main/common/Api";
 import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
-const mockedOauthService = mock(OAuthService);
-const oauthService = instance(mockedOauthService);
-when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
-when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve("dropbox-account-id"));
-
-const mockedIdentityService = mock(IdentityService)
-const identityService = instance(mockedIdentityService)
-
-const endpoint = new OAuthEndpoint(oauthService, identityService);
 const icarusAccessToken:IcarusAccessToken = {
   accessToken: 'slack-access-token',
   userName: 'slack-username',
   dropboxAccountId: 'dropbox-account-id',
   githubUsername: undefined,
 }
-when(mockedIdentityService.getIcarusAccessToken(anyString())).thenReturn(Promise.resolve( icarusAccessToken  ))
+
+const mockedOauthService = mock(OAuthService);
+const oauthService = instance(mockedOauthService);
+when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
+when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve(icarusAccessToken));
+
+const mockedIdentityService = mock(IdentityService)
+const identityService = instance(mockedIdentityService)
+
+const endpoint = new OAuthEndpoint(oauthService, identityService);
+
 
 const _initiate = (cb, e) => endpoint.initiate(cb, e);
 const _complete = (cb, e) => endpoint.complete(cb, e);
@@ -61,7 +62,6 @@ describe("Dropbox OAuth Endpoint", () => {
     });
 
     verify(mockedOauthService.processCode("slack-access-token", "the code", anyString())).once();
-    verify(mockedIdentityService.getIcarusAccessToken("slack-access-token")).once()
 
     expect(result.statusCode).to.equal(200);
     expect(result.body).to.equal(JSON.stringify(icarusAccessToken));

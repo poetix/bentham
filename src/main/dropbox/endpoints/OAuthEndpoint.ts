@@ -1,7 +1,7 @@
 /**
 Classes in this module handle the protocol-level tasks of handling Events and returning HTTP responses.
 */
-import { complete } from "../../common/endpoints/EndpointUtils";
+import { complete, response } from "../../common/endpoints/EndpointUtils";
 import { event, callback, SlackIdentity, slackAccessToken, host, lambdaStage, IcarusAccessToken } from "../../common/Api";
 import { IdentityService } from "../../common/services/IdentityService";
 import { pathToLambda, redirectTo } from "../../common/clients/HttpClient";
@@ -40,15 +40,7 @@ export class OAuthEndpoint {
 
 
     return complete(cb, this.oauthService.processCode(slackAccessToken, dropboxAuthorisationCode, oauthCompleteUri)
-      .then((dropboxAccountId) => this.identityService.getIcarusAccessToken(slackAccessToken))
-      .then((icarusAccessToken) => ({
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify(icarusAccessToken)
-      }))
+      .then((icarusAccessToken) => response(200, icarusAccessToken))
     );
   }
 
