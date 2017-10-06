@@ -70,18 +70,21 @@ This journey happens when the user is logged in Slack, but not in Dropbox
 1. **index.html**, Browser, User clicks Dropbox login button
   * Browser goes to `<dropbox-oauth-initiate-lambda>?slackAccessToken=<slack-access-token>&returnUri=<post-dropbox-login-page-url>`
 
-2. **dropbox-auth-initiate-lambda**:
-    1. GET, `https://www.dropbox.com/oauth2/authorize?response_type=code&client_id=...&state=<slack-access-token>&redirect_uri=<return-uri-param>`
+2. **dropbox-oauth-initiate-lambda**:
+    1. GET, `https://www.dropbox.com/oauth2/authorize?response_type=code&client_id=...&redirect_uri=<return-uri-param>`
         * `redirect_uri` is the *returnUri* parameter passed to the lambda, i.e. `<post-dropbox-login-page-url>`
 
 3. User: authorises the application to access Dropbox
 4. Browser redirected back to `<post-dropbox-login-page-url>?code=<dropbox-authorisation-code>`
-5. **post-dropbox-login.html**, Browser (AJAX) GET, `<dropbox-auth-complete-lambda>?code=<dropbox-authorisation-code>&slackAccessToken=<slack-access-token>`
-6. **dropbox-auth-complete-lambda**
+5. **post-dropbox-login.html**,
+    * Browser (AJAX) GET, `<dropbox-auth-complete-lambda>?code=<dropbox-authorisation-code>&slackAccessToken=<slack-access-token>&initReturnUri=<post-dropbox-login-page-url>`
+    * `initReturnUri` must match the oauth initiate returnUri and is used for verification by Dropbox
+
+6. **dropbox-oauth-complete-lambda**
     1. Redeems `<dropbox-authorisation-code>` getting a `<dropbox-access-token>` and `<dropbox-account-id>`
-    2. Stores `<dropbox-access-token>` and `<dropbox-account-id>` in the DroboxTokenRepository
-    3. Obtain and stores initial cursor for the account **TODO clarify**
-    4. Add Dropbox identity to the user, in the Identity Service **TODO clarify**
+    2. Stores `<dropbox-access-token>` and `<dropbox-account-id>` in the Dropbox Token Repository
+    3. Obtains and stores initial cursor for the account **TODO clarify**
+    4. Adds a Dropbox identity to the user, in the Identity Service **TODO clarify**
     5. Lambda returns (`<icarus-access-token>`)
         ```
         {

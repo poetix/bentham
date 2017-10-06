@@ -16,17 +16,20 @@ export class OAuthEndpoint {
 
   initiate(cb: callback, event: event) {
     const slackAccessToken = event.queryStringParameters.slackAccessToken
+    const returnUri = event.queryStringParameters.returnUri
     const host = event.headers.Host
     const stage = event.requestContext.stage
 
-    cb(null, redirectTo(this.oauthService.getOAuthUri(host, stage, slackAccessToken)));
+
+    cb(null, redirectTo(this.oauthService.getOAuthUri(host, stage, slackAccessToken, returnUri)));
   }
 
   /**
     Request
       QueryString:
-      - state: Slack access token
+      - slackAccessToken: Slack access token
       - code: Dropbox Authorisation code
+      - initReturnUri: the returnUri passed to the initiate request, for verification by Dropbox only
     Response
       Body: IcarusAccessToken
   */
@@ -34,12 +37,11 @@ export class OAuthEndpoint {
     const host = event.headers.Host
     const stage = event.requestContext.stage
 
-    const slackAccessToken = event.queryStringParameters.state
+    const slackAccessToken = event.queryStringParameters.slackAccessToken
     const dropboxAuthorisationCode = event.queryStringParameters.code
-    const oauthCompleteUri = pathToLambda(host, stage, "dropbox-oauth-complete")
+    const initReturnUri = event.queryStringParameters.initReturnUri
 
-
-    return complete(cb, this.oauthService.processCode(slackAccessToken, dropboxAuthorisationCode, oauthCompleteUri)
+    return complete(cb, this.oauthService.processCode(slackAccessToken, dropboxAuthorisationCode, initReturnUri)
       .then((icarusAccessToken) => response(200, icarusAccessToken))
     );
   }

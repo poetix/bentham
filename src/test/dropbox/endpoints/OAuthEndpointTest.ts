@@ -16,7 +16,7 @@ const icarusAccessToken:IcarusAccessToken = {
 
 const mockedOauthService = mock(OAuthService);
 const oauthService = instance(mockedOauthService);
-when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
+when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
 when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve(icarusAccessToken));
 
 const mockedIdentityService = mock(IdentityService)
@@ -38,10 +38,11 @@ describe("Dropbox OAuth Endpoint", () => {
           stage: 'lambda-stage'
         },
         queryStringParameters: {
-          slackAccessToken: "slack-access-token"
+          slackAccessToken: "slack-access-token",
+          returnUri: 'http://return.uri'
         }
       });
-      verify(mockedOauthService.getOAuthUri("aws-api", "lambda-stage", "slack-access-token")).once();
+      verify(mockedOauthService.getOAuthUri("aws-api", "lambda-stage", "slack-access-token", "http://return.uri")).once();
 
       expect(result.statusCode).to.equal(302);
       expect(result.headers.Location).to.equal("http://oauth-uri");
@@ -57,11 +58,12 @@ describe("Dropbox OAuth Endpoint", () => {
       },
       queryStringParameters: {
         code: "the code",
-        state: "slack-access-token"
+        slackAccessToken: "slack-access-token",
+        initReturnUri: 'http://return.uri'
       }
     });
 
-    verify(mockedOauthService.processCode("slack-access-token", "the code", anyString())).once();
+    verify(mockedOauthService.processCode("slack-access-token", "the code", 'http://return.uri')).once();
 
     expect(result.statusCode).to.equal(200);
     expect(result.body).to.equal(JSON.stringify(icarusAccessToken));

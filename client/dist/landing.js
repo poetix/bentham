@@ -42,7 +42,8 @@ var landing = new Vue({
     },
     dropboxLogin: function() {
       var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
-      var authInitiateUri = lambdaPath + '/dropbox-oauth-initiate?slackAccessToken=' + slackAccessToken;
+      var returnPageUri = siteBasePath + '/dropbox-post-login.html';
+      var authInitiateUri = lambdaPath + '/dropbox-oauth-initiate?slackAccessToken=' + slackAccessToken + '&returnUri=' + returnPageUri;
       window.location.href = authInitiateUri;
     },
   }
