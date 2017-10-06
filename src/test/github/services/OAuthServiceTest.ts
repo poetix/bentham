@@ -40,10 +40,6 @@ beforeEach(() => {
 describe('GitHub OAuth Service', () => {
   describe('Process Auth Code', async () => {
 
-    it('should return the Icarus access token containing the github username', async () => {
-      const result = await unit.processCode('icarus-access-token', 'github-access-code', 'http://return.uri')
-      expect(result.githubUsername).is.equal('github-username')
-    })
 
     it('should exchange Access Code for Access Token', async () => {
       const result = await unit.processCode('icarus-access-token', 'github-access-code', 'http://return.uri')
@@ -65,5 +61,9 @@ describe('GitHub OAuth Service', () => {
       verify(identityServiceMock.addIdentity('icarus-access-token', 'github', anything() )).once()
     })
 
+    it('should return the Icarus access token containing the github username', async () => {
+      const result = await unit.processCode('icarus-access-token', 'github-access-code', 'http://return.uri')
+      expect(result.githubUsername).is.equal('github-username')
+    })
   })
 })

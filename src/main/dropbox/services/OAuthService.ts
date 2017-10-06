@@ -5,7 +5,6 @@ import { CursorRepository } from "../repositories/CursorRepository";
 import { slackAccessToken, host, uri, lambdaStage, IcarusAccessToken } from "../../common/Api";
 import { dropboxAccessCode, dropboxAccountId, dropboxAccessToken, cursor } from "../Api";
 
-// TODO Add some unit test
 export class OAuthService {
 
   constructor(
