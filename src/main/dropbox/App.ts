@@ -47,5 +47,5 @@ const reportService = new ReportService(tokenRepository, dropboxClient, fileChan
 
 // Endpoints
 export const webhookEndpoint = new WebhookEndpoint(notificationService);
-export const oauthEndpoint = new OAuthEndpoint(oauthService, identityService);
+export const oauthEndpoint = new OAuthEndpoint(oauthService);
 export const reportEndpoint = new ReportEndpoint(reportService);

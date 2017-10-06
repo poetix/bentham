@@ -2,7 +2,6 @@ import { toPromise } from '../../common/TestUtils';
 import { expect } from 'chai';
 import 'mocha';
 import { OAuthService } from "../../../main/dropbox/services/OAuthService";
-import { IdentityService } from "../../../main/common/services/IdentityService";
 import { OAuthEndpoint } from "../../../main/dropbox/endpoints/OAuthEndpoint";
 import { IcarusAccessToken } from "../../../main/common/Api";
 import { mock, instance, when, verify, anyString } from 'ts-mockito';
@@ -19,10 +18,7 @@ const oauthService = instance(mockedOauthService);
 when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
 when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve(icarusAccessToken));
 
-const mockedIdentityService = mock(IdentityService)
-const identityService = instance(mockedIdentityService)
-
-const endpoint = new OAuthEndpoint(oauthService, identityService);
+const endpoint = new OAuthEndpoint(oauthService);
 
 
 const _initiate = (cb, e) => endpoint.initiate(cb, e);

@@ -11,15 +11,13 @@ import { dropboxAccountId } from "../Api"
 export class OAuthEndpoint {
 
   constructor(
-    private readonly oauthService: OAuthService,
-    private readonly identityService: IdentityService) {}
+    private readonly oauthService: OAuthService) {}
 
   initiate(cb: callback, event: event) {
     const slackAccessToken = event.queryStringParameters.slackAccessToken
     const returnUri = event.queryStringParameters.returnUri
     const host = event.headers.Host
     const stage = event.requestContext.stage
-
 
     cb(null, redirectTo(this.oauthService.getOAuthUri(host, stage, slackAccessToken, returnUri)));
   }
