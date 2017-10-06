@@ -1,8 +1,8 @@
 language: node_js
 node_js:
-  - "iojs"
   - "6"
-  
 cache:
   directories:
     - "node_modules"
+
+# See: https://medium.com/a-man-with-no-server/setting-up-a-ci-cd-pipeline-with-travis-ci-for-a-serverless-app-e98b0e57d30c
