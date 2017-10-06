@@ -2,7 +2,7 @@
 import { IdentityService } from "../../common/services/IdentityService";
 import { GithubClient } from "../clients/GithubClient";
 import { TokenRepository } from "../repositories/TokenRepository";
-import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
+import { slackAccessToken, host, uri, lambdaStage, IcarusAccessToken } from "../../common/Api";
 import { githubAccessCode, githubUsername, githubAccessToken } from "../Api";
 
 export class OAuthService {
@@ -22,7 +22,7 @@ export class OAuthService {
   - stores the Github Access Token along with the Username
   - associates the Github Access Token and Username with the Icarus account
   */
-  async processCode(slackAccessToken: slackAccessToken, githubAccessCode: githubAccessCode, redirectUri: uri): Promise<githubUsername> {
+  async processCode(slackAccessToken: slackAccessToken, githubAccessCode: githubAccessCode, redirectUri: uri): Promise<IcarusAccessToken> {
     const accessToken = await this.github.requestAccessToken(githubAccessCode, redirectUri);
 
     const username = await this.github.getUsername(accessToken);
@@ -33,6 +33,6 @@ export class OAuthService {
         id: username,
         accessToken: accessToken
       })
-    ]).then(res => username);
+    ]).then(res => res[1]); // Returning the IcarusAccessToken from IdentityService.addIdentity
   }
 }

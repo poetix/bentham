@@ -19,15 +19,17 @@ export class DropboxClient {
     private readonly clientId: dropboxClientId,
     private readonly clientSecret: dropboxClientSecret) {}
 
-  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
+  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken, returnUri: uri): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
     `&client_id=${this.clientId}` +
-    `&redirect_uri=${pathToLambda(host, stage, "dropbox-oauth-complete")}` + // FIXME Path is missing stage!
+    `&redirect_uri=${returnUri}` +
     `&state=${slackAccessToken}`;
   }
 
-  async requestToken(code: dropboxAccessCode, redirectUri: uri): Promise<DropboxAccessDetails> {
+  async requestToken(code: dropboxAccessCode, accessCodeRequestRedirectUri:uri): Promise<DropboxAccessDetails> {
     console.log(`Requesting user token for code ${code}`);
+    // redirect_uri is for verification only.
+    // It must match the redirect_uri of the access code request and configured redirect uri in API
     const responseBody = await this.http.doHttp({
       url: 'https://api.dropboxapi.com/oauth2/token',
       method: 'POST',
@@ -36,7 +38,7 @@ export class DropboxClient {
         grant_type: "authorization_code",
         client_id: process.env.DROPBOX_CLIENT_ID,
         client_secret: process.env.DROPBOX_CLIENT_SECRET,
-        redirect_uri: redirectUri
+        redirect_uri: accessCodeRequestRedirectUri,
       }
     });
 

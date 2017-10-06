@@ -48,12 +48,15 @@ export class DynamoClient {
     return this.doOp(params, (p, cb) => DynamoClient.dynamo.batchWrite(p, cb));
   }
 
-  query(params: any): Promise<any[]> {
-    return this.doOp(params, (p, cb) => DynamoClient.dynamo.query(p, cb))
+  query(tableName: string, otherParams: any): Promise<any[]> {
+    // TODO This modifies the otherParams object passed by ref
+    otherParams.TableName = `${this.tablePrefix}${tableName}`
+
+    return this.doOp(otherParams, (p, cb) => DynamoClient.dynamo.query(p, cb))
       .then(data => data.Items);
   }
 
-  doOp(params: any, op: (params: any, cb: (err: any, res: any) => void) => void): Promise<any> {
+  private doOp(params: any, op: (params: any, cb: (err: any, res: any) => void) => void): Promise<any> {
     return new Promise<any>((respond, reject) => {
       op(params, (err, res) => {
         if (err) {

@@ -2,7 +2,7 @@ import { IdentityService } from "../../common/services/IdentityService";
 import { DropboxClient } from "../clients/DropboxClient";
 import { TokenRepository } from "../repositories/TokenRepository";
 import { CursorRepository } from "../repositories/CursorRepository";
-import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
+import { slackAccessToken, host, uri, lambdaStage, IcarusAccessToken } from "../../common/Api";
 import { dropboxAccessCode, dropboxAccountId, dropboxAccessToken, cursor } from "../Api";
 
 export class OAuthService {
@@ -13,8 +13,8 @@ export class OAuthService {
     private readonly tokenRepository: TokenRepository,
     private readonly cursorRepository: CursorRepository) {}
 
-  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
-    return this.dropbox.getOAuthUri(host, stage, slackAccessToken);
+  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken, returnUri:uri): uri {
+    return this.dropbox.getOAuthUri(host, stage, slackAccessToken, returnUri);
   }
 
   /**
@@ -26,8 +26,9 @@ export class OAuthService {
     existed before registration are not scanned for their update timestamps.
   - it associates the Dropbox account id and access token with the Icarus account.
    */
-  async processCode(slackAccessToken: slackAccessToken, dropboxAccessCode: dropboxAccessCode, redirectUri: uri): Promise<dropboxAccountId> {
-    const token = await this.dropbox.requestToken(dropboxAccessCode, redirectUri);
+  async processCode(slackAccessToken: slackAccessToken, dropboxAccessCode: dropboxAccessCode, accessCodeRequestRedirectUri:uri): Promise<IcarusAccessToken> {
+    // Redirect uri is passed for verification only
+    const token = await this.dropbox.requestToken(dropboxAccessCode, accessCodeRequestRedirectUri);
 
     return Promise.all([
       this.tokenRepository.saveToken(token.accountId, token.accessToken),
@@ -36,7 +37,7 @@ export class OAuthService {
         id: token.accountId,
         accessToken: token.accessToken
       })
-    ]).then(res => token.accountId);
+    ]).then(res => res[2]); // Returning only the IcarusAccessToken from IdentityService.addIdentity
   };
 
   private async storeInitialCursor(accountId: dropboxAccountId, token: dropboxAccessToken): Promise<cursor> {

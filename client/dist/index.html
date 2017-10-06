@@ -23,12 +23,12 @@
         <div id="external-apps">
           <div class="external-app" id="dropbox">
             <h1 class="app-name">Dropbox</h1>
-            <div v-if="accessToken.hasDropboxAuthorisation">View Dropbox Report</div>
+            <div v-if="accessToken.dropboxAccountId">View Dropbox Report</div>
             <div v-else><a v-on:click="dropboxLogin()">Link to Dropbox</a></div>
           </div>
           <div class="external-app" id="github">
             <h1 class="app-name">GitHub</h1>
-            <div v-if="accessToken.hasGithubAuthorisation">View GitHub Report</div>
+            <div v-if="accessToken.githubUsername">View GitHub Report</div>
             <div v-else><a v-on:click="githubLogin()">Link to GitHub</a></div>
           </div>
         </div>

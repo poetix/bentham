@@ -12,3 +12,12 @@ export const complete = <T>(cb: callback, p: Promise<T>) => {
     body: JSON.stringify(err)
   }));
 };
+
+export const response = (statusCode: number, bodyObject: any) => ({
+  statusCode: 200,
+  headers: {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*"
+  },
+  body: JSON.stringify(bodyObject)
+})

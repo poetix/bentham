@@ -18,7 +18,6 @@ var postLogin = new Vue({
   },
   mounted: function() {
     var slackAuthorisationCode = this.$route.query.code;
-
     console.log("Slack authorisation code obtained: " + slackAuthorisationCode);
 
     this.$nextTick(function() {

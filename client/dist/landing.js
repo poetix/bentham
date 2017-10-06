@@ -32,7 +32,7 @@ var landing = new Vue({
   },
   methods: {
     slackLogin: function() {
-      var returnPageUri = window.location.href.substr(0, window.location.href.lastIndexOf("/")) + '/post-login.html';
+      var returnPageUri = siteBasePath + '/post-login.html';
       var slackLoginUri = slackTeamUrl + '/oauth/authorize?scope=identity.basic&client_id=' + slackClientId + '&redirect_uri=' + returnPageUri;
       window.location.href = slackLoginUri;
     },
@@ -42,8 +42,8 @@ var landing = new Vue({
     },
     dropboxLogin: function() {
       var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
-      var returnPageUri = lambdaPath + '/dropbox-oauth-complete';
-      var authInitiateUri = lambdaPath + '/dropbox-oauth-initiate?slackAccessToken=' + slackAccessToken;
+      var returnPageUri = siteBasePath + '/dropbox-post-login.html';
+      var authInitiateUri = lambdaPath + '/dropbox-oauth-initiate?slackAccessToken=' + slackAccessToken + '&returnUri=' + returnPageUri;
       window.location.href = authInitiateUri;
     },
   }
