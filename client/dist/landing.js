@@ -36,14 +36,16 @@ var landing = new Vue({
       var slackLoginUri = slackTeamUrl + '/oauth/authorize?scope=identity.basic&client_id=' + slackClientId + '&redirect_uri=' + returnPageUri;
       window.location.href = slackLoginUri;
     },
-    githubLogin: function() {
-      var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
-      console.log('TBD Call Github OAuth initiate lambda');
-    },
     dropboxLogin: function() {
       var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
       var returnPageUri = siteBasePath + '/dropbox-post-login.html';
       var authInitiateUri = lambdaPath + '/dropbox-oauth-initiate?slackAccessToken=' + slackAccessToken + '&returnUri=' + returnPageUri;
+      window.location.href = authInitiateUri;
+    },
+    githubLogin: function() {
+      var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
+      var returnPageUri = siteBasePath + '/github-post-login.html';
+      var authInitiateUri = lambdaPath + '/github-oauth-initiate?slackAccessToken=' + slackAccessToken + '&returnUri=' + returnPageUri;
       window.location.href = authInitiateUri;
     },
   }

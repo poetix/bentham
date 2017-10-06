@@ -6,7 +6,7 @@ export class TokenRepository {
   constructor(readonly dynamo: DynamoClient) {}
 
   saveToken(accountId: dropboxAccountId, accessToken: dropboxAccessToken): Promise<void> {
-    console.log("Writing account access token to Dynamo");
+    console.log("Writing Dropbox access token to Dynamo");
 
     return this.dynamo.put("dropbox_tokens", {
       account_id: accountId,

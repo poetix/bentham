@@ -1,4 +1,4 @@
-import { cursor, fileInfo, dropboxClientId, dropboxClientSecret, dropboxAccessCode, DropboxAccessDetails, dropboxAccountId, dropboxAccessToken } from "../Api";
+import { cursor, fileInfo, dropboxClientId, dropboxClientSecret, dropboxAuthorisationCode, DropboxAccessDetails, dropboxAccountId, dropboxAccessToken } from "../Api";
 import { HttpClient, pathToLambda } from "../../common/clients/HttpClient";
 import { CursorRepository } from "../repositories/CursorRepository";
 import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
@@ -26,7 +26,7 @@ export class DropboxClient {
     `&state=${slackAccessToken}`;
   }
 
-  async requestToken(code: dropboxAccessCode, accessCodeRequestRedirectUri:uri): Promise<DropboxAccessDetails> {
+  async requestToken(code: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<DropboxAccessDetails> {
     console.log(`Requesting user token for code ${code}`);
     // redirect_uri is for verification only.
     // It must match the redirect_uri of the access code request and configured redirect uri in API

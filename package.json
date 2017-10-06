@@ -1,7 +1,7 @@
 {
-  "name": "bentham",
+  "name": "icarus",
   "version": "1.0.0",
-  "description": "Bentham",
+  "description": "Icarus",
   "main": "handler.js",
   "scripts": {
     "test": "mocha -r ts-node/register src/test/**/**/**/*.ts"

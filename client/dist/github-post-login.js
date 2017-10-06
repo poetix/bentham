@@ -9,23 +9,23 @@ var router = new VueRouter({
     routes: []
 });
 
-// TODO Code is very similar to post-login.js and github-post-login.js
+// TODO Code is very similar to post-login.js and dropbox-post-login.js
 
-var dropboxPostLogin = new Vue({
+var githubPostLogin = new Vue({
   router,
-  el: '#dropbox-post-login',
+  el: '#github-post-login',
   data: {
     mustLogIn: false,
     hasAccessToken: false
   },
   mounted: function() {
-    var dropboxAuthorisationCode = this.$route.query.code;
+    var githubAuthorisationCode = this.$route.query.code;
     // Expects having already obtained and stored in LS an Icarus Access Token
     // TODO Should probably redirect to index.html if none available
     var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
-    console.log("Dropbox authorisation code obtained: " + dropboxAuthorisationCode);
+    console.log("GitHub authorisation code obtained: " + githubAuthorisationCode);
     this.$nextTick(function() {
-      getIcarusTokenWithDropbox(dropboxAuthorisationCode, slackAccessToken);
+      getIcarusTokenWithGithub(githubAuthorisationCode, slackAccessToken);
     });
   },
   methods: {
@@ -37,14 +37,14 @@ var dropboxPostLogin = new Vue({
 });
 
 
-function getIcarusTokenWithDropbox(dropboxAuthorisationCode, slackAccessToken) {
-  var lambdaUri = lambdaPath + "/dropbox-oauth-complete?code=" + dropboxAuthorisationCode
+function getIcarusTokenWithGithub(githubAuthorisationCode, slackAccessToken) {
+  var lambdaUri = lambdaPath + "/github-oauth-complete?code=" + githubAuthorisationCode
       + '&slackAccessToken=' + slackAccessToken
-      + '&initReturnUri=' + siteBasePath + '/dropbox-post-login.html'; // This is the return uri used when initiating the OAuth journey; for verification only
+      + '&initReturnUri=' + siteBasePath + '/github-post-login.html'; // This is the return uri used when initiating the OAuth journey; for verification only
   axios.get(lambdaUri)
     .then(function(response) {
       console.log(response);
-      dropboxPostLogin.processToken(response.data);
+      githubPostLogin.processToken(response.data);
     })
     .catch(function(err) {
         console.log(err);

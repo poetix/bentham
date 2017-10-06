@@ -1,4 +1,4 @@
-export type dropboxAccessCode = string
+export type dropboxAuthorisationCode = string
 export type dropboxAccountId = string
 export type dropboxUserId = string
 export type dropboxAccessToken = string

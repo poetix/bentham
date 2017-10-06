@@ -2,11 +2,11 @@
 Classes in this module handle the protocol-level tasks of handling Events and returning HTTP responses.
 */
 import { complete, response } from "../../common/endpoints/EndpointUtils";
-import { event, callback, SlackIdentity, slackAccessToken, host, lambdaStage, IcarusAccessToken } from "../../common/Api";
+import { event, callback, slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
 import { IdentityService } from "../../common/services/IdentityService";
 import { pathToLambda, redirectTo } from "../../common/clients/HttpClient";
 import { OAuthService } from "../services/OAuthService";
-import { dropboxAccountId } from "../Api"
+import { dropboxAccountId, dropboxAuthorisationCode } from "../Api"
 
 export class OAuthEndpoint {
 
@@ -14,10 +14,10 @@ export class OAuthEndpoint {
     private readonly oauthService: OAuthService) {}
 
   initiate(cb: callback, event: event) {
-    const slackAccessToken = event.queryStringParameters.slackAccessToken
-    const returnUri = event.queryStringParameters.returnUri
-    const host = event.headers.Host
-    const stage = event.requestContext.stage
+    const slackAccessToken:slackAccessToken = event.queryStringParameters.slackAccessToken
+    const returnUri:uri = event.queryStringParameters.returnUri
+    const host:host = event.headers.Host
+    const stage:lambdaStage = event.requestContext.stage
 
     cb(null, redirectTo(this.oauthService.getOAuthUri(host, stage, slackAccessToken, returnUri)));
   }
@@ -32,12 +32,12 @@ export class OAuthEndpoint {
       Body: IcarusAccessToken
   */
   complete(cb: callback, event: event) {
-    const host = event.headers.Host
-    const stage = event.requestContext.stage
+    const host:host = event.headers.Host
+    const stage:lambdaStage = event.requestContext.stage
 
-    const slackAccessToken = event.queryStringParameters.slackAccessToken
-    const dropboxAuthorisationCode = event.queryStringParameters.code
-    const initReturnUri = event.queryStringParameters.initReturnUri
+    const slackAccessToken:slackAccessToken = event.queryStringParameters.slackAccessToken
+    const dropboxAuthorisationCode:dropboxAuthorisationCode = event.queryStringParameters.code
+    const initReturnUri:uri = event.queryStringParameters.initReturnUri
 
     return complete(cb, this.oauthService.processCode(slackAccessToken, dropboxAuthorisationCode, initReturnUri)
       .then((icarusAccessToken) => response(200, icarusAccessToken))

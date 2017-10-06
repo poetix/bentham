@@ -1,6 +1,6 @@
 import { HttpClient, pathToLambda } from "../../common/clients/HttpClient";
 import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
-import { githubClientId, gihubClientSecret, githubAccessCode, githubAccessToken, githubUsername } from "../Api"
+import { githubClientId, gihubClientSecret, githubAuthorisationCode, githubAccessToken, githubUsername } from "../Api"
 
 export class GithubClient {
   constructor(
@@ -8,21 +8,21 @@ export class GithubClient {
     private readonly clientId: githubClientId,
     private readonly clientSecret: gihubClientSecret) {}
 
-    getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken): uri {
+    getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken, returnUri: uri): uri {
       return  'https://github.com/login/oauth/authorize' +
-      `&client_id=${this.clientId}` +
-      `&redirect_uri=${pathToLambda(host, stage, "github-oauth-complete")}` +
+      `?client_id=${this.clientId}` +
+      `&redirect_uri=${returnUri}` +
       `&state=${slackAccessToken}`;
+      // No 'scope' = Read-only access to public information
     }
 
-    async requestAccessToken(code: githubAccessCode, redirectUri: uri): Promise<githubAccessToken> {
+    async requestAccessToken(code: githubAuthorisationCode, redirectUri: uri): Promise<githubAccessToken> {
       console.log(`Requesting user token for code ${code}`);
-      // FIXME
       const responseBody = await this.http.doHttp({
         url: 'https://github.com/login/oauth/access_token',
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          'Accept': 'application/json'
         },
         form: {
           code: code,
@@ -45,6 +45,7 @@ export class GithubClient {
         method: 'GET',
         headers: {
           'Authorization': `token ${accessToken}`,
+          'User-Agent': 'Icarus/1.0'
         },
       });
 

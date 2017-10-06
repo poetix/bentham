@@ -5,7 +5,7 @@ export type githubWebhookSecret = string;
 export type githubClientId = string
 export type gihubClientSecret = string
 
-export type githubAccessCode = string;
+export type githubAuthorisationCode = string;
 
 export type githubUsername = string;
 export type githubAccessToken = string;
