@@ -1,7 +1,7 @@
 import { slackAuthCode } from "../Api";
 import { SlackClient } from "../clients/SlackClient";
 import { IdentityService } from "../../common/services/IdentityService";
-import { IcarusAccessToken, uri } from "../../common/Api";
+import { IcarusUserToken, uri } from "../../common/Api";
 
 export class LoginService {
 
@@ -15,7 +15,7 @@ export class LoginService {
   - retrieves user's details
   - gets a UserToken from the Identity Service and returns it
   */
-  async login(slackCode: slackAuthCode, loginRedirectUri: uri): Promise<IcarusAccessToken> {
+  async login(slackCode: slackAuthCode, loginRedirectUri: uri): Promise<IcarusUserToken> {
     // Redeem the slack authorization code to get slack token and id.
     const token = await this.slack.getToken(slackCode, loginRedirectUri);
     // Requires `identity.basic` auth scope
@@ -23,8 +23,8 @@ export class LoginService {
 
     console.log(userDetails);
 
-    // Obtain a Icarus access token from the identity service, and return it.
-    return this.identity.grantIcarusAccessToken({
+    // Obtain a Icarus user token from the identity service, and return it.
+    return this.identity.grantIcarusUserToken({
       id: userDetails.user.id,
       teamId: userDetails.team.id,
       userName: userDetails.user.name,

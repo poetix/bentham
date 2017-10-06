@@ -12,7 +12,7 @@ Users from other integrations (Dropbox, GitHub...) are mapped to the Slack user.
 
 For details about Slack OAuth flow, see: https://api.slack.com/docs/oauth
 
-This journey happens when the user is not logged in (i.e. the browser LS has no 'icarus-access-token')
+This journey happens when the user is not logged in (i.e. the browser LS has no 'icarus-user-token')
 
 1. **index.html**, Browser, User clicks Slack login button
   * Browser goes to `<team>.slack.com/oauth/authorize?scope=identity.basic&client_id=...&redirect_url=<post-login-page-url>`
@@ -45,18 +45,18 @@ This journey happens when the user is not logged in (i.e. the browser LS has no 
       3. Constructs `<user-token>`
           * Includes `<slack-access-token>`, Slack Identity and all other available identities
 
-     4. Lambda returns (`<icarus-access-token>`)
+     4. Lambda returns (`<icarus-user-token>`)
         ```
         {
           userName: <slack-username>,
-          accessToken: <slack-access-token>,
+          accessToken: <icarus-access-token>, // Random UUID
           dropboxAccountId: <dropbox-account-id>|undefined,
           githubUsername: <github-username>|undefined,
         }
         ```  
 
 6. **post-login.html**,
-    * Stores `<icarus-access-token>` in localStorage(`icarus_access_token`)
+    * Stores `<icarus-user-token>` in localStorage(`icarus_access_token`)
     * Jump to **index.html**
 7. **index.html** Shows integrations login buttons (Dropbox, Github...)
 
@@ -64,7 +64,7 @@ This journey happens when the user is not logged in (i.e. the browser LS has no 
 ### Dropbox login
 
 This journey happens when the user is logged into Icarus with Slack, but not yet with Dropbox
-(i.e. the browser LS has an 'icarus-access-token' with hasDropboxAuthorisation=false).
+(i.e. the browser LS has an 'icarus-user-token' with hasDropboxAuthorisation=false).
 
 1. **index.html**, Browser, User clicks Dropbox login button
   * Browser goes to `<dropbox-oauth-initiate-lambda>?slackAccessToken=<slack-access-token>&returnUri=<post-dropbox-login-page-url>`
@@ -87,7 +87,7 @@ This journey happens when the user is logged into Icarus with Slack, but not yet
     2. Stores `<dropbox-access-token>` and `<dropbox-account-id>` in the Dropbox Token Repository
     3. Obtains and stores initial cursor for the account **TODO clarify**
     4. Adds a Dropbox identity to the user, in the Identity Service **TODO clarify**
-    5. Lambda returns (`<icarus-access-token>`)
+    5. Lambda returns (`<icarus-user-token>`)
         ```
         {
           userName: <slack-username>,
@@ -98,7 +98,7 @@ This journey happens when the user is logged into Icarus with Slack, but not yet
         ```  
 
 7. **post-dropbox-login.html**
-    * Updates `<icarus-access-token>` in localStorage(`icarus_access_token`)
+    * Updates `<icarus-user-token>` in localStorage(`icarus_access_token`)
     * Jump back to **index.html**
 
 ### Github login
@@ -128,7 +128,7 @@ The flow is almost identical to the Dropbox flow.
     2. Retrieves user's details from GitHub API
     3. Stores `<github-access-token>` and `<github-username>` in the GitHub Token Repository
     4. Adds a Dropbox identity to the user, in the Identity Service **TODO clarify**
-    5. Lambda returns (`<icarus-access-token>`)
+    5. Lambda returns (`<icarus-user-token>`)
         ```
         {
           userName: <slack-username>,
@@ -139,5 +139,5 @@ The flow is almost identical to the Dropbox flow.
         ```  
 
 7. **github-post-login.html**
-    * Updates `<icarus-access-token>` in localStorage(`icarus_access_token`)
+    * Updates `<icarus-user-token>` in localStorage(`icarus_access_token`)
     * Jump back to **index.html**

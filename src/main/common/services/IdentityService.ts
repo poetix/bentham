@@ -1,5 +1,5 @@
 import { IdentityRepository } from "../repositories/IdentityRepository";
-import { slackAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, IcarusAccessToken } from "../Api";
+import { slackAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, IcarusUserToken } from "../Api";
 const v4 = require('uuid/v4');
 
 export class IdentityService {
@@ -8,52 +8,56 @@ export class IdentityService {
 
 
   /**
-  If you have logged in via Slack, you can create or retrieve a IcarusAccessToken,
-  which includes a Slack access token
+  If you have logged in via Slack, you can create or retrieve a Icarus User Token Token,
+  which includes an access token
   */
-  async grantIcarusAccessToken(slackIdentity: SlackIdentity): Promise<IcarusAccessToken> {
+  async grantIcarusUserToken(slackIdentity: SlackIdentity): Promise<IcarusUserToken> {
     const accessToken = v4();
 
     await this.repo.saveSlackIdentity(accessToken, slackIdentity);
     const dropboxIdentity = await this.repo.getDropboxIdentity(slackIdentity.id);
     const githubIdentity = await this.repo.getGithubIdentity(slackIdentity.id);
 
-    return this.constructIcarusAccessToken(accessToken, slackIdentity, dropboxIdentity);
+    return this.constructIcarusUserToken(accessToken, slackIdentity, dropboxIdentity);
   }
 
   /**
-  Retrieves an Icarus Access Token having the Slack access token
+  Retrieves an Icarus User Token having the Slack access token
   */
-  async getIcarusAccessToken(slackAccessToken: slackAccessToken): Promise<IcarusAccessToken> {
-    const slackIdentity = await this.repo.getSlackIdentity(slackAccessToken);
-    const dropboxIdentity = await this.repo.getDropboxIdentity(slackIdentity.id);
-    const githubIdentity = await this.repo.getGithubIdentity(slackIdentity.id);
-
-    return this.constructIcarusAccessToken(slackAccessToken, slackIdentity, dropboxIdentity, githubIdentity);
+  async getIcarusUserToken(slackAccessToken: slackAccessToken): Promise<IcarusUserToken> {
+    return this.repo.getSlackIdentity(slackAccessToken)
+      .then( slackIdentity =>
+          Promise.all([
+            this.repo.getDropboxIdentity(slackIdentity.id),
+            this.repo.getGithubIdentity(slackIdentity.id)
+          ])
+          .then( identities => ({
+              accessToken: slackIdentity.accessToken,
+              userName: slackIdentity.userName,
+              dropboxAccountId: (<DropboxIdentity>identities[0]) ?  (<DropboxIdentity>identities[0]).id : undefined,
+              githubUsername: (<GithubIdentity>identities[1]) ? (<GithubIdentity>identities[1]).id : undefined
+            })
+        )
+      )
   }
 
 
-  private constructIcarusAccessToken(slackAccessToken: slackAccessToken, slackIdentity: SlackIdentity, dropboxIdentity?: DropboxIdentity, githubIdentity?: GithubIdentity): IcarusAccessToken {
-    const slackId = slackIdentity.id
-    const username = slackIdentity.userName
-    const dropboxId = dropboxIdentity ? dropboxIdentity.id : undefined
-    const githubUsername = githubIdentity ? githubIdentity.id : undefined
-
-    console.log(`Icarus Access Token: Slack ID=${slackId}, Dropbox ID=${dropboxId}, GitHub username=${githubUsername}`)
+  // FIXME Requires an Icarus Access Token
+  private constructIcarusUserToken( slackIdentity: SlackIdentity, dropboxIdentity: DropboxIdentity|undefined, githubIdentity: GithubIdentity|undefined): IcarusUserToken {
     return {
-      accessToken: slackAccessToken,
-      userName: username,
-      dropboxAccountId: dropboxId,
-      githubUsername: githubUsername,
+      accessToken: slackIdentity.accessToken,
+      userName: slackIdentity.userName,
+      dropboxAccountId: dropboxIdentity ? dropboxIdentity.id : undefined,
+      githubUsername: githubIdentity ? githubIdentity.id : undefined,
     }
   }
 
   /**
   Services which connect Icarus to other apps use this method
-  to add an app's user id and Slack access token to the identity set
+  to add an app's user id and access token to the identity set
   associated with this user.
   */
-  async addIdentity<K extends keyof IdentitySet>(slackAccessToken: slackAccessToken, name: K, value: IdentitySet[K]): Promise<IcarusAccessToken> {
+  async addIdentity<K extends keyof IdentitySet>(slackAccessToken: slackAccessToken, name: K, value: IdentitySet[K]): Promise<IcarusUserToken> {
     const slackIdentity = await this.repo.getSlackIdentity(slackAccessToken);
     switch(name) {
       case 'dropbox': {
@@ -61,14 +65,14 @@ export class IdentityService {
           this.repo.saveDropboxIdentity(slackIdentity.id, value as DropboxIdentity),
           this.repo.getGithubIdentity(slackIdentity.id)
         ])
-        .then( results => this.constructIcarusAccessToken(slackAccessToken, slackIdentity, value as DropboxIdentity, results[1] as GithubIdentity) )
+        .then( results => this.constructIcarusUserToken(slackIdentity, value as DropboxIdentity, results[1] as GithubIdentity) )
       }
       case 'github': {
         return Promise.all([
           this.repo.getDropboxIdentity(slackIdentity.id),
           this.repo.saveGithubIdentity(slackIdentity.id, value as GithubIdentity)
         ])
-        .then( results => this.constructIcarusAccessToken(slackAccessToken, slackIdentity, results[0] as DropboxIdentity, value as GithubIdentity) )
+        .then( results => this.constructIcarusUserToken(slackIdentity, results[0] as DropboxIdentity, value as GithubIdentity) )
       }
       default: {
         throw new Error(`Cannot save identity for service ${name}`);

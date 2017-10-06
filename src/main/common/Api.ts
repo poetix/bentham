@@ -11,7 +11,6 @@ export type lambdaStage = string;
 export type slackUsername = string;
 export type slackAccessToken = string;
 
-
 export interface AppIdentity {
   id: string,
   accessToken: string
@@ -33,8 +32,8 @@ export interface IdentitySet {
 }
 
 
-export interface IcarusAccessToken {
-  accessToken: slackAccessToken,
+export interface IcarusUserToken {
+  accessToken: slackAccessToken, // FIXME This is NOT the slack access token
   userName: slackUsername,
   dropboxAccountId: string|undefined, // TODO Fix type
   githubUsername: string|undefined, // TODO Fix type

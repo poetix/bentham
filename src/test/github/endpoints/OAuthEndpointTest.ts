@@ -3,11 +3,11 @@ import { expect } from 'chai';
 import 'mocha';
 import { OAuthService } from "../../../main/github/services/OAuthService";
 import { OAuthEndpoint } from "../../../main/github/endpoints/OAuthEndpoint";
-import { IcarusAccessToken } from "../../../main/common/Api";
+import { IcarusUserToken } from "../../../main/common/Api";
 import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
 
-const icarusAccessToken:IcarusAccessToken = {
+const icarusUserToken:IcarusUserToken = {
   accessToken: 'slack-access-token',
   userName: 'slack-username',
   dropboxAccountId: undefined,
@@ -17,7 +17,7 @@ const icarusAccessToken:IcarusAccessToken = {
 const mockedOauthService = mock(OAuthService);
 const oauthService = instance(mockedOauthService);
 when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
-when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve(icarusAccessToken));
+when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
 const endpoint = new OAuthEndpoint(oauthService);
 
@@ -44,7 +44,7 @@ describe("Github OAuth Endpoint", () => {
       expect(result.headers.Location).to.equal("http://oauth-uri");
   });
 
-  it("should return an Icarus Access Token including GitHub username on completion", async () => {
+  it("should return an Icarus User Token including GitHub username on completion", async () => {
     const result = await toPromise(_complete, {
       headers: {
         Host: "aws-api"
@@ -62,7 +62,7 @@ describe("Github OAuth Endpoint", () => {
     verify(mockedOauthService.processCode("slack-access-token", "the code", 'http://return.uri')).once();
 
     expect(result.statusCode).to.equal(200);
-    expect(result.body).to.equal(JSON.stringify(icarusAccessToken));
+    expect(result.body).to.equal(JSON.stringify(icarusUserToken));
   })
 
 });

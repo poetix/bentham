@@ -29,7 +29,7 @@ export class OAuthEndpoint {
       - code: Dropbox Authorisation code
       - initReturnUri: the returnUri passed to the initiate request, for verification by Dropbox only
     Response
-      Body: IcarusAccessToken
+      Body: IcarusUserToken
   */
   complete(cb: callback, event: event) {
     const host:host = event.headers.Host
@@ -40,7 +40,7 @@ export class OAuthEndpoint {
     const initReturnUri:uri = event.queryStringParameters.initReturnUri
 
     return complete(cb, this.oauthService.processCode(slackAccessToken, dropboxAuthorisationCode, initReturnUri)
-      .then((icarusAccessToken) => response(200, icarusAccessToken))
+      .then((icarusUserToken) => response(200, icarusUserToken))
     );
   }
 

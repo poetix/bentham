@@ -4,7 +4,7 @@ import { mock, instance, when, verify, resetCalls, anyString,  anything } from '
 
 import { IdentityService } from "../../../main/common/services/IdentityService"
 import { IdentityRepository } from "../../../main/common/repositories/IdentityRepository"
-import { slackAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, IcarusAccessToken } from "../../../main/common/Api";
+import { slackAccessToken, IdentitySet, SlackIdentity, DropboxIdentity, GithubIdentity, IcarusUserToken } from "../../../main/common/Api";
 
 
 const slackIdentity:SlackIdentity = {
@@ -26,7 +26,7 @@ const githubIdentity:GithubIdentity = {
 
 
 describe('Identity Service', () => {
-  describe('Get Icarus access token', () => {
+  describe('Get Icarus user token', () => {
 
     it('should return a token with Dropbox ID and GitHub username when all identities are available', async () => {
       const repositoryMock = mock(IdentityRepository)
@@ -36,7 +36,7 @@ describe('Identity Service', () => {
       when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( dropboxIdentity ))
       when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( githubIdentity ))
 
-      const result = await unit.getIcarusAccessToken('slack-access-token')
+      const result = await unit.getIcarusUserToken('slack-access-token')
 
       expect(result.accessToken).is.equal('slack-access-token')
       expect(result.userName).is.equal('slack-username')
@@ -56,7 +56,7 @@ describe('Identity Service', () => {
       when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( undefined ))
       when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( undefined ))
 
-      const result = await unit.getIcarusAccessToken('slack-access-token')
+      const result = await unit.getIcarusUserToken('slack-access-token')
 
       expect(result.accessToken).is.equal('slack-access-token')
       expect(result.userName).is.equal('slack-username')
@@ -71,7 +71,7 @@ describe('Identity Service', () => {
 
   describe('Add Identity', () => {
 
-    it('should return an Icarus access token with both Drobox ID and GitHub username, on adding Dropbox identity when the user already has Github identity', async () => {
+    it('should return an Icarus user token with both Drobox ID and GitHub username, on adding Dropbox identity when the user already has Github identity', async () => {
       const repositoryMock = mock(IdentityRepository)
       const unit = new IdentityService(instance(repositoryMock))
 
@@ -91,7 +91,7 @@ describe('Identity Service', () => {
       verify(repositoryMock.getGithubIdentity('slack-account-id')).once()
     })
 
-    it('should return an Icarus access token with both Drobox ID and GitHub username, on adding GitHub identity when the user already has Dropbox identity', async () => {
+    it('should return an Icarus user token with both Drobox ID and GitHub username, on adding GitHub identity when the user already has Dropbox identity', async () => {
       const repositoryMock = mock(IdentityRepository)
       const unit = new IdentityService(instance(repositoryMock))
 
@@ -111,7 +111,7 @@ describe('Identity Service', () => {
       verify(repositoryMock.getDropboxIdentity('slack-account-id')).once()
     })
 
-    it('should return an Icarus access token with Dropbox ID only, on adding Drobox identity when a user does not have a Github identity', async () => {
+    it('should return an Icarus user token with Dropbox ID only, on adding Drobox identity when a user does not have a Github identity', async () => {
       const repositoryMock = mock(IdentityRepository)
       const unit = new IdentityService(instance(repositoryMock))
 
@@ -131,7 +131,7 @@ describe('Identity Service', () => {
       verify(repositoryMock.getGithubIdentity('slack-account-id')).once()
     })
 
-    it('should return an Icarus access token with Github username only, on adding GitHub identity when a user does not have a Dropbox identity', async () => {
+    it('should return an Icarus user token with Github username only, on adding GitHub identity when a user does not have a Dropbox identity', async () => {
       const repositoryMock = mock(IdentityRepository)
       const unit = new IdentityService(instance(repositoryMock))
 

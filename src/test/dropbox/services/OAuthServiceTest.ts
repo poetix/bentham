@@ -73,7 +73,7 @@ describe('Dropbox OAuth Service', () => {
       verify(identityServiceMock.addIdentity('icarus-access-token', 'dropbox', anything() )).once()
     })
 
-    it('should return the Icarus access token containing the Dropbox account id', async () => {
+    it('should return the Icarus user token containing the Dropbox account id', async () => {
       const result = await unit.processCode('icarus-access-token', 'dropbox-auth-code', 'http://return.uri')
       expect(result.dropboxAccountId).is.equal('dropbox-account-id')
     })

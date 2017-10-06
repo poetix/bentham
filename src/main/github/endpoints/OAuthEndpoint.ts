@@ -31,7 +31,7 @@ export class OAuthEndpoint {
     const initReturnUri:uri = event.queryStringParameters.initReturnUri
 
     return complete(cb, this.oauthService.processCode(slackAccessToken, githubAuthorisationCode, initReturnUri)
-      .then((icarusAccessToken) => response(200, icarusAccessToken))
+      .then((icarusUserToken) => response(200, icarusUserToken))
     );
   }
 }

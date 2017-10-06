@@ -11,7 +11,7 @@ export class SlackLoginEndpoint {
 
   login(cb: callback, evt: event) {
     return complete(cb, this.service.login(evt.queryStringParameters.code, this.loginRedirectUri)
-      .then(icarusAccessToken => response(200, icarusAccessToken)));
+      .then(icarusUserToken => response(200, icarusUserToken)));
   }
 
 }
