@@ -37,8 +37,7 @@ beforeEach(() => {
   resetCalls(githubClientMock)
 })
 
-// FIXME Re-enable tests when implementation is fixed
-describe.skip('GitHub OAuth Service', () => {
+describe('GitHub OAuth Service', () => {
   describe('Process Auth Code', async () => {
 
 

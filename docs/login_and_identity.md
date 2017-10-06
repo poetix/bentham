@@ -63,20 +63,22 @@ This journey happens when the user is not logged in (i.e. the browser LS has no 
 
 ### Dropbox login
 
-This journey happens when the user is logged in Slack, but not in Dropbox
+This journey happens when the user is logged into Icarus with Slack, but not yet with Dropbox
 (i.e. the browser LS has an 'icarus-access-token' with hasDropboxAuthorisation=false).
-
 
 1. **index.html**, Browser, User clicks Dropbox login button
   * Browser goes to `<dropbox-oauth-initiate-lambda>?slackAccessToken=<slack-access-token>&returnUri=<post-dropbox-login-page-url>`
 
 2. **dropbox-oauth-initiate-lambda**:
-    1. GET, `https://www.dropbox.com/oauth2/authorize?response_type=code&client_id=...&redirect_uri=<return-uri-param>`
-        * `redirect_uri` is the *returnUri* parameter passed to the lambda, i.e. `<post-dropbox-login-page-url>`
+    1. GET, `https://www.dropbox.com/oauth2/authorize?response_type=code&client_id=...&redirect_uri=<return-uri-param>&state=<slack-access-token>`
+        * `redirect_uri` is the *returnUri* parameter passed to the lambda, i.e. `<dropbox-post-login-page-url>`
+        * `state=<slack-access-token>` is not actually used by the current frontend-driven implementation
 
 3. User: authorises the application to access Dropbox
-4. Browser redirected back to `<post-dropbox-login-page-url>?code=<dropbox-authorisation-code>`
-5. **post-dropbox-login.html**,
+4. Browser redirected back to `<dropbox-post-login-page-url>?code=<dropbox-authorisation-code>&state=<slack-access-token>`
+    * `state=<slack-access-token>` is not used by the current implementation
+
+5. **dropbox-post-login.html**,
     * Browser (AJAX) GET, `<dropbox-auth-complete-lambda>?code=<dropbox-authorisation-code>&slackAccessToken=<slack-access-token>&initReturnUri=<post-dropbox-login-page-url>`
     * `initReturnUri` must match the oauth initiate returnUri and is used for verification by Dropbox
 
@@ -97,4 +99,45 @@ This journey happens when the user is logged in Slack, but not in Dropbox
 
 7. **post-dropbox-login.html**
     * Updates `<icarus-access-token>` in localStorage(`icarus_access_token`)
-    * Jump to **dropbox-report.html**
+    * Jump back to **index.html**
+
+### Github login
+
+Similarly to Dropbox, the GitHub login journey happens when the user is logged into Icarus with Slack, but not yet with GitHub.
+
+The flow is almost identical to the Dropbox flow.
+
+1. **index.html**, Browser, User clicks GitHub login button
+  * Browser goes to `<github-oauth-initiate-lambda>?slackAccessToken=<slack-access-token>&returnUri=<github-post-login-page-url>`
+
+2. **github-oauth-initiate-lambda**:
+    1. GET, `https://github.com/login/oauth/authorize?client_id=...&redirect_uri=<return-uri-param>&state=<slack-access-token>`
+        * `redirect_uri` is the *returnUri* parameter passed to the lambda, i.e. `<github-post-login-page-url>`
+        * `state=<slack-access-token>` is not actually used by the current frontend-driven implementation
+
+3. User: authorises the application to access GitHub
+4. Browser redirected back to `<github-post-login-page-url>?code=<github-authorisation-code>&state=<slack-access-token>`
+    * `state=<slack-access-token>` is not used by the current implementation
+
+5. **github-post-login.html**,
+    * Browser (AJAX) GET, `<github-auth-complete-lambda>?code=<github-authorisation-code>&slackAccessToken=<slack-access-token>&initReturnUri=<github-post-login-page-url>`
+    * `initReturnUri` must match the oauth initiate returnUri and is used for verification by Github
+
+6. **github-oauth-complete-lambda**
+    1. Redeems `<github-authorisation-code>` getting a `<github-access-token>`
+    2. Retrieves user's details from GitHub API
+    3. Stores `<github-access-token>` and `<github-username>` in the GitHub Token Repository
+    4. Adds a Dropbox identity to the user, in the Identity Service **TODO clarify**
+    5. Lambda returns (`<icarus-access-token>`)
+        ```
+        {
+          userName: <slack-username>,
+          accessToken: <slack-access-token>,
+          dropboxAccountId: <dropbox-account-id>|undefined,
+          githubUsername: <github-username>,
+        }
+        ```  
+
+7. **github-post-login.html**
+    * Updates `<icarus-access-token>` in localStorage(`icarus_access_token`)
+    * Jump back to **index.html**

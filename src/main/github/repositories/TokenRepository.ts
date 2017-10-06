@@ -6,7 +6,7 @@ export class TokenRepository {
   constructor(private readonly dynamo: DynamoClient) {}
 
   saveToken(username: githubUsername, accessToken: githubAccessToken): Promise<void> {
-    console.log("Writing account access token to Dynamo");
+    console.log("Writing Github access token to Dynamo");
 
     return this.dynamo.put("github_tokens", {
       username: username,

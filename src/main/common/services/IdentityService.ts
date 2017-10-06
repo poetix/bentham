@@ -32,19 +32,19 @@ export class IdentityService {
     return this.constructIcarusAccessToken(slackAccessToken, slackIdentity, dropboxIdentity, githubIdentity);
   }
 
-  /**
-  Retrieves the Slack Identity by Slack access token
-  */
-  async getSlackIdentity(slackAccessToken: slackAccessToken): Promise<SlackIdentity> {
-    return this.repo.getSlackIdentity(slackAccessToken)
-  }
 
   private constructIcarusAccessToken(slackAccessToken: slackAccessToken, slackIdentity: SlackIdentity, dropboxIdentity?: DropboxIdentity, githubIdentity?: GithubIdentity): IcarusAccessToken {
+    const slackId = slackIdentity.id
+    const username = slackIdentity.userName
+    const dropboxId = dropboxIdentity ? dropboxIdentity.id : undefined
+    const githubUsername = githubIdentity ? githubIdentity.id : undefined
+
+    console.log(`Icarus Access Token: Slack ID=${slackId}, Dropbox ID=${dropboxId}, GitHub username=${githubUsername}`)
     return {
       accessToken: slackAccessToken,
-      userName: slackIdentity.userName,
-      dropboxAccountId: dropboxIdentity ? dropboxIdentity.id : undefined,
-      githubUsername: githubIdentity ? githubIdentity.id : undefined,
+      userName: username,
+      dropboxAccountId: dropboxId,
+      githubUsername: githubUsername,
     }
   }
 
@@ -57,12 +57,18 @@ export class IdentityService {
     const slackIdentity = await this.repo.getSlackIdentity(slackAccessToken);
     switch(name) {
       case 'dropbox': {
-        await this.repo.saveDropboxIdentity(slackIdentity.id, value as DropboxIdentity);
-        return this.constructIcarusAccessToken(slackAccessToken, slackIdentity, value as DropboxIdentity);
+        return Promise.all([
+          this.repo.saveDropboxIdentity(slackIdentity.id, value as DropboxIdentity),
+          this.repo.getGithubIdentity(slackIdentity.id)
+        ])
+        .then( results => this.constructIcarusAccessToken(slackAccessToken, slackIdentity, value as DropboxIdentity, results[1] as GithubIdentity) )
       }
       case 'github': {
-        await this.repo.saveGithubIdentity(slackIdentity.id, value as GithubIdentity);
-        return this.constructIcarusAccessToken(slackAccessToken, slackIdentity, undefined, value as GithubIdentity);
+        return Promise.all([
+          this.repo.getDropboxIdentity(slackIdentity.id),
+          this.repo.saveGithubIdentity(slackIdentity.id, value as GithubIdentity)
+        ])
+        .then( results => this.constructIcarusAccessToken(slackAccessToken, slackIdentity, results[0] as DropboxIdentity, value as GithubIdentity) )
       }
       default: {
         throw new Error(`Cannot save identity for service ${name}`);
