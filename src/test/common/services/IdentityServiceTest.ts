@@ -76,7 +76,7 @@ describe('Identity Service', () => {
       const unit = new IdentityService(instance(repositoryMock))
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
-      when(repositoryMock.saveDropboxIdentity(anyString(), anything())).thenReturn(Promise.resolve())
+      when(repositoryMock.saveDropboxIdentity(anyString(), anything())).thenReturn(Promise.resolve( dropboxIdentity ))
       when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( githubIdentity ))
 
       const result = await unit.addIdentity('slack-access-token', 'dropbox', dropboxIdentity)
@@ -96,7 +96,7 @@ describe('Identity Service', () => {
       const unit = new IdentityService(instance(repositoryMock))
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
-      when(repositoryMock.saveGithubIdentity(anyString(), anything())).thenReturn(Promise.resolve())
+      when(repositoryMock.saveGithubIdentity(anyString(), anything())).thenReturn(Promise.resolve( githubIdentity ))
       when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( dropboxIdentity ))
 
       const result = await unit.addIdentity('slack-access-token', 'github', githubIdentity)
@@ -116,7 +116,7 @@ describe('Identity Service', () => {
       const unit = new IdentityService(instance(repositoryMock))
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
-      when(repositoryMock.saveDropboxIdentity(anyString(), anything())).thenReturn(Promise.resolve())
+      when(repositoryMock.saveDropboxIdentity(anyString(), anything())).thenReturn(Promise.resolve( dropboxIdentity ))
       when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( undefined ))
 
       const result = await unit.addIdentity('slack-access-token', 'dropbox', dropboxIdentity)
@@ -136,7 +136,7 @@ describe('Identity Service', () => {
       const unit = new IdentityService(instance(repositoryMock))
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
-      when(repositoryMock.saveGithubIdentity(anyString(), anything())).thenReturn(Promise.resolve())
+      when(repositoryMock.saveGithubIdentity(anyString(), anything())).thenReturn(Promise.resolve( githubIdentity ))
       when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( undefined ))
 
       const result = await unit.addIdentity('slack-access-token', 'github', githubIdentity)
