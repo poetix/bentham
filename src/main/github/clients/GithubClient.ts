@@ -1,5 +1,5 @@
 import { HttpClient, pathToLambda } from "../../common/clients/HttpClient";
-import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
+import { icarusAccessToken, host, uri, lambdaStage } from "../../common/Api";
 import { githubClientId, gihubClientSecret, githubAuthorisationCode, githubAccessToken, githubUsername } from "../Api"
 
 export class GithubClient {
@@ -8,11 +8,11 @@ export class GithubClient {
     private readonly clientId: githubClientId,
     private readonly clientSecret: gihubClientSecret) {}
 
-    getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken, returnUri: uri): uri {
+    getOAuthAuthoriseUri(host: host, stage:lambdaStage, icarusAccessToken: icarusAccessToken, returnUri: uri): uri {
       return  'https://github.com/login/oauth/authorize' +
       `?client_id=${this.clientId}` +
       `&redirect_uri=${returnUri}` +
-      `&state=${slackAccessToken}`;
+      `&state=${icarusAccessToken}`;
       // No 'scope' = Read-only access to public information
     }
 

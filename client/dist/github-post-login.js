@@ -20,26 +20,31 @@ var githubPostLogin = new Vue({
   },
   mounted: function() {
     var githubAuthorisationCode = this.$route.query.code;
-    // Expects having already obtained and stored in LS an Icarus Access Token
-    // TODO Should probably redirect to index.html if none available
-    var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
     console.log("GitHub authorisation code obtained: " + githubAuthorisationCode);
-    this.$nextTick(function() {
-      getIcarusTokenWithGithub(githubAuthorisationCode, slackAccessToken);
-    });
+
+    var userToken = Vue.ls.get("icarus_user_token");
+    if (userToken) {
+      var icarusAccessToken = userToken.accessToken;
+      this.$nextTick(function() {
+        getIcarusTokenWithGithub(githubAuthorisationCode, icarusAccessToken);
+      });
+    } else {
+      console.log("Missing Icarus user token!")
+      window.location.href="index.html";
+    }
   },
   methods: {
     processToken: function(icarusAccessToken) {
-      Vue.ls.set("icarus_access_token", icarusAccessToken);
+      Vue.ls.set("icarus_user_token", icarusAccessToken);
       window.location.href="index.html";
     },
   }
 });
 
 
-function getIcarusTokenWithGithub(githubAuthorisationCode, slackAccessToken) {
+function getIcarusTokenWithGithub(githubAuthorisationCode, icarusAccessToken) {
   var lambdaUri = lambdaPath + "/github-oauth-complete?code=" + githubAuthorisationCode
-      + '&slackAccessToken=' + slackAccessToken
+      + '&icarusAccessToken=' + icarusAccessToken
       + '&initReturnUri=' + siteBasePath + '/github-post-login.html'; // This is the return uri used when initiating the OAuth journey; for verification only
   axios.get(lambdaUri)
     .then(function(response) {
