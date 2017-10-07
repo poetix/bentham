@@ -11,7 +11,7 @@ import { mock, instance, when, verify, anyString, anything } from "ts-mockito";
 const mockSlackClient: SlackClient = mock(SlackClient);
 const slackClient: SlackClient = instance(mockSlackClient);
 
-when(mockSlackClient.getToken(anyString(), anyString())).thenReturn(Promise.resolve("the slack token"));
+when(mockSlackClient.getToken(anyString(), anyString())).thenReturn(Promise.resolve("the slack access token"));
 when(mockSlackClient.getUserDetails(anyString())).thenReturn(Promise.resolve({
   "ok": true,
   "user": {
@@ -44,7 +44,7 @@ describe("The Login Service", () => {
     verify(mockSlackClient.getToken("the slack authorisation code", "http://return.uri"));
 
     expect(result).to.deep.equal({
-      accessToken: "the slack token", // FIXME THis is not the slack token
+      accessToken: "the slack access token",
       userName: "Sonny Whether",
       dropboxAccountId: undefined,
       githubUsername: undefined
