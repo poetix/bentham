@@ -1,4 +1,4 @@
-# Login & Identity integration
+# Login journeys
 
 An Icarus instance is bound to one Slack team.
 
