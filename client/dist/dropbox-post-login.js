@@ -20,26 +20,31 @@ var dropboxPostLogin = new Vue({
   },
   mounted: function() {
     var dropboxAuthorisationCode = this.$route.query.code;
-    // Expects having already obtained and stored in LS an Icarus Access Token
-    // TODO Should probably redirect to index.html if none available
-    var slackAccessToken = Vue.ls.get("icarus_access_token").accessToken;
     console.log("Dropbox authorisation code obtained: " + dropboxAuthorisationCode);
-    this.$nextTick(function() {
-      getIcarusTokenWithDropbox(dropboxAuthorisationCode, slackAccessToken);
-    });
+
+    var userToken = Vue.ls.get("icarus_user_token");
+    if( userToken ) {
+      var icarusAccessToken = userToken.accessToken;
+      this.$nextTick(function() {
+        getIcarusTokenWithDropbox(dropboxAuthorisationCode, icarusAccessToken);
+      });
+    } else {
+      console.log("Missing Icarus user token!");
+      window.location.href="index.html";
+    }
   },
   methods: {
     processToken: function(icarusAccessToken) {
-      Vue.ls.set("icarus_access_token", icarusAccessToken);
+      Vue.ls.set("icarus_user_token", icarusAccessToken);
       window.location.href="index.html";
     },
   }
 });
 
 
-function getIcarusTokenWithDropbox(dropboxAuthorisationCode, slackAccessToken) {
+function getIcarusTokenWithDropbox(dropboxAuthorisationCode, icarusAccessToken) {
   var lambdaUri = lambdaPath + "/dropbox-oauth-complete?code=" + dropboxAuthorisationCode
-      + '&slackAccessToken=' + slackAccessToken
+      + '&icarusAccessToken=' + icarusAccessToken
       + '&initReturnUri=' + siteBasePath + '/dropbox-post-login.html'; // This is the return uri used when initiating the OAuth journey; for verification only
   axios.get(lambdaUri)
     .then(function(response) {

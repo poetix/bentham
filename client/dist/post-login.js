@@ -26,7 +26,7 @@ var postLogin = new Vue({
   },
   methods: {
     processToken: function(icarusAccessToken) {
-      Vue.ls.set("icarus_access_token", icarusAccessToken);
+      Vue.ls.set("icarus_user_token", icarusAccessToken);
       window.location.href="index.html";
     },
   }

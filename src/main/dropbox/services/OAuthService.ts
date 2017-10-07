@@ -2,7 +2,7 @@ import { IdentityService } from "../../common/services/IdentityService";
 import { DropboxClient } from "../clients/DropboxClient";
 import { TokenRepository } from "../repositories/TokenRepository";
 import { CursorRepository } from "../repositories/CursorRepository";
-import { slackAccessToken, host, uri, lambdaStage, IcarusUserToken } from "../../common/Api";
+import { icarusAccessToken, host, uri, lambdaStage, IcarusUserToken } from "../../common/Api";
 import { dropboxAuthorisationCode, dropboxAccountId, dropboxAccessToken, cursor } from "../Api";
 
 export class OAuthService {
@@ -13,8 +13,8 @@ export class OAuthService {
     private readonly tokenRepository: TokenRepository,
     private readonly cursorRepository: CursorRepository) {}
 
-  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken, returnUri:uri): uri {
-    return this.dropbox.getOAuthUri(host, stage, slackAccessToken, returnUri);
+  getOAuthAuthoriseUri(host: host, stage:lambdaStage, icarusAccessToken: icarusAccessToken, returnUri:uri): uri {
+    return this.dropbox.getOAuthAuthoriseUri(host, stage, icarusAccessToken, returnUri);
   }
 
   /**
@@ -26,23 +26,22 @@ export class OAuthService {
     existed before registration are not scanned for their update timestamps.
   - it associates the Dropbox account id and access token with the Icarus account.
    */
-  // FIXME replace Slack Access Token with Icarus access token, where applciable 
-  async processCode(slackAccessToken: slackAccessToken, dropboxAuthorisationCode: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<IcarusUserToken> {
+  async processCode(icarusAccessToken: icarusAccessToken, dropboxAuthorisationCode: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<IcarusUserToken> {
     // Redirect uri is passed for verification only
-    const token = await this.dropbox.requestToken(dropboxAuthorisationCode, accessCodeRequestRedirectUri);
+    const dropboxAccessDetails = await this.dropbox.requestAccessDetails(dropboxAuthorisationCode, accessCodeRequestRedirectUri);
 
     return Promise.all([
-      this.tokenRepository.saveToken(token.accountId, token.accessToken),
-      this.storeInitialCursor(token.accountId, token.accessToken),
-      this.identity.addIdentity(slackAccessToken, 'dropbox', {
-        id: token.accountId,
-        accessToken: token.accessToken
+      this.tokenRepository.saveToken(dropboxAccessDetails.accountId, dropboxAccessDetails.accessToken),
+      this.storeInitialCursor(dropboxAccessDetails.accountId, dropboxAccessDetails.accessToken),
+      this.identity.addIdentity(icarusAccessToken, 'dropbox', {
+        id: dropboxAccessDetails.accountId,
+        accessToken: dropboxAccessDetails.accessToken
       })
     ]).then(res => res[2]); // Returning only the IcarusUserToken from IdentityService.addIdentity
   };
 
-  private async storeInitialCursor(accountId: dropboxAccountId, token: dropboxAccessToken): Promise<cursor> {
-    const cursor = await this.dropbox.getLatestCursor(accountId, token);
+  private async storeInitialCursor(accountId: dropboxAccountId, accessToken: dropboxAccessToken): Promise<cursor> {
+    const cursor = await this.dropbox.getLatestCursor(accountId, accessToken);
     await this.cursorRepository.saveCursor(accountId, cursor);
     return cursor;
   }

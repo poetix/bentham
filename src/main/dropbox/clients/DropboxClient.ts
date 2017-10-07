@@ -1,7 +1,7 @@
 import { cursor, fileInfo, dropboxClientId, dropboxClientSecret, dropboxAuthorisationCode, DropboxAccessDetails, dropboxAccountId, dropboxAccessToken } from "../Api";
 import { HttpClient, pathToLambda } from "../../common/clients/HttpClient";
 import { CursorRepository } from "../repositories/CursorRepository";
-import { slackAccessToken, host, uri, lambdaStage } from "../../common/Api";
+import { icarusAccessToken, host, uri, lambdaStage } from "../../common/Api";
 
 export interface FileFetchResult {
   files: Array<fileInfo>
@@ -19,14 +19,14 @@ export class DropboxClient {
     private readonly clientId: dropboxClientId,
     private readonly clientSecret: dropboxClientSecret) {}
 
-  getOAuthUri(host: host, stage:lambdaStage, slackAccessToken: slackAccessToken, returnUri: uri): uri {
+  getOAuthAuthoriseUri(host: host, stage:lambdaStage, icarusAccessToken: icarusAccessToken, returnUri: uri): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
     `&client_id=${this.clientId}` +
     `&redirect_uri=${returnUri}` +
-    `&state=${slackAccessToken}`;
+    `&state=${icarusAccessToken}`;
   }
 
-  async requestToken(code: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<DropboxAccessDetails> {
+  async requestAccessDetails(code: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<DropboxAccessDetails> {
     console.log(`Requesting user token for code ${code}`);
     // redirect_uri is for verification only.
     // It must match the redirect_uri of the access code request and configured redirect uri in API

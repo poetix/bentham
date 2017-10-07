@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { mock, instance, when, verify, resetCalls, anyString,  anything } from 'ts-mockito';
+import { mock, instance, when, verify, capture, resetCalls, anyString,  anything } from 'ts-mockito';
 
 import { OAuthService } from "../../../main/dropbox/services/OAuthService";
 import { TokenRepository } from "../../../main/dropbox/repositories/TokenRepository";
@@ -39,7 +39,7 @@ const dropboxAccessDetails:DropboxAccessDetails = {
   accountId: 'dropbox-account-id',
   accessToken: 'dropbox-access-token'
 }
-when(dropboxClientMock.requestToken(anyString(), anyString())).thenReturn(Promise.resolve(dropboxAccessDetails))
+when(dropboxClientMock.requestAccessDetails(anyString(), anyString())).thenReturn(Promise.resolve(dropboxAccessDetails))
 when(dropboxClientMock.getLatestCursor(anyString(), anyString())).thenReturn(Promise.resolve('the-cursor'))
 
 
@@ -51,13 +51,13 @@ beforeEach(() => {
 })
 
 describe('Dropbox OAuth Service', () => {
-  describe('Process Auth Code', async () => {
-    it('should exchange Access Code for Access Token', async () => {
+  describe('process Auth Code', async () => {
+    it('should exchange Authorization Code for Access Token', async () => {
       const result = await unit.processCode('icarus-access-token', 'dropbox-auth-code', 'http://return.uri')
-      verify(dropboxClientMock.requestToken('dropbox-auth-code', 'http://return.uri')).once()
+      verify(dropboxClientMock.requestAccessDetails('dropbox-auth-code', 'http://return.uri')).once()
     })
 
-    it('should save the token in Token Repository', async () => {
+    it('should save the token in Dropbox Token Repository', async () => {
       const result = await unit.processCode('icarus-access-token', 'dropbox-auth-code', 'http://return.uri')
       verify(tokenRepositoryMock.saveToken('dropbox-account-id', 'dropbox-access-token')).once()
     })
@@ -68,7 +68,7 @@ describe('Dropbox OAuth Service', () => {
       verify(cursorRepositoryMock.saveCursor('dropbox-account-id', 'the-cursor')).once()
     })
 
-    it('should add a new Identity to Identity Service', async () => {
+    it('should add a new dropbox Identity to Identity Service', async () => {
       const result = await unit.processCode('icarus-access-token', 'dropbox-access-token', 'http://return.uri')
       verify(identityServiceMock.addIdentity('icarus-access-token', 'dropbox', anything() )).once()
     })
