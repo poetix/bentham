@@ -92,7 +92,7 @@ This journey happens when the user is logged into Icarus with Slack, but not yet
         1. Gets latest cursor from Dropbox API, passing the `<dropbox-access-token>`
         2. Saves the cursor for the Dropbox account Id (overwriting, if exists)
 
-    4. Adds a Dropbox identity to the user, in the Identity Service **TODO clarify**
+    4. Adds a Dropbox identity to the user, in the Identity Service
         1. Gets the `<slack-account-id>` corresponding to the `<icarus-access-token>`
         2. Saves the Dropbox Identity (Dropbox account), related to the `<slack-account-id>`
         3. Retrieves other identities (Github) for the same `<slack-account-id>`
@@ -119,26 +119,32 @@ Similarly to Dropbox, the GitHub login journey happens when the user is logged i
 The flow is almost identical to the Dropbox flow.
 
 1. **index.html**, Browser, User clicks GitHub login button
-  * Browser goes to `<github-oauth-initiate-lambda>?slackAccessToken=<slack-access-token>&returnUri=<github-post-login-page-url>`
+  * Browser goes to `<github-oauth-initiate-lambda>?icarusAccessToken=<icarus-access-token>&returnUri=<github-post-login-page-url>`
 
 2. **github-oauth-initiate-lambda**:
-    1. GET, `https://github.com/login/oauth/authorize?client_id=...&redirect_uri=<return-uri-param>&state=<slack-access-token>`
+    * Gets OAuth Authorisation Code from Dropbox authorise endpoint
+        * GET, `https://github.com/login/oauth/authorize?client_id=...&redirect_uri=<return-uri-param>&state=<icarus-access-token>`
         * `redirect_uri` is the *returnUri* parameter passed to the lambda, i.e. `<github-post-login-page-url>`
-        * `state=<slack-access-token>` is not actually used by the current frontend-driven implementation
+        * `state=<icarus-access-token>` is not actually used by the current frontend-driven implementation
 
 3. User: authorises the application to access GitHub
-4. Browser redirected back to `<github-post-login-page-url>?code=<github-authorisation-code>&state=<slack-access-token>`
-    * `state=<slack-access-token>` is not used by the current implementation
+4. Browser redirected back to `<github-post-login-page-url>?code=<github-authorisation-code>&state=<icarus-access-token>`
+    * `state=<icarus-access-token>` is not used by the current implementation
 
 5. **github-post-login.html**,
-    * Browser (AJAX) GET, `<github-auth-complete-lambda>?code=<github-authorisation-code>&slackAccessToken=<slack-access-token>&initReturnUri=<github-post-login-page-url>`
+    * Browser (AJAX) GET, `<github-auth-complete-lambda>?code=<github-authorisation-code>&icarusAccessToken=<icarus-access-token>&initReturnUri=<github-post-login-page-url>`
     * `initReturnUri` must match the oauth initiate returnUri and is used for verification by Github
 
 6. **github-oauth-complete-lambda**
-    1. Redeems `<github-authorisation-code>` getting a `<github-access-token>`
-    2. Retrieves user's details from GitHub API
+    1. Redeems `<github-authorisation-code>` getting a `<github-access-token>`, via Github OAuth Access Token endpoint
+    2. Retrieves user's details via GitHub API, passing the `<github-access-token>`
     3. Stores `<github-access-token>` and `<github-username>` in the GitHub Token Repository
-    4. Adds a Dropbox identity to the user, in the Identity Service **TODO clarify**
+    4. Adds a Dropbox identity to the user, in the Identity Service (identical to Dropbox)
+        1. Gets the `<slack-account-id>` corresponding to the `<icarus-access-token>`
+        2. Saves the Github Identity (Github account), related to the `<slack-account-id>`
+        3. Retrieves other identities (Dropbox) for the same `<slack-account-id>`
+        4. Generates the `<icarus-user-token>` with all available identities
+
     5. Lambda returns (`<icarus-user-token>`)
         ```
         {

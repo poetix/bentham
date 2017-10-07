@@ -7,7 +7,7 @@ import { IcarusUserToken } from "../../../main/common/Api";
 import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
 const icarusUserToken:IcarusUserToken = {
-  accessToken: 'slack-access-token',
+  accessToken: 'icarus-access-token',
   userName: 'slack-username',
   dropboxAccountId: 'dropbox-account-id',
   githubUsername: undefined,

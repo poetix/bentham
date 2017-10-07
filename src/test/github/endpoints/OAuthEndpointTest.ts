@@ -8,7 +8,7 @@ import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
 
 const icarusUserToken:IcarusUserToken = {
-  accessToken: 'slack-access-token',
+  accessToken: 'icarus-access-token',
   userName: 'slack-username',
   dropboxAccountId: undefined,
   githubUsername: 'github-username',
@@ -16,7 +16,7 @@ const icarusUserToken:IcarusUserToken = {
 
 const mockedOauthService = mock(OAuthService);
 const oauthService = instance(mockedOauthService);
-when(mockedOauthService.getOAuthUri(anyString(), anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
+when(mockedOauthService.getOAuthAuthoriseUri(anyString(), anyString(), anyString(), anyString())).thenReturn("http://oauth-uri");
 when(mockedOauthService.processCode(anyString(), anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
 const endpoint = new OAuthEndpoint(oauthService);
@@ -34,11 +34,11 @@ describe("Github OAuth Endpoint", () => {
           stage: 'lambda-stage'
         },
         queryStringParameters: {
-          slackAccessToken: "slack-access-token",
+          icarusAccessToken: "icarus-access-token",
           returnUri: 'http://return.uri'
         }
       });
-      verify(mockedOauthService.getOAuthUri("aws-api", "lambda-stage", "slack-access-token", 'http://return.uri')).once();
+      verify(mockedOauthService.getOAuthAuthoriseUri("aws-api", "lambda-stage", "icarus-access-token", 'http://return.uri')).once();
 
       expect(result.statusCode).to.equal(302);
       expect(result.headers.Location).to.equal("http://oauth-uri");
@@ -53,13 +53,13 @@ describe("Github OAuth Endpoint", () => {
         stage: 'lambda-stage'
       },
       queryStringParameters: {
-        code: "the code",
-        slackAccessToken: "slack-access-token",
+        code: "github-auth-code",
+        icarusAccessToken: "icarus-access-token",
         initReturnUri: 'http://return.uri'
       }
     });
 
-    verify(mockedOauthService.processCode("slack-access-token", "the code", 'http://return.uri')).once();
+    verify(mockedOauthService.processCode("icarus-access-token", "github-auth-code", 'http://return.uri')).once();
 
     expect(result.statusCode).to.equal(200);
     expect(result.body).to.equal(JSON.stringify(icarusUserToken));
