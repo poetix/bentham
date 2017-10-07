@@ -22,6 +22,7 @@ export class OAuthService {
   - stores the Github Access Token along with the Username
   - associates the Github Access Token and Username with the Icarus account
   */
+  // FIXME replace Slack Access Token with Icarus access token, where applicable 
   async processCode(slackAccessToken: slackAccessToken, githubAuthorisationCode: githubAuthorisationCode, redirectUri: uri): Promise<IcarusUserToken> {
     const accessToken = await this.github.requestAccessToken(githubAuthorisationCode, redirectUri);
 

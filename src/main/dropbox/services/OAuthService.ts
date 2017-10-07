@@ -26,6 +26,7 @@ export class OAuthService {
     existed before registration are not scanned for their update timestamps.
   - it associates the Dropbox account id and access token with the Icarus account.
    */
+  // FIXME replace Slack Access Token with Icarus access token, where applciable 
   async processCode(slackAccessToken: slackAccessToken, dropboxAuthorisationCode: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<IcarusUserToken> {
     // Redirect uri is passed for verification only
     const token = await this.dropbox.requestToken(dropboxAuthorisationCode, accessCodeRequestRedirectUri);

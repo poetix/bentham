@@ -49,6 +49,7 @@ Note that `ICARUS_DEV` only allows **a-zA-Z0-9** (no hyphen, no underscore)
 ## More documentation
 
 * [Login and Identity integration](./docs/login_and_identity.md)
+* [DynamoDB tables](./docs/DynamoDB_tables.md)
 * TBD Slack application setup
 * TBD Dropbox application setup
 * TBD GitHub application setup

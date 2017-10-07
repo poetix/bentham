@@ -1,4 +1,4 @@
-import { GithubIdentity, DropboxIdentity, slackAccessToken, SlackIdentity } from "../Api";
+import { GithubIdentity, DropboxIdentity, slackAccessToken, SlackIdentity, icarusAccessToken } from "../Api";
 import { DynamoClient } from "../clients/DynamoClient";
 
 export class IdentityRepository {
@@ -24,30 +24,33 @@ export class IdentityRepository {
     }).then(res => githubIdentity)
   }
 
-  async saveSlackIdentity(slackAccessToken: slackAccessToken, slackIdentity: SlackIdentity): Promise<SlackIdentity> {
-    console.log(`Writing Slack identity for Slack Access Token: ${slackAccessToken} to DynanoDB`)
-    return Promise.all([
-      this.dynamo.put("access_tokens", {
-        access_token: slackAccessToken,
-        slack_id: slackIdentity.id,
-      }),
-      this.dynamo.put("slack_accounts", {
-        slack_id: slackIdentity.id,
-        user_name: slackIdentity.userName,
-        team_id: slackIdentity.teamId,
-        access_token: slackIdentity.accessToken
-      })
-    ]).then(results => slackIdentity)
+  async saveIcarusAccessToken(icarusAccessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<icarusAccessToken> {
+    console.log(`Saving Icarus Access Token ${icarusAccessToken} related to SlackID: ${slackIdentity.id}`)
+    return this.dynamo.put("access_tokens", {
+      access_token: icarusAccessToken,
+      slack_id: slackIdentity.id,
+    }).then(res => icarusAccessToken)
   }
 
-  async getSlackIdentity(slackAccessToken: slackAccessToken): Promise<SlackIdentity> {
+  async saveSlackIdentity(icarusAccessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<SlackIdentity> {
+    console.log(`Saving Slack identity for SlackID: ${slackIdentity.id}`)
+    return this.dynamo.put("slack_accounts", {
+      slack_id: slackIdentity.id,
+      user_name: slackIdentity.userName,
+      team_id: slackIdentity.teamId,
+      access_token: slackIdentity.accessToken
+    })
+    .then(res => slackIdentity)
+  }
+
+  async getSlackIdentity(icarusAccessToken: icarusAccessToken): Promise<SlackIdentity> {
     // TODO Should chain Promises rather than awaiting
     const slackIdLookupResult = await this.dynamo.get("access_tokens", {
-      access_token: slackAccessToken
+      access_token: icarusAccessToken
     });
 
     if (!slackIdLookupResult) {
-      throw new Error(`Unable to retrieve Slack ID for access token ${slackAccessToken}`);
+      throw new Error(`Unable to retrieve Slack ID for Icarus access token ${icarusAccessToken}`);
     }
 
     const slackIdentityResult = await this.dynamo.get("slack_accounts", {

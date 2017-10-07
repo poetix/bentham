@@ -32,20 +32,22 @@ This journey happens when the user is not logged in (i.e. the browser LS has no 
         * Returns: `<slack-user-id>`, `<slack-username>`, `<slack-team-id>`
         * Requires `identity.basic` auth scope
 
-    3. **IdentityService.grantUsertoken**:
-      1. Save Slack Identity (`slack_accounts` table) in DynamoDB:
-          * slack_id: `<slack-user-id>`, PK: overwrites the same record every time a user login again
+    3. **IdentityService.grantUsertoken**
+      1. Saves Slack Identity (`slack_accounts` table) in DynamoDB
+          * slack_id: `<slack-user-id>`, PK: overwrites the same record when a known user log in again, possibly with a different Slack access token
           * user_name: `<slack-username>`
           * team_id: `<slack-team-id>`
           * access_token: `<slack-access-token>`]
 
-      2. Get user's identities for other integrations, if any (Dropbox, GitHub... )
+      2. Generates and saves a new `<icarus-access-token>` (UUID), related to `<slack-user-id>`
+
+      3. Retrieves user's identities for other integrations, if any (Dropbox, GitHub... ), by `<slack-user-id>`
           * DynamoDB `dropbox_accounts`, `github_accounts` tables. PK is `slack_id`
 
-      3. Constructs `<user-token>`
+      4. Constructs `<user-token>`
           * Includes `<slack-access-token>`, Slack Identity and all other available identities
 
-     4. Lambda returns (`<icarus-user-token>`)
+      5. Lambda returns (`<icarus-user-token>`)
         ```
         {
           userName: <slack-username>,

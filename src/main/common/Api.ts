@@ -30,10 +30,10 @@ export interface IdentitySet {
   github?: GithubIdentity,
   // Other app identities go here
 }
-
+export type icarusAccessToken = string
 
 export interface IcarusUserToken {
-  accessToken: slackAccessToken, // FIXME This is NOT the slack access token
+  accessToken: icarusAccessToken,
   userName: slackUsername,
   dropboxAccountId: string|undefined, // TODO Fix type
   githubUsername: string|undefined, // TODO Fix type
