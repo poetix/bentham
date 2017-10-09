@@ -10,19 +10,12 @@ Node:
 brew install node
 ```
 
-NPM installs
+NPM modules
 
 ```bash
-npm install typescript ts-loader ts-node -g
 npm install serverless -g
-npm install aws-sdk
-npm install @types/node @types/aws-sdk @types/mocha @types/chai
-npm install serverless-webpack-plugin webpack serverless-webpack serverless-finch
-npm install ts-loader typescript mocha chai ts-mockito
-npm install request moment
+npm install
 ```
-**TODO Not sure this list is final**
-
 
 ## Dev environment
 

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Icarus",
   "main": "handler.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/buildit/icarus.git"
+  },
   "scripts": {
     "test": "mocha -r ts-node/register src/test/**/**/**/*.ts"
   },
@@ -11,6 +15,7 @@
     "@types/mocha": "^2.2.43",
     "@types/node": "^6.0.88",
     "@types/uuid": "^3.4.2",
+    "@types/aws-sdk": "^2.7.0",
     "aws-sdk": "^2.126.0",
     "chai": "^4.1.2",
     "mocha": "^3.5.3",
@@ -21,13 +26,12 @@
     "ts-mockito": "^2.2.1",
     "ts-node": "^3.3.0",
     "typescript": "^2.5.3",
-    "webpack": "^3.6.0"
+    "webpack": "^3.6.0",
+    "serverless-finch": "^1.1.1"
   },
   "author": "Dominic Fox (dominic.fox@wipro.com)",
   "license": "MIT",
   "dependencies": {
-    "@types/aws-sdk": "^2.7.0",
-    "moment": "^2.18.1",
-    "serverless-finch": "^1.1.1"
+    "moment": "^2.18.1"
   }
 }
