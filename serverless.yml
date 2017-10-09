@@ -28,17 +28,17 @@ provider:
 
     TABLE_PREFIX: ${self:service}-${opt:stage, self:provider.stage}-
 
-    ACCESSTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-access_tokens
-    SLACKACCOUNTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-slack_accounts
+    ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
+    SLACKACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}slack_accounts
 
-    DROPBOXACCOUNTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_accounts
-    DROPBOXTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_tokens
-    DROPBOXCURSORS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dropbox_cursors
-    FILECHANGES_TABLE: ${self:service}-${opt:stage, self:provider.stage}-file_changes
+    DROPBOXACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_accounts
+    DROPBOXTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_tokens
+    DROPBOXCURSORS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_cursors
+    FILECHANGES_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_file_changes
 
-    GITHUBEVENTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_events
-    GITHUBACCOUNTS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_accounts
-    GITHUBTOKENS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-github_tokens
+    GITHUBEVENTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_events
+    GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
+    GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
 custom:
   # Used by serverless-finch plugin
   client:

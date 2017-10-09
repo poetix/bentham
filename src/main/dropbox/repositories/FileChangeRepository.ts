@@ -19,12 +19,12 @@ export class FileChangeRepository {
 
     console.log(`Writing items to DynamoDB for account ${accountId}`);
     console.log(changeList);
-    this.pager.putAll("file_changes", items);
+    this.pager.putAll("dropbox_file_changes", items);
   }
 
   async getFileChanges(accountId: dropboxAccountId): Promise<Array<any>> {
     return this.dynamo.query(
-      'file_changes',
+      'dropbox_file_changes',
       {
         KeyConditionExpression: 'account_id = :hkey',
         ExpressionAttributeValues: {
