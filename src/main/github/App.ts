@@ -13,12 +13,9 @@ import { OAuthService } from "./services/OAuthService"
 import { WebhookEndpoint } from "./endpoints/WebhookEndpoint"
 import { OAuthEndpoint } from "./endpoints/OAuthEndpoint";
 
-
-// FIXME Move all resources shared with dropbox/App into a global App
-
 // Clients
-const dynamo = new DynamoClient(process.env.TABLE_PREFIX); // FIXME Shared with Dropbox
-const httpClient = new HttpClient(); // FIXME Shared with Dropbox
+const dynamo = new DynamoClient(process.env.TABLE_PREFIX);
+const httpClient = new HttpClient();
 const githubClient = new GithubClient(
   httpClient,
   process.env.GITHUB_CLIENT_ID,
@@ -27,10 +24,10 @@ const githubClient = new GithubClient(
 // Repositories
 const userEventRepository = new UserEventRepository(dynamo)
 const tokenRepository = new TokenRepository(dynamo);
-const identityRepository = new IdentityRepository(dynamo); // FIXME Shared with Dropbox
+const identityRepository = new IdentityRepository(dynamo);
 
 // Services
-const identityService = new IdentityService(identityRepository); // FIXME Shared with Dropbox
+const identityService = new IdentityService(identityRepository);
 const webhookEventService = new WebhookEventService(userEventRepository, process.env.GITHUB_WEBHOOK_SECRET);
 const oauthService = new OAuthService(identityService, githubClient, tokenRepository);
 
