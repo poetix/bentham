@@ -15,14 +15,19 @@ For details about Slack OAuth flow, see: https://api.slack.com/docs/oauth
 This journey happens when the user is not logged in (i.e. the browser LS has no 'icarus-user-token')
 
 1. **index.html**, Browser, User clicks Slack login button
-  * Browser goes to `<team>.slack.com/oauth/authorize?scope=identity.basic&client_id=...&redirect_url=<post-login-page-url>`
-  * `<post-login-page-url>` must match with a Redirect URL set in the Slack App
-  * App requires `identity.basic` authorisation scope
+    * Browser goes to `<slack-oauth-initiate-lambda>?returnUri=<post-login-page-url>`
+    * `<post-login-page-url>` must match with a Redirect URL set in the Slack App
 
-2. User: authorises the application to access Slack
-3. Browser redirected back to `<post-login-page-url>?code=<slack-authorisation-code>`
-4. **post-login.html**, Browser (AJAX) GET, `<slack-login-lambda>?code=<slack-authorisation-code>`
-5. **slack-login-lambda**:
+2. **slack-oauth-initiate-lambda**:
+    1. Redirects to `<slack-team-url>/oauth/authorize?scope=identity.basic&client_id=...&redirect_url=<return-uri>`
+        * App requires `identity.basic` authorisation scope
+
+3. User: authorises the application to access Slack
+4. Browser redirected back to `<post-login-page-url>?code=<slack-authorisation-code>`
+5. **post-login.html**, Browser (AJAX) GET, `<slack-oauth-complete-lambda>?code=<slack-authorisation-code>&returnUri=<post-login-page-url>`
+    * `returnUri` is required for verification, by Slack
+
+6. **slack-oath-complete-lambda**:
     1. Redeems `<slack-authorisation-code>` getting a `<slack-access-token>`
         * GET, `https://slack.com/api/oauth.access?client_id=...&client_secret=...&code=<slack-authorisation-code>&redirect_url=<fe-post-login>`
         * (`redirect_url` is required for verification)
@@ -57,10 +62,10 @@ This journey happens when the user is not logged in (i.e. the browser LS has no 
         }
         ```  
 
-6. **post-login.html**,
+7. **post-login.html**,
     * Stores `<icarus-user-token>` in localStorage
     * Jump to **index.html**
-7. **index.html** Shows integrations login buttons (Dropbox, Github...)
+8. **index.html** Shows integrations login buttons (Dropbox, Github...) 
 
 
 ### Dropbox login

@@ -21,8 +21,9 @@ npm install
 
 Expects the following environment variables:
 
-* `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: Dropbox integration credentials
+* `SLACK_TEAM_URL`: URL of Slack team
 * `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`: Slack integration credentials
+* `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: Dropbox integration credentials
 * `GITHUB_WEBHOOK_SECRET`: GitHub webhook application secret
 * `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
 

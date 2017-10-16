@@ -1,5 +1,6 @@
 import { oAuthEndpoint } from "./App";
 
-// Webhook lambdas
-// FIXME add initiate and complete
-export const slackLogin = (event, context, cb) => oAuthEndpoint.login(cb, event);
+
+// OAuth
+export const oauthInitiate = (event, context, callback) => oAuthEndpoint.initiate(callback, event);
+export const oauthComplete = (event, context, callback) => oAuthEndpoint.complete(callback, event);

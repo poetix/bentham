@@ -39,7 +39,7 @@ const oAuthService = new OAuthService(slackClient, identityService);
 
 describe("Slack OAuth Service", () => {
   it("should fetch the user's credentials from Slack, and use them to obtain a Icarus User Token from the Login service", async () => {
-    const result = await oAuthService.login("the slack authorisation code", "http://return.uri");
+    const result = await oAuthService.processCode("the slack authorisation code", "http://return.uri");
 
     verify(mockSlackClient.getToken("the slack authorisation code", "http://return.uri"));
 

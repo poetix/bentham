@@ -17,6 +17,7 @@ provider:
     DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
     DROPBOX_CLIENT_SECRET: ${env:DROPBOX_CLIENT_SECRET}
 
+    SLACK_TEAM_URL: ${env:SLACK_TEAM_URL}
     SLACK_CLIENT_ID: ${env:SLACK_CLIENT_ID}
     SLACK_CLIENT_SECRET: ${env:SLACK_CLIENT_SECRET}
 
@@ -45,12 +46,19 @@ custom:
 
 functions:
   # Slack
-  slack-login:
-    handler: src/main/slack/handler.slackLogin
+  slack-oauth-initiate:
+    handler: src/main/slack/handler.oauthInitiate
     events:
       - http:
           method: get
-          path: slack-login
+          path: slack-oauth-initiate  
+
+  slack-oauth-complete:
+    handler: src/main/slack/handler.oauthComplete
+    events:
+      - http:
+          method: get
+          path: slack-oauth-complete
 
   # Dropbox
   dropbox-webhook-challenge:

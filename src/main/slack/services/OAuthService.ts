@@ -9,6 +9,10 @@ export class OAuthService {
     private readonly slack: SlackClient,
     private readonly identity: IdentityService) {}
 
+  getOAuthAuthoriseUri(returnUri: uri): uri {
+    return this.slack.getOAuthAuthoriseUri(returnUri)
+  }
+
   /*
   Completes the Slack authentication process:
   - exchanges auth code for access token
@@ -16,9 +20,9 @@ export class OAuthService {
   - gets a UserToken from the Identity Service and returns it
   */
   // FIXME rename
-  async login(slackCode: slackAuthCode, loginRedirectUri: uri): Promise<IcarusUserToken> {
+  async processCode(slackCode: slackAuthCode, returnUri: uri): Promise<IcarusUserToken> {
     // Redeem the slack authorization code to get slack token and id.
-    const token = await this.slack.getToken(slackCode, loginRedirectUri);
+    const token = await this.slack.getToken(slackCode, returnUri);
     // Requires `identity.basic` auth scope
     const userDetails = await this.slack.getUserDetails(token);
 

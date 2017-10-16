@@ -10,6 +10,7 @@ import { DynamoClient } from "../common/clients/DynamoClient";
 const httpClient = new HttpClient();
 const slackClient = new SlackClient(
   httpClient,
+  process.env.SLACK_TEAM_URL,
   process.env.SLACK_CLIENT_ID,
   process.env.SLACK_CLIENT_SECRET);
 
@@ -23,4 +24,4 @@ const identityService = new IdentityService(identityRepo);
 const oAuthService = new OAuthService(slackClient, identityService);
 
 // Endpoints
-export const oAuthEndpoint = new OAuthEndpoint(oAuthService, process.env.SLACK_LOGIN_REDIRECT_URI);
+export const oAuthEndpoint = new OAuthEndpoint(oAuthService);

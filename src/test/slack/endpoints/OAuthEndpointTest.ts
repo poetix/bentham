@@ -5,71 +5,109 @@ import { slackAuthCode, slackToken } from "../../../main/slack/Api";
 import { DropboxIdentity, GithubIdentity, IcarusUserToken } from "../../../main/common/Api";
 import { OAuthService } from "../../../main/slack/services/OAuthService";
 import { OAuthEndpoint } from "../../../main/slack/endpoints/oAuthEndpoint";
-import { mock, instance, when, verify, anyString } from "ts-mockito";
+import { mock, instance, when, verify, resetCalls, anyString } from "ts-mockito";
 
 const mockOAuthService: OAuthService = mock(OAuthService);
 const oAuthService = instance(mockOAuthService);
 
-const endpoint = new OAuthEndpoint(oAuthService, "http://return.uri");
+const endpoint = new OAuthEndpoint(oAuthService);
 
-const _login = (cb, e) => endpoint.login(cb, e);
+const _initiate = (cb, e) => endpoint.initiate(cb, e);
+const _complete = (cb, e) => endpoint.complete(cb, e);
+
+beforeEach(() => {
+  resetCalls(mockOAuthService)
+})
 
 describe("Slack OAuth Endpoint", () => {
-  it("should pass the Slack auth code to the login service to obtain an Icarus user token", async () => {
-    const icarusUserToken:IcarusUserToken = {
-      accessToken: 'the access token',
-      userName: "Arthur Putey",
-      dropboxAccountId: undefined,
-      githubUsername: undefined,
-    }
-    when(mockOAuthService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
-      const result = await toPromise(_login, {
+  describe("OAuth initiate", () => {
+
+    it("should redirect an 'initiate' request to the Slack team API", async () => {
+      when(mockOAuthService.getOAuthAuthoriseUri(anyString())).thenReturn("http://oauth-uri");
+
+      const result = await toPromise(_initiate, {
         queryStringParameters: {
-          code: "the auth code"
+          returnUri: 'http://return.uri'
         }
       });
 
+      expect(result.statusCode).to.equal(302);
+      expect(result.headers.Location).to.equal("http://oauth-uri");
+
+      verify(mockOAuthService.getOAuthAuthoriseUri('http://return.uri')).once()
+    })
+  })
+
+  describe("OAuth complete", () => {
+
+    it("should pass the Slack auth code to the login service to obtain an Icarus user token", async () => {
+      const icarusUserToken:IcarusUserToken = {
+        accessToken: 'the access token',
+        userName: "Arthur Putey",
+        dropboxAccountId: undefined,
+        githubUsername: undefined,
+      }
+      when(mockOAuthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
+  
+        const result = await toPromise(_complete, {
+          queryStringParameters: {
+            code: "the auth code",
+            returnUri: 'http://return.uri'
+          }
+        });
+  
+        expect(result.statusCode).to.equal(200);
+        expect(result.body).to.equal(JSON.stringify(icarusUserToken));
+
+        verify(mockOAuthService.processCode('the auth code', 'http://return.uri')).once()
+    });
+  
+    it("should contain user Dropbox id", async () => {
+      const icarusUserToken:IcarusUserToken = {
+        accessToken: 'the access token',
+        userName: "Arthur Putey",
+        dropboxAccountId: 'the dropbox id',
+        githubUsername: undefined,
+      }
+  
+      when(mockOAuthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
+  
+      const result = await toPromise(_complete, {
+        queryStringParameters: {
+          code: "the auth code",
+          returnUri: 'http://return.uri'
+        }
+      });
+  
       expect(result.statusCode).to.equal(200);
       expect(result.body).to.equal(JSON.stringify(icarusUserToken));
-  });
 
-  it("should contain user Dropbox id", async () => {
-    const icarusUserToken:IcarusUserToken = {
-      accessToken: 'the access token',
-      userName: "Arthur Putey",
-      dropboxAccountId: 'the dropbox id',
-      githubUsername: undefined,
-    }
-
-    when(mockOAuthService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
-
-    const result = await toPromise(_login, {
-      queryStringParameters: {
-        code: "the auth code"
-      }
+      verify(mockOAuthService.processCode('the auth code', 'http://return.uri')).once()
     });
-
-    expect(result.statusCode).to.equal(200);
-    expect(result.body).to.equal(JSON.stringify(icarusUserToken));
-  });
-
-  it("should contain GitHub username", async () => {
-    const icarusUserToken:IcarusUserToken = {
-      accessToken: 'the access token',
-      userName: "Arthur Putey",
-      dropboxAccountId: undefined,
-      githubUsername: 'the github username',
-    }
-    when(mockOAuthService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
-
-    const result = await toPromise(_login, {
-      queryStringParameters: {
-        code: "the auth code"
+  
+    it("should contain GitHub username", async () => {
+      const icarusUserToken:IcarusUserToken = {
+        accessToken: 'the access token',
+        userName: "Arthur Putey",
+        dropboxAccountId: undefined,
+        githubUsername: 'the github username',
       }
-    });
+      when(mockOAuthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
+  
+      const result = await toPromise(_complete, {
+        queryStringParameters: {
+          code: "the auth code",
+          returnUri: 'http://return.uri'
+        }
+      });
+  
+      expect(result.statusCode).to.equal(200);
+      expect(result.body).to.equal(JSON.stringify(icarusUserToken));
 
-    expect(result.statusCode).to.equal(200);
-    expect(result.body).to.equal(JSON.stringify(icarusUserToken));
-  });
+      verify(mockOAuthService.processCode('the auth code', 'http://return.uri')).once()
+    });
+  })
+
+
 });
