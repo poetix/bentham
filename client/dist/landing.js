@@ -33,8 +33,8 @@ var landing = new Vue({
   methods: {
     slackLogin: function() {
       var returnPageUri = siteBasePath + '/post-login.html';
-      var slackLoginUri = slackTeamUrl + '/oauth/authorize?scope=identity.basic&client_id=' + slackClientId + '&redirect_uri=' + returnPageUri;
-      window.location.href = slackLoginUri;
+      var authInitiateUri = lambdaPath + '/slack-oauth-initiate?returnUri=' + returnPageUri;
+      window.location.href = authInitiateUri;
     },
     dropboxLogin: function() {
       var icarusAccessToken = Vue.ls.get("icarus_user_token").accessToken;

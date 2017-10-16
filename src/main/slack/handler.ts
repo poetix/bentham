@@ -1,4 +1,6 @@
-import { slackLoginEndpoint } from "./App";
+import { oAuthEndpoint } from "./App";
 
-// Webhook lambdas
-export const slackLogin = (event, context, cb) => slackLoginEndpoint.login(cb, event);
+
+// OAuth
+export const oauthInitiate = (event, context, callback) => oAuthEndpoint.initiate(callback, event);
+export const oauthComplete = (event, context, callback) => oAuthEndpoint.complete(callback, event);

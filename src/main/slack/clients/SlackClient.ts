@@ -7,8 +7,16 @@ export class SlackClient {
 
   constructor(
     private readonly http: HttpClient,
+    private readonly slackTeamUrl: uri,
     private readonly clientId: string,
     private readonly clientSecret: string) {}
+
+  getOAuthAuthoriseUri(returnUri: uri): uri {
+    return `${this.slackTeamUrl}/oauth/authorize` +
+      '?scope=identity.basic' +
+      `&client_id=${this.clientId}` +
+      `&redirect_url=${returnUri}`
+  }
 
   async getToken(code: slackAuthCode, loginRedirectUri: uri): Promise<slackToken> {
     console.log(`Fetching token with code ${code}`);
