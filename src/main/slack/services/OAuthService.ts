@@ -3,7 +3,7 @@ import { SlackClient } from "../clients/SlackClient";
 import { IdentityService } from "../../common/services/IdentityService";
 import { IcarusUserToken, uri } from "../../common/Api";
 
-export class LoginService {
+export class OAuthService {
 
   constructor(
     private readonly slack: SlackClient,
@@ -15,6 +15,7 @@ export class LoginService {
   - retrieves user's details
   - gets a UserToken from the Identity Service and returns it
   */
+  // FIXME rename
   async login(slackCode: slackAuthCode, loginRedirectUri: uri): Promise<IcarusUserToken> {
     // Redeem the slack authorization code to get slack token and id.
     const token = await this.slack.getToken(slackCode, loginRedirectUri);

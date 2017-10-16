@@ -19,8 +19,6 @@ provider:
 
     SLACK_CLIENT_ID: ${env:SLACK_CLIENT_ID}
     SLACK_CLIENT_SECRET: ${env:SLACK_CLIENT_SECRET}
-    # FIXME Parametrise the redirect URI
-    SLACK_LOGIN_REDIRECT_URI: https://s3.eu-west-2.amazonaws.com/lorenzodev-icarus-site/post-login.html
 
     GITHUB_WEBHOOK_SECRET: ${env:GITHUB_WEBHOOK_SECRET}
     GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}

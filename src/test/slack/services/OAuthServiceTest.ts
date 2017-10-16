@@ -5,7 +5,7 @@ import { slackAuthCode, slackToken } from "../../../main/slack/Api";
 import { SlackClient } from "../../../main/slack/clients/SlackClient";
 import { DropboxIdentity, SlackIdentity, IdentitySet, IcarusUserToken } from "../../../main/common/Api";
 import { IdentityService} from "../../../main/common/services/IdentityService";
-import { LoginService } from "../../../main/slack/services/LoginService";
+import { OAuthService } from "../../../main/slack/services/OAuthService";
 import { mock, instance, when, verify, anyString, anything } from "ts-mockito";
 
 const mockSlackClient: SlackClient = mock(SlackClient);
@@ -35,11 +35,11 @@ when(mockIdentityService.grantIcarusUserToken(anything())).thenCall(slackIdentit
 
 
 
-const loginService = new LoginService(slackClient, identityService);
+const oAuthService = new OAuthService(slackClient, identityService);
 
-describe("The Login Service", () => {
+describe("Slack OAuth Service", () => {
   it("should fetch the user's credentials from Slack, and use them to obtain a Icarus User Token from the Login service", async () => {
-    const result = await loginService.login("the slack authorisation code", "http://return.uri");
+    const result = await oAuthService.login("the slack authorisation code", "http://return.uri");
 
     verify(mockSlackClient.getToken("the slack authorisation code", "http://return.uri"));
 

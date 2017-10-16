@@ -3,18 +3,18 @@ import { expect } from 'chai';
 import 'mocha';
 import { slackAuthCode, slackToken } from "../../../main/slack/Api";
 import { DropboxIdentity, GithubIdentity, IcarusUserToken } from "../../../main/common/Api";
-import { LoginService } from "../../../main/slack/services/LoginService";
-import { SlackLoginEndpoint } from "../../../main/slack/endpoints/SlackLoginEndpoint";
+import { OAuthService } from "../../../main/slack/services/OAuthService";
+import { OAuthEndpoint } from "../../../main/slack/endpoints/oAuthEndpoint";
 import { mock, instance, when, verify, anyString } from "ts-mockito";
 
-const mockLoginService: LoginService = mock(LoginService);
-const loginService = instance(mockLoginService);
+const mockOAuthService: OAuthService = mock(OAuthService);
+const oAuthService = instance(mockOAuthService);
 
-const endpoint = new SlackLoginEndpoint(loginService, "http://return.uri");
+const endpoint = new OAuthEndpoint(oAuthService, "http://return.uri");
 
 const _login = (cb, e) => endpoint.login(cb, e);
 
-describe("Slack Login Endpoint", () => {
+describe("Slack OAuth Endpoint", () => {
   it("should pass the Slack auth code to the login service to obtain an Icarus user token", async () => {
     const icarusUserToken:IcarusUserToken = {
       accessToken: 'the access token',
@@ -22,7 +22,7 @@ describe("Slack Login Endpoint", () => {
       dropboxAccountId: undefined,
       githubUsername: undefined,
     }
-    when(mockLoginService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
+    when(mockOAuthService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
       const result = await toPromise(_login, {
         queryStringParameters: {
@@ -42,7 +42,7 @@ describe("Slack Login Endpoint", () => {
       githubUsername: undefined,
     }
 
-    when(mockLoginService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
+    when(mockOAuthService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
     const result = await toPromise(_login, {
       queryStringParameters: {
@@ -61,7 +61,7 @@ describe("Slack Login Endpoint", () => {
       dropboxAccountId: undefined,
       githubUsername: 'the github username',
     }
-    when(mockLoginService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
+    when(mockOAuthService.login(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
     const result = await toPromise(_login, {
       queryStringParameters: {
