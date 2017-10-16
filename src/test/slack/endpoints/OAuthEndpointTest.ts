@@ -4,7 +4,7 @@ import 'mocha';
 import { slackAuthCode, slackToken } from "../../../main/slack/Api";
 import { DropboxIdentity, GithubIdentity, IcarusUserToken } from "../../../main/common/Api";
 import { OAuthService } from "../../../main/slack/services/OAuthService";
-import { OAuthEndpoint } from "../../../main/slack/endpoints/oAuthEndpoint";
+import { OAuthEndpoint } from "../../../main/slack/endpoints/OAuthEndpoint";
 import { mock, instance, when, verify, resetCalls, anyString } from "ts-mockito";
 
 const mockOAuthService: OAuthService = mock(OAuthService);
