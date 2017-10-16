@@ -19,14 +19,13 @@ export class OAuthService {
   - retrieves user's details
   - gets a UserToken from the Identity Service and returns it
   */
-  // FIXME rename
   async processCode(slackCode: slackAuthCode, returnUri: uri): Promise<IcarusUserToken> {
     // Redeem the slack authorization code to get slack token and id.
     const token = await this.slack.getToken(slackCode, returnUri);
     // Requires `identity.basic` auth scope
     const userDetails = await this.slack.getUserDetails(token);
 
-    console.log(userDetails);
+    console.log(`Slack user details: ${JSON.stringify(userDetails)}`);
 
     // Obtain a Icarus user token from the identity service, and return it.
     return this.identity.grantIcarusUserToken({
