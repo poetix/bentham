@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { parseBody } from "../../../main/common/endpoints/EndpointUtils"
+import { parseBody, xAccessTokenHeader } from "../../../main/common/endpoints/EndpointUtils"
 import { stringify as formStringify} from "querystring"
 
 describe('Endpoint utils', () => {
@@ -45,4 +45,30 @@ describe('Endpoint utils', () => {
         expect(result.foo).is.equal('bar')
         expect(result).has.property('baz')          
     })
+
+    it('should extract X-AccessToken header', () => {
+      const event = {
+        headers: {
+          'X-AccessToken': 'the-access-token'
+        },
+      }
+
+      const result = xAccessTokenHeader(event)
+
+      expect(result).is.ok
+      expect(result).is.equal('the-access-token')
+    })
+
+    it('should extract X-AccessToken header, when header name is mixed case', () => {
+      const event = {
+        headers: {
+          'X-acceSStokeN': 'the-access-token'
+        },
+      }
+
+      const result = xAccessTokenHeader(event)
+
+      expect(result).is.ok
+      expect(result).is.equal('the-access-token')
+    })    
 })

@@ -99,7 +99,10 @@ functions:
       - http:
           method: get
           path: dropbox-user-report
-
+          cors:
+            origin: '*'
+            headers:
+              - X-AccessToken
 
   # Github
   gihub-webhook-receive:

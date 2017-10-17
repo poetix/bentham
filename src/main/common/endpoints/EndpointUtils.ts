@@ -1,4 +1,4 @@
-import { callback, event } from "../Api";
+import { callback, event, icarusAccessToken } from "../Api";
 import { parse as parseEncodedForm } from "querystring"
 
 /**
@@ -24,14 +24,18 @@ export const response = (statusCode: number, bodyObject: any) => ({
 })
 
 export const parseBody = (evt: event ) => {
-  const contentType = eventContentType(evt)
+  const contentType = getHeaderCaseUnsensitive(evt, 'content-type')
   return ( contentType == 'application/x-www-form-urlencoded' ) ? parseEncodedForm(evt.body) : JSON.parse(evt.body) 
 }
  
-const eventContentType = (evt: event):string|undefined => {
-  // Headers mases are case insensitive :(
-  const headerNames = Object.keys(evt.headers)
-        .reduce( (keys, k) => { keys[k.toLowerCase()] = k; return keys}, {} )
+// Extract `X-AccessToken` header value, with case-insensitive header name 
+export const xAccessTokenHeader = (evt:event): icarusAccessToken|undefined => {
+  return getHeaderCaseUnsensitive(evt, 'X-AccessToken')
+}
 
-  return evt.headers[headerNames['content-type']]
+const getHeaderCaseUnsensitive = (evt: event, headerName:string): string|undefined => {
+  const headerNames = Object.keys(evt.headers)
+  .reduce( (keys, k) => { keys[k.toLowerCase()] = k; return keys}, {} )
+
+  return evt.headers[headerNames[ headerName.toLowerCase() ]]
 }
