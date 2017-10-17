@@ -38,6 +38,7 @@ export class IdentityService {
             this.repo.getDropboxIdentity(slackIdentity.id),
             this.repo.getGithubIdentity(slackIdentity.id)
           ])
+          // TODO Use deconstructing instead of accessing results as an array
           .then( identities => ({
               accessToken: slackIdentity.accessToken,
               userName: slackIdentity.userName,
@@ -46,6 +47,24 @@ export class IdentityService {
             })
         )
       )
+  }
+
+  async getDropboxIdentity(icarusAccessToken: icarusAccessToken): Promise<DropboxIdentity> {
+    return this.repo.getSlackIdentity(icarusAccessToken)
+      .then( slackIdentity => this.repo.getDropboxIdentity(slackIdentity.id))
+      .then( dropboxIdentity => {
+        if  ( dropboxIdentity ) return dropboxIdentity
+        throw 'No Dropbox identity'
+      })
+  }
+
+  async getGithubIdentity(icarusAccessToken: icarusAccessToken): Promise<GithubIdentity> {
+    return this.repo.getSlackIdentity(icarusAccessToken)
+      .then( slackIdentity => this.repo.getGithubIdentity(slackIdentity.id))
+      .then( githubIdentity => {
+        if ( githubIdentity) return githubIdentity
+        throw 'No Github identity'
+      })
   }
 
   private constructIcarusUserToken(icarusAccessToken:icarusAccessToken, slackIdentity: SlackIdentity, dropboxIdentity: DropboxIdentity|undefined, githubIdentity: GithubIdentity|undefined): IcarusUserToken {

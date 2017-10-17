@@ -1,8 +1,10 @@
 import { dropboxAccountId, dropboxUserId, dropboxAccessToken } from "../Api";
 import { DropboxClient } from "../clients/DropboxClient";
 import { groupBy, mapValues } from "../../common/CollectionUtils";
+import { icarusAccessToken } from "../../common/Api";
 import { TokenRepository } from "../repositories/TokenRepository";
 import { FileChangeRepository } from "../repositories/FileChangeRepository";
+import { IdentityService } from "../../common/services/IdentityService"
 
 export interface UserInteractions {
   userName: string,
@@ -19,12 +21,16 @@ export class ReportService {
   constructor(
     private readonly tokens: TokenRepository,
     private readonly dropbox: DropboxClient,
-    private readonly fileChanges: FileChangeRepository) {}
+    private readonly fileChanges: FileChangeRepository,
+    private readonly identity: IdentityService 
+  ) {}
 
-  async getReport(accountId: dropboxAccountId): Promise<UserReport> {
+  async getReport(icarusAccessToken: icarusAccessToken): Promise<UserReport> {
+    const dropboxAccountId = (await this.identity.getDropboxIdentity(icarusAccessToken)).id
+
     const [token, changes] = await Promise.all([
-      this.tokens.fetchToken(accountId),
-      this.fileChanges.getFileChanges(accountId)]);
+      this.tokens.fetchToken(dropboxAccountId),
+      this.fileChanges.getFileChanges(dropboxAccountId)]);
 
     const [accountDetails, interactions] = await Promise.all([
       this.dropbox.getCurrentAccountDetails(token),

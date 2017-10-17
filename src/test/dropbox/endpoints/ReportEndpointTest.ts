@@ -31,11 +31,11 @@ describe("Report Endpoint", () => {
   it("should obtain a report from the report service", async () => {
       const result = await toPromise(_getReport, {
         queryStringParameters: {
-          "dropbox_account_id": "the account id"
+          icarusAccessToken: "the access token"
         }
       });
 
-      verify(mockedReportService.getReport("the account id")).once();
+      verify(mockedReportService.getReport("the access token")).once();
 
       expect(result.statusCode).to.equal(200);
       expect(result.body).to.equal(JSON.stringify(report));

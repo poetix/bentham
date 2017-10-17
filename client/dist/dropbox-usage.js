@@ -19,11 +19,11 @@ var userReport = new Vue({
     interactions: {}
   },
   mounted: function() {
-    var accessToken = Vue.ls.get("icarus_user_token");
+    var accessToken = Vue.ls.get("icarus_user_token").accessToken;
     console.log('Access token: ' + accessToken);
 
-    // FIXME Retrieve the report by Icarus Access token
-    var reportUrl = lambdaPath + "/dropbox-user-report?dropbox_account_id=" + accessToken.dropboxAccountId;
+    // FIXME Pass access token as header
+    var reportUrl = lambdaPath + "/dropbox-user-report?icarusAccessToken=" + accessToken;
     console.log('Report URL:' + reportUrl);
 
     axios.get(reportUrl)
