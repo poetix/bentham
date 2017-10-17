@@ -3,6 +3,7 @@ import 'mocha';
 import { ReportService } from "../../../main/dropbox/services/ReportService";
 import { TokenRepository } from "../../../main/dropbox/repositories/TokenRepository";
 import { FileChangeRepository } from "../../../main/dropbox/repositories/FileChangeRepository";
+import { IdentityService } from "../../../main/common/services/IdentityService"
 import { DropboxClient } from "../../../main/dropbox/clients/DropboxClient";
 import { mock, instance, when, verify, anyString } from 'ts-mockito';
 
@@ -41,7 +42,14 @@ when(mockedDropboxClient.getUserDetails(anyString(), anyString())).thenCall((use
   Promise.resolve({ userName: lookup[userId] })
 );
 
-const service = new ReportService(tokenRepository, dropboxClient, fileChangeRepository);
+const mockedIdentityService = mock(IdentityService)
+const identityService = instance(mockedIdentityService)
+when(mockedIdentityService.getDropboxIdentity(anyString())).thenReturn(Promise.resolve({
+  id: "the account id",
+  accessToken: "the dropbox access token"
+}))
+
+const service = new ReportService(tokenRepository, dropboxClient, fileChangeRepository, identityService);
 
 describe("The Report Service", () => {
   it("should combine the user's name and file change history", async () => {

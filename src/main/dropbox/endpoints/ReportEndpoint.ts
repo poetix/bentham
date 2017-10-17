@@ -1,23 +1,27 @@
 /**
 Classes in this module handle the protocol-level tasks of handling Events and returning HTTP responses.
 */
-import { complete } from "../../common/endpoints/EndpointUtils";
-import { event, callback } from "../../common/Api";
+import { complete, response, xAccessTokenHeader } from "../../common/endpoints/EndpointUtils";
+import { event, callback, icarusAccessToken } from "../../common/Api";
 import { ReportService } from "../services/ReportService"
 
 export class ReportEndpoint {
 
   constructor(readonly service: ReportService) {}
 
+  /** 
+    Retrieve user Dropbox report
+    Expects icarus access token as 'X-AccessToken' header
+  */
   getReport(cb: callback, event: event) {
-    complete(cb, this.service.getReport(event.queryStringParameters["dropbox_account_id"])
-    .then((report) => ({
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: JSON.stringify(report)
-    })));
+    const icarusAccessToken:icarusAccessToken|undefined = xAccessTokenHeader(event)
+    
+    if( icarusAccessToken ) {
+      complete(cb, this.service.getReport(icarusAccessToken)
+      .then((report) => response(200, report)));
+    } else {
+      cb( response(403, 'Unauthorized' ), null)      
+    }
   }
 
 }

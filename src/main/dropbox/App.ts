@@ -43,7 +43,7 @@ const fileUpdateRecorder = new FileUpdateRecorder(
 const identityService = new IdentityService(identityRepository);
 const notificationService = new NotificationService(fileUpdateRecorder);
 const oauthService = new OAuthService(identityService, dropboxClient, tokenRepository, cursorRepository);
-const reportService = new ReportService(tokenRepository, dropboxClient, fileChangeRepository);
+const reportService = new ReportService(tokenRepository, dropboxClient, fileChangeRepository, identityService);
 
 // Endpoints
 export const webhookEndpoint = new WebhookEndpoint(notificationService);

@@ -23,7 +23,7 @@
         <div id="external-apps">
           <div class="external-app" id="dropbox">
             <h1 class="app-name">Dropbox</h1>
-            <div v-if="accessToken.dropboxAccountId">View Dropbox Report</div>
+            <div v-if="accessToken.dropboxAccountId"><a href="dropbox-usage.html">View Dropbox Report</a></div>
             <div v-else><a v-on:click="dropboxLogin()">Link to Dropbox</a></div>
           </div>
           <div class="external-app" id="github">

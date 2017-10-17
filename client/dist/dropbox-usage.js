@@ -1,3 +1,8 @@
+options = {
+    namespace: 'vuejs__'
+};
+
+Vue.use(VueLocalStorage, options);
 
 var router = new VueRouter({
     mode: 'history',
@@ -8,23 +13,48 @@ var userReport = new Vue({
   router,
   el: '#user-report',
   data: {
-    accountId: function() {
-      return this.$route.query["account_id"];
-    },
     accountName: "[Loading]",
     users: [],
     selected: undefined,
     interactions: {}
   },
-  methods: {
+  mounted: function() {
+    var accessToken = Vue.ls.get("icarus_user_token").accessToken;
+
+    axios.get(lambdaPath + "/dropbox-user-report", {
+        headers: {
+            'X-AccessToken': accessToken
+        }
+    })
+    .then(function (response) {
+      var interactions = response.data.interactions;
+      userReport.interactions = interactions;
+      userReport.accountName = response.data.accountName;
+      userReport.users = Object.keys(interactions).map(function(key) {
+        return {
+          id: key,
+          name: interactions[key].userName
+        }
+      });
+  
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  },
+  methods: {  
     showBarChart: function(interactions) {
       var hoursWorked = getHoursWorked(interactions),
           dayRange = getDayRange(hoursWorked),
           chartData = getChartData(hoursWorked, dayRange);
 
       buildBarChart(chartData);
-    }
-  }
+    },
+
+
+  },  
 });
 
 function getHoursWorked(interactions) {
@@ -72,25 +102,8 @@ function getChartData(hoursWorked, dayRange) {
   })
 }
 
-var reportUrl = lambdaPath + "/dropbox-user-report?account_id=" + userReport.accountId();
 
-axios.get(reportUrl)
-  .then(function (response) {
-    var interactions = response.data.interactions;
-    userReport.interactions = interactions;
-    userReport.accountName = response.data.accountName;
-    userReport.users = Object.keys(interactions).map(function(key) {
-      return {
-        id: key,
-        name: interactions[key].userName
-      }
-    });
 
-    console.log(response);
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
 
 function buildBarChart(chartdata) {
   var margin = {top: 30, right: 10, bottom: 30, left: 50}
