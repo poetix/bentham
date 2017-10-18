@@ -5,13 +5,14 @@ import { parse as parseEncodedForm } from "querystring"
  Takes a Promise, and uses it to complete a callback.
  */
 export const complete = <T>(cb: callback, p: Promise<T>) => {
-  return p.then(res => cb(null, res), err => cb(null, {
-    statusCode: 500,
-    headers: {
-      'Access-Control-Allow-Origin': '*'
-    },
-    body: JSON.stringify(err)
-  }));
+
+  return p.then(res => cb(null, res))
+    .catch(err => {
+      console.log(err)
+      cb(null, {
+        statusCode: 500
+      })
+    })
 };
 
 export const response = (statusCode: number, bodyObject: any) => ({
