@@ -1,9 +1,3 @@
-options = {
-  namespace: 'vuejs__'
-};
-
-Vue.use(VueLocalStorage, options);
-
 var router = new VueRouter({
     mode: 'history',
     routes: []
@@ -22,11 +16,11 @@ var dropboxPostLogin = new Vue({
     var dropboxAuthorisationCode = this.$route.query.code;
     console.log("Dropbox authorisation code obtained: " + dropboxAuthorisationCode);
 
-    var userToken = Vue.ls.get("icarus_user_token");
+    var userToken = getIcarusUserToken();
     if( userToken ) {
       var icarusAccessToken = userToken.accessToken;
       this.$nextTick(function() {
-        getIcarusTokenWithDropbox(dropboxAuthorisationCode, icarusAccessToken);
+        redeemDropboxAuthCodeAndLinkIdentity(dropboxAuthorisationCode, icarusAccessToken);
       });
     } else {
       console.log("Missing Icarus user token!");
@@ -34,15 +28,15 @@ var dropboxPostLogin = new Vue({
     }
   },
   methods: {
-    processToken: function(icarusAccessToken) {
-      Vue.ls.set("icarus_user_token", icarusAccessToken);
+    processToken: function(icarusUserToken) {
+      setIcarusUserToken(icarusUserToken);
       window.location.href="index.html";
     },
   }
 });
 
 
-function getIcarusTokenWithDropbox(dropboxAuthorisationCode, icarusAccessToken) {
+function redeemDropboxAuthCodeAndLinkIdentity(dropboxAuthorisationCode, icarusAccessToken) {
   var initReturnUri = siteBasePath + '/dropbox-post-login.html'; // This is the return uri used when initiating the OAuth journey; for verification only
 
   axios.post(lambdaPath + '/dropbox-oauth-complete', {

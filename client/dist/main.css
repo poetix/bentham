@@ -33,7 +33,35 @@ div.greeting {
 }
 
 div.external-app {
+  font-family: 'Raleway', serif;
   background-color: #F8F8F8;
   border-top: 2px solid #AAAADDD;
   margin-top: 8px;
+}
+
+div.app-status {
+  font-size: medium;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  float: left;
+  width: 150px;
+}
+
+div.app-status > button {
+
+  background-color: rgb(76, 83, 175); 
+  border: none;
+  color: white;
+  padding: 20px;
+
+  display: inline-block;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+div.app-status > .linked {
+  background-color: rgb(76, 175, 89); 
+  cursor: default;
 }

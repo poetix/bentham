@@ -1,9 +1,3 @@
-options = {
-  namespace: 'vuejs__'
-};
-
-Vue.use(VueLocalStorage, options);
-
 var router = new VueRouter({
     mode: 'history',
     routes: []
@@ -17,14 +11,14 @@ var landing = new Vue({
     hasAccessToken: false
   },
   mounted: function() {
-    var accessToken = Vue.ls.get("icarus_user_token");
+    var userToken = getIcarusUserToken();
 
     this.$nextTick(function() {
-      if (accessToken) {
+      if (userToken) {
         console.log("Access token retrieved from local storage");
-        console.log(accessToken);
-        this.accessToken = accessToken;
-        showApplication(accessToken);
+        console.log(userToken);
+        this.accessToken = userToken;
+        showApplication(userToken);
       } else {
         showLoginButton();
       }
@@ -62,8 +56,8 @@ function showLoginButton() {
   landing.mustLogIn = true;
 }
 
-function showApplication(accessToken) {
-  landing.userDetails = accessToken;
+function showApplication(userToken) {
+  landing.userDetails = userToken;
   landing.mustLogIn = false;
   landing.hasAccessToken = true;
 }

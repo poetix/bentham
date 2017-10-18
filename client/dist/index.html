@@ -21,16 +21,14 @@
         <h1 class="title">Icarus</h1>
         <div class="greeting">Welcome, {{ accessToken.userName }}</div>
         <div id="external-apps">
-          <div class="external-app" id="dropbox">
-            <h1 class="app-name">Dropbox</h1>
-            <div v-if="accessToken.dropboxAccountId"><a href="dropbox-usage.html">View Dropbox Report</a></div>
-            <div v-else><a v-on:click="dropboxLogin()">Link to Dropbox</a></div>
-          </div>
-          <div class="external-app" id="github">
-            <h1 class="app-name">GitHub</h1>
-            <div v-if="accessToken.githubUsername">View GitHub Report</div>
-            <div v-else><a v-on:click="githubLogin()">Link to GitHub</a></div>
-          </div>
+            <div class="app-status" v-if="accessToken.dropboxAccountId"><button class="linked">Linked to Dropbox</button></div>
+            <div class="app-status" v-else><button v-on:click="dropboxLogin()">Link Dropbox account</button></div>
+
+          
+            <div class="app-status" v-if="accessToken.githubUsername"><button class="linked">Linked to Github</button></div>
+            <div class="app-status" v-else><button v-on:click="githubLogin()">Link GitHub account</button></div>
+
+      
         </div>
       </div>
     </div>
@@ -40,6 +38,7 @@
     <script src="https://unpkg.com/vue-ls"></script>
     <script src="https://unpkg.com/vue-router"></script>
     <script src="config.js"></script>
-    <script src="landing.js"></script>
+    <script src="common.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>

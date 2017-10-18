@@ -1,9 +1,3 @@
-options = {
-    namespace: 'vuejs__'
-};
-
-Vue.use(VueLocalStorage, options);
-
 var router = new VueRouter({
     mode: 'history',
     routes: []

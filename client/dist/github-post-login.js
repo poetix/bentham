@@ -1,9 +1,3 @@
-options = {
-  namespace: 'vuejs__'
-};
-
-Vue.use(VueLocalStorage, options);
-
 var router = new VueRouter({
     mode: 'history',
     routes: []
@@ -22,11 +16,11 @@ var githubPostLogin = new Vue({
     var githubAuthorisationCode = this.$route.query.code;
     console.log("GitHub authorisation code obtained: " + githubAuthorisationCode);
 
-    var userToken = Vue.ls.get("icarus_user_token");
+    var userToken = getIcarusUserToken();
     if (userToken) {
       var icarusAccessToken = userToken.accessToken;
       this.$nextTick(function() {
-        getIcarusTokenWithGithub(githubAuthorisationCode, icarusAccessToken);
+        redeemGithubAuthCodeAndLinkIdentity(githubAuthorisationCode, icarusAccessToken);
       });
     } else {
       console.log("Missing Icarus user token!")
@@ -34,15 +28,15 @@ var githubPostLogin = new Vue({
     }
   },
   methods: {
-    processToken: function(icarusAccessToken) {
-      Vue.ls.set("icarus_user_token", icarusAccessToken);
+    processToken: function(icarusUserToken) {
+      setIcarusUserToken(icarusUserToken);
       window.location.href="index.html";
     },
   }
 });
 
 
-function getIcarusTokenWithGithub(githubAuthorisationCode, icarusAccessToken) {
+function redeemGithubAuthCodeAndLinkIdentity(githubAuthorisationCode, icarusAccessToken) {
   var initReturnUri = siteBasePath + '/github-post-login.html'; // This is the return uri used when initiating the OAuth journey; for verification only
 
   axios.post(lambdaPath + '/github-oauth-complete',{
