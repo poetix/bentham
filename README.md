@@ -29,16 +29,34 @@ Expects the following environment variables:
 
 ### AWS credentials
 
-Setup AWS `test` profile:
-```bash
-serverless config credentials --provider aws --key <aws-access-key-id> --secret <aws-secret-access-key> --profile custom-profile
-```
+Expects `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set in the deployment environment.
+
+At the moment the region is hardwired to `eu-west-2`
 
 ### Dev stage
 
 The `ICARUS_DEV` environment variable is prefixed to `dev` stage, unless `stage` is overwritten by command line.
 
 Note that `ICARUS_DEV` only allows **a-zA-Z0-9** (no hyphen, no underscore)
+
+### DynamoDB table deletion
+
+By default, `sls remove` does not delete DynamoDB tables.
+
+To force deletion, add the `--tableDeletion Delete` option when running `sls deploy` and `sls remove`
+
+### Dev deployment
+
+- Don't forget setting up `ICARUS_DEV`.
+- Deploy using `sls deploy -v` (optionally `sls deploy --tableDeletion Delete -v`)
+- Remove with `sls remove -v` (`sls remove --tableDeletion Delete -v` to also drop DynamoDB tables)  
+
+**DO NOT USE** `deploy.sh` during development: it only deploys master branch to `test` stage. 
+
+## CI/CD
+
+Set all required env variables in Travis project settings, including AWS credentials.
+
 
 ## More documentation
 

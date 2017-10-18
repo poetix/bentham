@@ -11,7 +11,7 @@ provider:
   runtime: nodejs6.10
   stage: ${env:ICARUS_DEV, ''}dev
   region: eu-west-2
-  profile: test
+  # profile: test
 
   environment:
     DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
@@ -42,6 +42,9 @@ custom:
   # Used by serverless-finch plugin
   client:
       bucketName: ${opt:stage, self:provider.stage}-icarus-site
+
+  # Override with 'Delete' to drop tables when removing the stack
+  dynamoDbDeletionPolicy: ${opt:tableDeletion, 'Retain'} # 'Retain' | 'Delete'
 
 
 functions:
@@ -132,8 +135,7 @@ resources:
   Resources:
     AccessTokensTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
         AttributeDefinitions:
@@ -160,8 +162,7 @@ resources:
 
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -176,8 +177,7 @@ resources:
 
     DropboxAccountsTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -192,8 +192,7 @@ resources:
 
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXTOKENS_TABLE}
         AttributeDefinitions:
@@ -208,8 +207,7 @@ resources:
 
     DropboxCursorsTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXCURSORS_TABLE}
         AttributeDefinitions:
@@ -224,8 +222,7 @@ resources:
 
     FileChangesTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.FILECHANGES_TABLE}
         AttributeDefinitions:
@@ -244,8 +241,7 @@ resources:
 
     GithubEventsTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBEVENTS_TABLE}
         AttributeDefinitions:
@@ -276,8 +272,7 @@ resources:
 
     GithubAccountsTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -292,8 +287,7 @@ resources:
 
     GithubTokensTable:
       Type: AWS::DynamoDB::Table
-      # TODO Comment out the DeletionPolicy to make `serverless remove` deleting the table
-      DeletionPolicy: Retain
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBTOKENS_TABLE}
         AttributeDefinitions:
