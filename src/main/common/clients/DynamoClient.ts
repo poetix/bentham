@@ -49,7 +49,7 @@ export class DynamoClient {
   }
 
   query(tableName: string, otherParams: any): Promise<any[]> {
-    // TODO This modifies the otherParams object passed by ref
+    // This modifies the otherParams object passed by ref...
     otherParams.TableName = `${this.tablePrefix}${tableName}`
 
     return this.doOp(otherParams, (p, cb) => DynamoClient.dynamo.query(p, cb))

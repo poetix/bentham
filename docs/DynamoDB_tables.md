@@ -4,8 +4,15 @@ Table names are always prefixed with: `icarus-[<developer>]<stage>-`
 
 ### access_token
 
+- `slack_id`: PK, Slack user ID (e.g. `U7BV5T...`)
 - `access_token`: PK, Icarus access token (UUID)
-- `slack_id`: Slack user ID (e.g. `U7BV5T...`)
+
+#### access_tokens_by_token Index
+
+- `access_token`: PK
+
+Type: GlobalSecondaryIndex
+Attributes: All
 
 ### slack_accounts
 
@@ -69,9 +76,7 @@ Attributes: All
 - `account_id`: PK, Dropbox user ID
 - `cursor`: Dropbox cursor ID
 
-### file_changes
-
-**TODO Rename to `dropbox_file_changes`**
+### dropbox_file_changes
 
 - `account_id`: PK, Dropbox user ID
 - `user_id`: *Modified by* user ID
