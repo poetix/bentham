@@ -137,14 +137,26 @@ resources:
       Properties:
         TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
         AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
           - AttributeName: access_token
             AttributeType: S
         KeySchema:
-          - AttributeName: access_token
-            KeyType: HASH
+          - AttributeName: slack_id
+            KeyType: HASH         
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
+        GlobalSecondaryIndexes:
+          - IndexName: "access_tokens_by_token"
+            KeySchema:
+            - AttributeName: "access_token"
+              KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 10 
 
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
@@ -327,5 +339,7 @@ resources:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
         Roles:
           - Ref: IamRoleLambdaExecution

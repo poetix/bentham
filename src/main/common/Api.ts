@@ -2,7 +2,7 @@
  * Common datatypes
  */
 export type event = any;
-export type callback = (result: any, error: any) => void;
+export type callback = (error: any, result: any) => void;
 
 export type host = string;
 export type uri = string;
