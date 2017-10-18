@@ -15,4 +15,9 @@ fi
 
 echo "Deploying from branch $BRANCH to stage $STAGE"
 #npm prune --production  #remove devDependencies
+
+# Deploy backend
 sls deploy --stage $STAGE --tableDeletion $TABLEDELETION -v
+
+# Deploy frontend
+sls client deploy --stage $STAGE -v 
