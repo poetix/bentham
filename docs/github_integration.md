@@ -8,9 +8,12 @@ the Icarus identity.
 Note that webhooks delivers information about all involved users, regardless they
 have an identity in Icarus.
 
+On Github, the Webhook and the App are not connected. 
+The App is used only for OAuth, while the webhook may be sent to any endpoint.
+
 ## Github application setup
 
-Setup an **OAuth App**
+Setup an "**OAuth App**" (not a "Github App")
 
 * Client ID, Client Secret: `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` set in environment
 * Homepage URL: `<frontend-url>/index.html`
@@ -18,7 +21,7 @@ Setup an **OAuth App**
 
 ## Webhook setup
 
-Setup one or more webhooks, at repository or organisation level
+Setup one or more webhooks, at repository or organisation level.
 
 * *Payload URL*: `<service-endpoint>/github-webhook`
 * *Content type*: `application/json`

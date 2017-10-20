@@ -10,5 +10,7 @@ App credentials:
 
 Permissions:
 * OAuth Access Token: not used
-* Redirect URLs: `<frontend-url>/`
+* Redirect URLs: `<frontend-url>/post-login.html`
 * Scopes: only requires `identity.basic` permission scope
+
+Install your App to your Workspace

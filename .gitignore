@@ -113,3 +113,5 @@ Temporary Items
 .webpack
 
 # End of https://www.gitignore.io/api/osx,node,linux,serverless
+
+.certs
