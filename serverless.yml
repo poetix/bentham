@@ -45,6 +45,7 @@ custom:
   # Domain Manager
   ## Comment out the entire branch to disable custom DNS domain
   customDomain:
+    # API service base URI becomes: `https://<icarus-domain>/<stage>/`
     basePath: ${self:provider.stage}
     domainName: ${env:ICARUS_DOMAIN}
     stage: ${self:provider.stage}
@@ -52,7 +53,7 @@ custom:
 
   # Used by serverless-finch plugin
   client:
-    bucketName: ${self:provider.stage}-icarus-site # The public URL is `https://s3.amazonaws.com/<stage>-icarus-site/`
+    bucketName: ${self:provider.stage}-icarus-site # The public URL become `https://s3.amazonaws.com/<stage>-icarus-site/`
 
   # DynamoDB table deletion policy
   # Default is 'Retain'. Override with 'Delete' to drop tables when removing the stack

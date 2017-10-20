@@ -108,6 +108,6 @@ Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage
 
 ## Known Issues/Limitations
 
-SSL Certificate generation and import in ACM, DNS base domain setup are all manual.
-
-API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
+* SSL Certificate generation and import in ACM, DNS base domain setup are all manual.
+* API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
+* No automatic integration or acceptance test :(
