@@ -25,8 +25,6 @@ describe('The Github User Event Repository', () => {
         id: 'user-event-id',
         username: 'github-username',
         eventType: 'commit',
-        objectType: 'commit',
-        objectUri: 'http://an.url',
         timestamp: '2017-09-26T14:54:38+01:00',
       }
 
@@ -38,8 +36,6 @@ describe('The Github User Event Repository', () => {
 
 
       expect(actualDbEvent.id).is.equal('user-event-id')
-      expect(actualDbEvent.object_type).is.equal('commit')
-      expect(actualDbEvent.object_uri).is.equal('http://an.url')
       expect(actualDbEvent.username).is.equal('github-username')
       expect(actualDbEvent.timestamp).is.equal('2017-09-26T14:54:38+01:00')
 

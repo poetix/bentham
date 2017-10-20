@@ -33,15 +33,15 @@ Setup one or more webhooks, at repository or organisation level.
 Webhook events are not stored *raw*, as received from Github.
 Icarus extracts *user events* from supported *webhook events* and store them individually.
 
-Every *user event* refers to an object. The event includes the object URI.
+Supported Webhook events and stored events:
 
-* `push`: stores individual commits; refers to the commit (implicitly de-duplicate commits)
-* `issues`: stores the action; refers to the issue
-* `commit_comment`: stores the action; refers to the commit comment
-* `pull_request`: stores the action; refers to the PR
-* `pull_request_review`: stores the action; refers to the review html content
-* `pull_request_review_comment`: stores the action; refers to the comment
-* `create`: stores the creation of a repository, branch or tag; refers to the repo or to the branch/tag tree
-* `delete`: stores the creation of a branch or tag; refers to the branch/tag tree
+* `push`: stores individual commits (implicitly de-duplicate commits)
+* `issues`: stores the action on the issue
+* `commit_comment`: stores the action on the comment
+* `pull_request`: stores the action on the PR
+* `pull_request_review`: stores the action on the review
+* `pull_request_review_comment`: stores the action on the comment
+* `create`: stores the creation of a repository, branch or tag
+* `delete`: stores the creation of a branch or tag
 
 Any other event is ignored at the moment

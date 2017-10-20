@@ -5,7 +5,6 @@ import { timestamp } from "../Api";
 
 export type userEventId = string; // Globally unique ID of a UserEvent
 export type githubUsername = string;
-export type githubObjectType = string;
 export type userEventType = string;
 
 // User event (i.e. event= tracked by Icarus)
@@ -13,8 +12,6 @@ export interface UserEvent {
   id: userEventId;
   username: githubUsername;
   eventType: userEventType;
-  objectType: githubObjectType; // Type of the object referenced by event
-  objectUri: uri; // URL of the object referenced by the event
   timestamp: timestamp;
 }
 
@@ -29,8 +26,6 @@ export class UserEventRepository {
     const storedEvent = {
       id: event.id,
       event_type: event.eventType,
-      object_type: event.objectType,
-      object_uri: event.objectUri,
       username: event.username,
       timestamp: event.timestamp,
     }
