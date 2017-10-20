@@ -79,8 +79,6 @@ function pushToCommits(webhookEvent:WebhookEvent): UserEvent[] {
     id: `${commit.committer.username}-${commit.id}`, // The same commit may be included in multiple pushes but get de-duplicated
     username: commit.committer.username,
     eventType: 'commit',
-    objectType: 'commit',
-    objectUri: commit.url,
     timestamp: commit.timestamp
   }))
 }
@@ -92,8 +90,6 @@ function issuesEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `issues-${payload.action}`,
-    objectType: 'issue',
-    objectUri: payload.issue.url,
     timestamp: isoNow() // No timestamp in the payload
   }
 }
@@ -104,8 +100,6 @@ function commitCommentEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `commit_comment-${payload.action}`,
-    objectType: 'commit_comment',
-    objectUri: payload.comment.url,
     timestamp: isoNow()
   }
 }
@@ -116,8 +110,6 @@ function pullRequestEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `pull_request-${payload.action}`,
-    objectType: 'pull_request',
-    objectUri: payload.pull_request.url,
     timestamp: isoNow()
   }
 }
@@ -128,8 +120,6 @@ function pullRequestReviewEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `pull_request_review-${payload.action}`,
-    objectType: 'pull_request_review',
-    objectUri: payload.review.html_url,
     timestamp: isoNow()
   }
 }
@@ -140,8 +130,6 @@ function pullRequestReviewCommentEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `pull_request_review_comment-${payload.action}`,
-    objectType: 'pull_request_review_comment',
-    objectUri: payload.comment.url,
     timestamp: isoNow()
   }
 }
@@ -156,8 +144,6 @@ function createEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `create-${refType}`,
-    objectType: refType,
-    objectUri: url,
     timestamp: isoNow()
   }
 }
@@ -172,8 +158,6 @@ function deleteEvent(webhookEvent:WebhookEvent): UserEvent {
     id: uuidv4(),
     username: payload.sender.login,
     eventType: `delete-${refType}`,
-    objectType: refType,
-    objectUri: url,
     timestamp: isoNow()
   }
 }
