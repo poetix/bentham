@@ -5,13 +5,13 @@ service:
 plugins:
   - serverless-webpack # compiles and bundles together typescript code
   - serverless-finch   # deploys static web pages to S3
+  - serverless-domain-manager
 
 provider:
   name: aws
   runtime: nodejs6.10
-  stage: ${env:ICARUS_DEV, ''}dev
-  region: eu-west-2
-  # profile: test
+  region: us-east-1 # Domain Manager plugin supports us-east-1 only!
+  stage: ${opt:stage, self:custom.stage}
 
   environment:
     DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
@@ -25,7 +25,7 @@ provider:
     GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
     GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
 
-    TABLE_PREFIX: ${self:service}-${opt:stage, self:provider.stage}-
+    TABLE_PREFIX: ${self:service}-${self:provider.stage}-
 
     ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
     SLACKACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}slack_accounts
@@ -38,12 +38,24 @@ provider:
     GITHUBEVENTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_events
     GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
     GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
+
 custom:
+  stage: ${env:ICARUS_STAGE, 'dev'}
+
+  # Domain Manager
+  ## Comment out the entire branch to disable custom DNS domain
+  customDomain:
+    basePath: ${self:provider.stage}
+    domainName: ${env:ICARUS_DOMAIN}
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+
   # Used by serverless-finch plugin
   client:
-      bucketName: ${opt:stage, self:provider.stage}-icarus-site
+    bucketName: ${self:provider.stage}-icarus-site # The public URL is `https://s3.amazonaws.com/<stage>-icarus-site/`
 
-  # Override with 'Delete' to drop tables when removing the stack
+  # DynamoDB table deletion policy
+  # Default is 'Retain'. Override with 'Delete' to drop tables when removing the stack
   dynamoDbDeletionPolicy: ${opt:tableDeletion, 'Retain'} # 'Retain' | 'Delete'
 
 
