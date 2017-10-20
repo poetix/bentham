@@ -33,7 +33,7 @@ Setup one or more webhooks, at repository or organisation level.
 Webhook events are not stored *raw*, as received from Github.
 Icarus extracts *user events* from supported *webhook events* and store them individually.
 
-Supported Webhoo events:
+Supported Webhook events and stored events:
 
 * `push`: stores individual commits (implicitly de-duplicate commits)
 * `issues`: stores the action on the issue
