@@ -1,67 +1,43 @@
-div#application {
-  margin-left: 30%;
-  margin-right: 30%;
-  background-color: #EEEEFF;
+body {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.integrations{
+  padding-right: 10px;
+  padding-left: 10px;
 }
 
-h1.title {
-  margin-top: 0px;
-  margin-bottom: 8px;
+@media (min-width: 768px) {
+  .container {
+    max-width: 730px;
+  }
+}
+.container-narrow > hr {
+  margin: 10px 0;
+}
+.jumbotron {
   text-align: center;
-  padding: 4px;
-  font-family: 'Raleway', serif;
-  font-size: 64px;
-  color: #0000CD;
-  background-color: #B0C4DE;
 }
 
-h1.app-name {
-  text-align: center;
-  margin-top: 0px;
-  padding: 4px;
-  font-family: 'Raleway', serif;
-  font-size: 32px;
-  color: #0000CD;
-  background-color: #B0C4DE;
+.integrations {
+  margin: 10px 0;
 }
 
-div.greeting {
-  text-align: center;
-  font-family: 'Raleway', serif;
-  font-size: large;
-  padding: 8px;
+.glyphicon.spinning {
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
 }
 
-div.external-app {
-  font-family: 'Raleway', serif;
-  background-color: #F8F8F8;
-  border-top: 2px solid #AAAADDD;
-  margin-top: 8px;
+@keyframes spin {
+  from { transform: scale(1) rotate(0deg);}
+  to { transform: scale(1) rotate(360deg);}
 }
 
-div.app-status {
-  font-size: medium;
-  font-size: 16px;
-  text-align: center;
-  text-decoration: none;
-  float: left;
-  width: 200px;
+@-webkit-keyframes spin2 {
+  from { -webkit-transform: rotate(0deg);}
+  to { -webkit-transform: rotate(360deg);}
 }
 
-div.app-status > button {
-
-  background-color: rgb(76, 83, 175); 
-  border: none;
-  color: white;
-  padding: 20px;
-
-  display: inline-block;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 8px;
-}
-
-div.app-status > .linked {
-  background-color: rgb(76, 175, 89); 
-  cursor: default;
+.glyphicon-left {
+  margin-right: 7px;
 }
