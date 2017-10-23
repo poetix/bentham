@@ -1,37 +1,72 @@
 <doctype html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Icarus</title>
-    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"/>
-    <link href="main.css" rel="stylesheet"/>
+    <link rel="stylesheet" 
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" 
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="./main.css">          
   </head>
   <body>
-    <div id="landing-page">
-      <div v-if="mustLogIn" id="signin">
-        <a v-on:click="slackLogin">
-        <!-- <a href="https://aidesigners.slack.com/oauth/authorize?scope=identity.basic&client_id=186339815891.250008717313&redirect_uri=https://s3.eu-west-2.amazonaws.com/lorenzodev-icarus-site/post-login.html"> -->
-          <img  alt="Sign in with Slack"
-                height="40"
-                width="172"
-                src="https://platform.slack-edge.com/img/sign_in_with_slack.png"
-                srcset="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" />
-        </a>
+    <div id="landing-page" class="container">
+      <div class="jumbotron">
+        <h1>Icarus</h1>
+        <p v-if="mustLogIn" v-on:click="slackLogin"><button class="btn btn-lg btn-primary">Login / Sign in with Slack</button></p>
+        <h4 v-if="hasAccessToken">Welcome back, {{ accessToken.userName }}</h4>
       </div>
-      <div v-if="hasAccessToken" id="application">
-        <h1 class="title">Icarus</h1>
-        <div class="greeting">Welcome, {{ accessToken.userName }}</div>
-        <div id="external-apps">
-            <div class="app-status" v-if="accessToken.dropboxAccountId"><button class="linked">Linked to Dropbox</button></div>
-            <div class="app-status" v-else><button v-on:click="dropboxLogin()">Link Dropbox account</button></div>
-
-          
-            <div class="app-status" v-if="accessToken.githubUsername"><button class="linked">Linked to Github</button></div>
-            <div class="app-status" v-else><button v-on:click="githubLogin()">Link GitHub account</button></div>
-
       
+      <!-- Slack login -->
+      <div v-if="hasAccessToken" class="container-fluid">
+        <!-- Dropbox -->
+        <div class="row integrations">          
+          <div v-if="accessToken.dropboxAccountId">
+              <div class="panel panel-success">
+                  <div class="panel-heading">Icarus is monitoring your Dropbox activity</div>
+                  <div class="panel-body">Icarus logs your actions (e.g. file created/modified) and the time it happened,
+                    but no file name or content.
+                  </div>
+              </div>
+          </div>
+          <div v-else>
+            <div class="panel panel-default">
+                <div class="panel-heading"><button v-on:click="dropboxLogin()" class="btn btn-lg btn-primary">Link Dropbox account</button></div>
+                <div class="panel-body">Icarus will only log your action (e.g. file created/modified) and the time it happened,
+                        but no file name or content.            
+                </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Github -->
+        <div class="row integrations">
+            <div v-if="accessToken.githubUsername">
+                <div class="panel panel-success">
+                    <div class="panel-heading">Icarus is monitoring your Github activity</div>
+                    <div class="panel-body">Icarus only logs your actions (e.g. open an Issue) and the time it happened, but no ID, content or text.<br/>
+                        Only Organisations and Repositories configured to notify events to Icarus are monitored.
+                    </div>
+                  </div>
+            </div>
+            <div v-else>
+                <div class="panel panel-default">
+                    <div class="panel-heading"><button v-on:click="githubLogin()" class="btn btn-lg btn-primary">Link Github account</button></div>
+                    <div class="panel-body">Icarus will only log your actions (e.g. open an Issue) and the time it happened, but ID, content or text.<br/>
+                        Only Organisations and Repositories configured to notify events to Icarus are monitored.
+                    </div>
+                </div>              
+            </div>
+        </div>
+ 
       </div>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/vue"></script>
