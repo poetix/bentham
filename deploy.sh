@@ -9,7 +9,7 @@ if [[ $BRANCH == 'master' ]]; then
   TABLEDELETION="Retain"
 fi
 
-echo "Branch: $BRANCH, PR? ${TRAVIS_PULL_REQUEST}, Stage: $STAGE"
+echo "Branch: $BRANCH, Mapped Stage: $STAGE, PR? ${TRAVIS_PULL_REQUEST}"
 
 
 # Only deploy branches with stages, but not PR
