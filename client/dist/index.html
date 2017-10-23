@@ -18,8 +18,15 @@
     <div id="landing-page" class="container">
       <div class="jumbotron">
         <h1>Icarus</h1>
-        <p v-if="mustLogIn" v-on:click="slackLogin"><button class="btn btn-lg btn-primary">Login / Sign in with Slack</button></p>
         <h4 v-if="hasAccessToken">Welcome back, {{ accessToken.userName }}</h4>
+      </div>
+      <div v-if="mustLogIn" class="row main-login">
+          <div class="panel panel-default">
+              <div class="panel-heading"><button v-on:click="slackLogin" class="btn btn-lg btn-primary">Login / Sign in with Slack</button></div>
+              <div class="panel-body">Icarus only accesses your user basic info (name, user ID, team ID).<br/>
+                  The Slack user is your main identity in Icarus.
+              </div>
+          </div>  
       </div>
       
       <!-- Slack login -->
