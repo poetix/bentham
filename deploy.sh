@@ -10,14 +10,9 @@ fi
 
 echo "Branch: $BRANCH, PR? ${TRAVIS_PULL_REQUEST}, Stage: $STAGE"
 
-# Do not deploy PR
-if [[  "${TRAVIS_PULL_REQUEST}" = true ]]; then
-  echo "Not deploying PR"
-  exit 0
-fi
 
-# Only deploy branches with stages
-if [ -z "$STAGE" ]; then
+# Only deploy branches with stages, but not PR
+if [ -z "$STAGE" ] && [ "${TRAVIS_PULL_REQUEST}" = false ]; then
   echo "Not deploying this branch";
   exit 0;
 fi
