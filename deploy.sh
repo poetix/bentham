@@ -7,6 +7,7 @@ if [[ $BRANCH == 'master' ]]; then
   STAGE="test"
   TABLEDELETION="Retain"
 fi
+echo "Branch: $BRANCH, Stage: $STAGE"
 
 if [ -z "$STAGE" ]; then
   echo "Not deploying this branch";
