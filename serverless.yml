@@ -3,9 +3,9 @@ service:
 
 # Add the serverless-webpack plugin
 plugins:
-  - serverless-webpack # compiles and bundles together typescript code
-  - serverless-finch   # deploys static web pages to S3
-  - serverless-domain-manager
+  - serverless-webpack        # compiles and bundles together typescript code
+  - serverless-finch          # deploys static web pages to S3
+  - serverless-domain-manager # custom DNS domain for lambda endpoints
 
 provider:
   name: aws
