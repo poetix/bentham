@@ -9,10 +9,10 @@ if [[ $BRANCH == 'master' ]]; then
   TABLEDELETION="Retain"
 fi
 
-echo "Branch: $BRANCH, PR? ${TRAVIS_PULL_REQUEST} Stage: $STAGE"
+echo "Branch: $BRANCH, PR? ${TRAVIS_PULL_REQUEST}, Stage: $STAGE"
 
 # Do not deploy PR
-if [[  "${TRAVIS_PULL_REQUEST}" = true ]]l; then
+if [[  "${TRAVIS_PULL_REQUEST}" = true ]]; then
   echo "Not deploying PR"
   exit 0
 fi
