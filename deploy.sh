@@ -2,8 +2,7 @@
 set -e
 BRANCH=${TRAVIS_BRANCH:-$(git rev-parse --abbrev-ref HEAD)} 
 
-
-# Only deploy 'master' 
+# Maps branch to stage
 if [[ $BRANCH == 'master' ]]; then
   STAGE="test"
   TABLEDELETION="Retain"
@@ -17,6 +16,7 @@ if [[  "${TRAVIS_PULL_REQUEST}" = true ]]; then
   exit 0
 fi
 
+# Only deploy branches with stages
 if [ -z "$STAGE" ]; then
   echo "Not deploying this branch";
   exit 0;
