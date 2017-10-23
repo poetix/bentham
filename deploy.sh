@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-BRANCH=${TRAVIS_BRANCH:-$(git rev-parse --abbrev-ref HEAD)} 
+BRANCH=$(git rev-parse --abbrev-ref HEAD) 
 
 # Only deploy 'master'
 if [[ $BRANCH == 'master' ]]; then
@@ -8,8 +8,8 @@ if [[ $BRANCH == 'master' ]]; then
   TABLEDELETION="Retain"
 fi
 
-if [ -z ${STAGE+x} ]; then
-  echo "Not deploying changes";
+if [ -z "$STAGE" ]; then
+  echo "Not deploying this branch";
   exit 0;
 fi
 
