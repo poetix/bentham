@@ -13,6 +13,44 @@ provider:
   region: us-east-1 # Domain Manager plugin supports us-east-1 only!
   stage: ${opt:stage, self:custom.stage}
 
+  iamRoleStatements: 
+    # DynamoDB access
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:BatchWriteItem
+        - dynamodb:Query   
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
+    # For listening to DynamoDB Streams
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
+    # For deploying in VPC
+    - Effect: Allow
+      Action:
+        - ec2:CreateNetworkInterface
+        - ec2:DescribeNetworkInterfaces
+        - ec2:DeleteNetworkInterface
+      Resource: "*"       
+
   environment:
     DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
     DROPBOX_CLIENT_SECRET: ${env:DROPBOX_CLIENT_SECRET}
@@ -61,9 +99,16 @@ custom:
 
 
 functions:
+
   # Slack
   slack-oauth-initiate:
     handler: src/main/slack/handler.oauthInitiate
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -72,6 +117,12 @@ functions:
 
   slack-oauth-complete:
     handler: src/main/slack/handler.oauthComplete
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -81,6 +132,12 @@ functions:
   # Dropbox
   dropbox-webhook-challenge:
     handler: src/main/dropbox/handler.webhookChallenge
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -88,6 +145,12 @@ functions:
 
   dropbox-webhook-notify:
     handler: src/main/dropbox/handler.webhookNotify
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
@@ -95,6 +158,12 @@ functions:
 
   dropbox-oauth-initiate:
     handler: src/main/dropbox/handler.oauthInitiate
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
@@ -103,6 +172,12 @@ functions:
 
   dropbox-oauth-complete:
     handler: src/main/dropbox/handler.oauthComplete
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -111,6 +186,12 @@ functions:
 
   dropbox-user-report:
     handler: src/main/dropbox/handler.userReport
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -121,7 +202,13 @@ functions:
               - X-AccessToken
   
   file-changes-event-processor:
-    handler: src/main/dropbox/handler.fileChangesEvents
+    handler: src/main/dropbox/handler.fileChangesEvents # TODO Move into a separate handler
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB 
     events:
       - stream:
           type: dynamodb
@@ -133,6 +220,12 @@ functions:
   # Github
   gihub-webhook-receive:
     handler: src/main/github/handler.webhookReceive
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -140,6 +233,12 @@ functions:
 
   github-oauth-initiate:
     handler: src/main/github/handler.oauthInitiate
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -148,6 +247,12 @@ functions:
 
   github-oauth-complete:
     handler: src/main/github/handler.oauthComplete
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
@@ -156,6 +261,163 @@ functions:
 
 resources:
   Resources:
+  
+    ######
+    # VPC
+    ######
+
+    ServerlessVPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.42.0.0/16"
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage}"
+
+    # VPC Networking. 
+    # See: https://gist.github.com/romaninsh/81d4ee778c1e20f709f3518c22521ba4
+    # Also see: https://gist.github.com/reggi/dc5f2620b7b4f515e68e46255ac042a7
+    ServerlessPrivateSubnetA:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}a
+        CidrBlock: "10.42.10.0/24"
+    ServerlessPrivateSubnetB:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}b
+        CidrBlock: "10.42.11.0/24"
+
+    ServerlessPublicSubnet:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}a
+        CidrBlock: "10.42.0.0/24"
+
+    ServerlessNATIP:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::EIP
+      Properties:
+        Domain: vpc
+
+    ServelessNatGateway:
+      DependsOn: ServerlessPublicSubnet
+      Type: AWS::EC2::NatGateway
+      Properties:
+        SubnetId:
+          Ref: ServerlessPublicSubnet
+        AllocationId:
+          "Fn::GetAtt": ServerlessNATIP.AllocationId
+
+    ServelessPrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Private (Lambda)"
+
+    ServerlessDefaultPrivateRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: ServelessPrivateRouteTable
+        DestinationCidrBlock: "0.0.0.0/0"
+        NatGatewayId:
+          Ref: ServelessNatGateway
+          
+    ServerlessPrivateARouteTableAssoiciation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServelessPrivateRouteTable
+        SubnetId:
+          Ref: ServerlessPrivateSubnetA
+
+    ServerlessPrivateBRouteTableAssoiciation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServelessPrivateRouteTable
+        SubnetId:
+          Ref: ServerlessPrivateSubnetB
+
+    ServerlessIgw:
+      Type: AWS::EC2::InternetGateway
+
+    ServerlessIgwAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        InternetGatewayId:
+          Ref: ServerlessIgw    
+
+    ServerlessPublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Public (IGW)"
+
+    ServerlessDefaultPublicRoute:
+      DependsOn: ServerlessIgw
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: ServerlessPublicRouteTable
+        DestinationCidrBlock: "0.0.0.0/0"
+        GatewayId:
+          Ref: ServerlessIgw
+
+    ServerlessPublicRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServerlessPublicRouteTable
+        SubnetId:
+          Ref: ServerlessPublicSubnet         
+
+    ServerlessSecurityGroup:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: SecurityGroup for Icarus Serverless Functions
+        VpcId:
+          Ref: ServerlessVPC
+
+    ServerlessStorageSecurityGroup: # For RDS
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Ingress for RDS Instance
+        VpcId:
+          Ref: ServerlessVPC
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          SourceSecurityGroupId:
+            Ref: ServerlessSecurityGroup
+    # TODO ServerlessRDSSubnetGroup and ServerlessRDSCluster: see https://github.com/mugglmenzel/serverless-examples-cached-rds-ws/blob/master/serverless.yml
+
+
+    ##################
+    # DynamoDB tables
+    ##################
+
     AccessTokensTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
@@ -326,45 +588,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-
-    DynamoDBIamPolicy:
-      Type: AWS::IAM::Policy
-      DependsOn:
-        - GithubTokensTable
-        - GithubAccountsTable
-        - GithubEventsTable
-        - DropboxTokensTable
-        - DropboxCursorsTable
-        - FileChangesTable
-        - AccessTokensTable
-        - SlackAccountsTable
-        - DropboxAccountsTable
-      Properties:
-        PolicyName: lambda-dynamodb
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:GetItem
-                - dynamodb:PutItem
-                - dynamodb:BatchWriteItem
-                - dynamodb:Query
-                - dynamodb:DescribeStream
-                - dynamodb:GetRecords
-                - dynamodb:GetShardIterator
-                - dynamodb:ListStreams                
-              Resource:
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
-        Roles:
-          - Ref: IamRoleLambdaExecution
