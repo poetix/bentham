@@ -19,6 +19,8 @@ import { FileChangeRepository } from "./repositories/FileChangeRepository";
 import { IdentityRepository } from "../common/repositories/IdentityRepository";
 import { IdentityService } from "../common/services/IdentityService";
 
+import { FileChangesEventProcessor } from "./eventProcessors/FileChangesEventProcessor";
+
 // Repositories
 const dynamo = new DynamoClient(process.env.TABLE_PREFIX);
 const tokenRepository = new TokenRepository(dynamo);
@@ -49,3 +51,7 @@ const reportService = new ReportService(tokenRepository, dropboxClient, fileChan
 export const webhookEndpoint = new WebhookEndpoint(notificationService);
 export const oauthEndpoint = new OAuthEndpoint(oauthService);
 export const reportEndpoint = new ReportEndpoint(reportService);
+
+// Event Processors
+// TODO Move into a separate App
+export const fileChangesEventProcessor = new FileChangesEventProcessor()

@@ -119,6 +119,16 @@ functions:
             origin: '*'
             headers:
               - X-AccessToken
+  
+  file-changes-event-processor:
+    handler: src/main/dropbox/handler.fileChangesEvents
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - FileChangesTable
+              - StreamArn
 
   # Github
   gihub-webhook-receive:
@@ -251,6 +261,8 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
+        StreamSpecification:
+          StreamViewType: KEYS_ONLY
 
     GithubEventsTable:
       Type: AWS::DynamoDB::Table
@@ -282,6 +294,8 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
+        StreamSpecification:
+          StreamViewType: KEYS_ONLY
 
     GithubAccountsTable:
       Type: AWS::DynamoDB::Table
@@ -336,6 +350,10 @@ resources:
                 - dynamodb:PutItem
                 - dynamodb:BatchWriteItem
                 - dynamodb:Query
+                - dynamodb:DescribeStream
+                - dynamodb:GetRecords
+                - dynamodb:GetShardIterator
+                - dynamodb:ListStreams                
               Resource:
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
                 - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
