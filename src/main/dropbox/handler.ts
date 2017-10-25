@@ -1,4 +1,4 @@
-import { webhookEndpoint, oauthEndpoint, reportEndpoint, fileChangesEventProcessor } from "./App";
+import { webhookEndpoint, oauthEndpoint, reportEndpoint } from "./App";
 
 // Webhook lambdas
 export const webhookChallenge = (event, context, cb) => webhookEndpoint.challenge(cb, event);
@@ -10,8 +10,3 @@ export const oauthComplete = (event, context, cb) => oauthEndpoint.complete(cb, 
 
 // Report lambdas
 export const userReport = (event, context, cb) => reportEndpoint.getReport(cb, event);
-
-
-// File Changes event processor
-// TODO Move into a separate App
-export const fileChangesEvents = (event, context, cb) => fileChangesEventProcessor.process(cb, event);

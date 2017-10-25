@@ -88,6 +88,56 @@ export class IdentityRepository {
   }
 
 
+  // Lookups Slack ID by Dropbox ID; reject if not found
+  private async getSlackIdByDropboxId(dropboxId: string): Promise<string> {
+    console.log(`Looking up SlackID by Dropbox ID: ${dropboxId}`) // FIXME remove
+    return this.dynamo.query(dropboxAccountsTable, {
+      IndexName: 'slackid_by_dropboxid',
+      KeyConditionExpression: 'dropboxId = :dropboxId',
+      ExpressionAttributeValues: {
+        ':dropboxId': dropboxId, 
+      },
+      ProjectionExpression: 'slack_id',
+      Limit: "1",
+    })
+    .then(results => {
+      console.log(`DynamoDB query result: ${JSON.stringify(results)}`) // FIXME remove
+      if ( results && results.length )
+        return results[0].slack_id
+      else
+        throw Error('Cannot find any Slack ID for Dropbox ID: ' + dropboxId)
+    })    
+  }
+
+  async getSlackIdentityByDropboxId(dropboxId: string): Promise<SlackIdentity> {
+    return this.getSlackIdByDropboxId(dropboxId)
+      .then( slackId => this.getSlackIdentityBySlackId(slackId))
+  }
+
+  // Lookup Slack ID by Github Username; reject if not found
+  private async getSlackIdByGithubUsername(githubUser: string) {
+    return this.dynamo.query(githubAccountsTable, {
+      IndexName: 'slackid_by_githubuser',
+      KeyConditionExpression: 'githubId = :githubUser',
+      ExpressionAttributeValues: {
+        ':githubId': githubUser, 
+      },
+      ProjectionExpression: 'slack_id',
+      Limit: "1",
+    })
+    .then(results => {
+      if ( results && results.length )
+        return results[0].slack_id
+      else
+        throw Error('Cannot find any Slack ID for Github user: ' + githubUser)
+    })      
+  }
+
+  async getSlackIdentityByGithubUser(githubUser: string): Promise<SlackIdentity> {
+    return this.getSlackIdByGithubUsername(githubUser)
+    .then( slackId => this.getSlackIdentityBySlackId(slackId))
+  }
+
   async getDropboxIdentity(slackId: string): Promise<DropboxIdentity | undefined> {
     console.log(`Retrieving Dropbox identity by Slack ID: ${slackId}`)
     

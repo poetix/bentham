@@ -33,6 +33,8 @@ provider:
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}/index/slackid_by_dropboxid
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}/index/slackid_by_githubuser
     # For listening to DynamoDB Streams
     - Effect: Allow
       Action:
@@ -63,6 +65,8 @@ provider:
     GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
     GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
 
+
+
     TABLE_PREFIX: ${self:service}-${self:provider.stage}-
 
     ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
@@ -77,6 +81,15 @@ provider:
     GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
     GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
 
+    # RDS_ENDPOINT:
+    #   "Fn::Join": [":", ["Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Address], "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Port]]]
+    RDS_HOST: 
+      "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Address]
+    RDS_PORT: 
+      "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Port]
+    RDS_DB: read_models
+    RDS_USER: ${env:RDS_USER, 'master'}
+    RDS_PWD: ${env:RDS_PWD}
 custom:
   stage: ${env:ICARUS_STAGE, 'dev'}
 
@@ -200,22 +213,6 @@ functions:
             origin: '*'
             headers:
               - X-AccessToken
-  
-  file-changes-event-processor:
-    handler: src/main/dropbox/handler.fileChangesEvents # TODO Move into a separate handler
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB 
-    events:
-      - stream:
-          type: dynamodb
-          arn:
-            Fn::GetAtt:
-              - FileChangesTable
-              - StreamArn
 
   # Github
   gihub-webhook-receive:
@@ -259,6 +256,23 @@ functions:
           path: github-oauth-complete
           cors: true
 
+  # Read Models
+  file-changes-event-processor:
+    handler: src/main/readModels/handler.fileChangesEvents
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB 
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - FileChangesTable
+              - StreamArn
+
 resources:
   Resources:
   
@@ -274,24 +288,28 @@ resources:
           - Key: Name
             Value: "${self:service}-${self:provider.stage}"
 
-    # VPC Networking. 
-    # See: https://gist.github.com/romaninsh/81d4ee778c1e20f709f3518c22521ba4
-    # Also see: https://gist.github.com/reggi/dc5f2620b7b4f515e68e46255ac042a7
+    # VPC Networking.
+    # See:
+    #   https://github.com/mugglmenzel/serverless-examples-cached-rds-ws/blob/master/serverless.yml
+    #   https://gist.github.com/romaninsh/81d4ee778c1e20f709f3518c22521ba4
+    #   https://gist.github.com/reggi/dc5f2620b7b4f515e68e46255ac042a7
+
     ServerlessPrivateSubnetA:
       DependsOn: ServerlessVPC
       Type: AWS::EC2::Subnet
       Properties:
         VpcId:
           Ref: ServerlessVPC
-        AvailabilityZone: ${self:provider.region}a
+        AvailabilityZone: ${self:provider.region}c # There is some issue with Aurora, not able to be deployed on us-east-1a and -1b
         CidrBlock: "10.42.10.0/24"
+
     ServerlessPrivateSubnetB:
       DependsOn: ServerlessVPC
       Type: AWS::EC2::Subnet
       Properties:
         VpcId:
           Ref: ServerlessVPC
-        AvailabilityZone: ${self:provider.region}b
+        AvailabilityZone: ${self:provider.region}d
         CidrBlock: "10.42.11.0/24"
 
     ServerlessPublicSubnet:
@@ -397,8 +415,9 @@ resources:
         GroupDescription: SecurityGroup for Icarus Serverless Functions
         VpcId:
           Ref: ServerlessVPC
-
-    ServerlessStorageSecurityGroup: # For RDS
+  
+    # RDS
+    ServerlessStorageSecurityGroup:
       DependsOn: ServerlessVPC
       Type: AWS::EC2::SecurityGroup
       Properties:
@@ -406,13 +425,50 @@ resources:
         VpcId:
           Ref: ServerlessVPC
         SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '5432'
-          ToPort: '5432'
+        - IpProtocol: tcp # MySQL (Aurora)
+          FromPort: '3306'
+          ToPort: '3306'
           SourceSecurityGroupId:
             Ref: ServerlessSecurityGroup
-    # TODO ServerlessRDSSubnetGroup and ServerlessRDSCluster: see https://github.com/mugglmenzel/serverless-examples-cached-rds-ws/blob/master/serverless.yml
 
+    ServerlessRDSSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: "RDS Subnet Group"
+        SubnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
+        
+    ServerlessRDSCluster:
+      DependsOn: ServerlessStorageSecurityGroup
+      Type: AWS::RDS::DBCluster
+      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      Properties:
+        Engine: aurora
+        Port: 3306
+        DatabaseName: ${self:provider.environment.RDS_DB}
+        MasterUsername: ${self:provider.environment.RDS_USER}
+        MasterUserPassword: ${self:provider.environment.RDS_PWD}
+        VpcSecurityGroupIds:
+          - Ref: ServerlessStorageSecurityGroup
+        DBSubnetGroupName:
+          Ref: ServerlessRDSSubnetGroup
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Read Models"        
+   
+    ServerlessRDSPrimaryInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        Engine: aurora
+        DBClusterIdentifier: 
+          Ref: ServerlessRDSCluster
+        DBInstanceClass: db.t2.medium
+        DBSubnetGroupName:
+          Ref: ServerlessRDSSubnetGroup
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Read Models - Primary"  
 
     ##################
     # DynamoDB tables
@@ -468,12 +524,24 @@ resources:
         AttributeDefinitions:
           - AttributeName: slack_id
             AttributeType: S
+          - AttributeName: dropboxId
+            AttributeType: S
         KeySchema:
           - AttributeName: slack_id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: slackid_by_dropboxid
+            KeySchema:
+            - AttributeName: dropboxId
+              KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5          
 
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
@@ -552,10 +620,10 @@ resources:
               ProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 5
-              WriteCapacityUnits: 10
+              WriteCapacityUnits: 5
         ProvisionedThroughput:
           ReadCapacityUnits: 5
-          WriteCapacityUnits: 10
+          WriteCapacityUnits: 5
         StreamSpecification:
           StreamViewType: KEYS_ONLY
 
@@ -567,12 +635,24 @@ resources:
         AttributeDefinitions:
           - AttributeName: slack_id
             AttributeType: S
+          - AttributeName: githubId
+            AttributeType: S
         KeySchema:
           - AttributeName: slack_id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: slackid_by_githubuser
+            KeySchema:
+            - AttributeName: githubId
+              KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5  
 
     GithubTokensTable:
       Type: AWS::DynamoDB::Table

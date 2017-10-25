@@ -37,7 +37,7 @@ The following environment variables are expected, to deploy the project:
 * `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: Dropbox integration credentials
 * `GITHUB_WEBHOOK_SECRET`: GitHub webhook application secret
 * `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
-
+* `RDS_USER` and `RDS_PWD`: RDS master user and pwd (master username default: `master`; no default pwd!)
 ### AWS credentials
 
 Expects `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set in the deployment environment.
@@ -74,9 +74,9 @@ It will be used as stage by default
 **DO NOT USE** `deploy.sh` during development: it only deploys the `master` branch to `test` stage. 
 
 
-#### DynamoDB tables
+#### DynamoDB and RDS deletion
 
-By default, `sls remove` does not delete DynamoDB tables.
+By default, `sls remove` does not delete DynamoDB tables and RDS instances.
 
 To force deletion, add the `--tableDeletion Delete` option when running `sls deploy` and `sls remove`
 
@@ -110,4 +110,6 @@ Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage
 
 * SSL Certificate generation and import in ACM, DNS base domain setup are all manual.
 * API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
+    * There is some issue deploying RDS Aurora on `us-east-1a` and `-1b`. I can't find any documentation, but other people had the same issue. CF complaining about "Your subnet group doesn't have enough availability zones..." when using `us-east-1a` and `-1b`, while it works on `-1c` and `-1d`. For example, see [this answer](https://stackoverflow.com/questions/44924723/creation-rds-aurora-cluster-via-cloudformation#answer-45340611)
+
 * No automatic integration or acceptance test :(
