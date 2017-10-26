@@ -2,6 +2,7 @@
 set -e
 BRANCH=${TRAVIS_BRANCH:-$(git rev-parse --abbrev-ref HEAD)} 
 PR=${TRAVIS_PULL_REQUEST:-false}
+DBDELETIONPOLICY=${DB_DELETION:-Retain} # Allows overriding del
 
 # Maps branch to stage
 if [[ $BRANCH == 'master' ]]; then
@@ -22,7 +23,7 @@ echo "Deploying from branch $BRANCH to stage $STAGE"
 #npm prune --production  #remove devDependencies
 
 # Deploy backend
-sls deploy --stage $STAGE --tableDeletion $TABLEDELETION -v
+sls deploy --stage $STAGE --dbDeletion $DBDELETIONPOLICY -v
 
 # Deploy frontend
 sls client deploy --stage $STAGE -v 
