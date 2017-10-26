@@ -592,7 +592,7 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
         StreamSpecification:
-          StreamViewType: KEYS_ONLY
+          StreamViewType: NEW_IMAGE
 
     GithubEventsTable:
       Type: AWS::DynamoDB::Table

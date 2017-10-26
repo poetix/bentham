@@ -3,7 +3,7 @@ import { UserActivity } from "../Api"
 import { IdentityRepository } from "../../common/repositories/IdentityRepository"
 
 export interface DropboxFileChangeEvent {
-    dropboxAccountId: string,
+    dropboxUserId: string,
     timestamp: Date,
 }
 
@@ -51,7 +51,7 @@ export class UserActivityStatsService {
 
     // Maps a DropboxFileChangeEvent to a UserActivity, for known Icarus users only
     private async toUserActivity(fileChangeEvent: DropboxFileChangeEvent): Promise<UserActivity|undefined> {
-        const dropboxId = fileChangeEvent.dropboxAccountId
+        const dropboxId = fileChangeEvent.dropboxUserId
         // If the user is not mapped, returns a resolved Promise<undefined>
         return this.identityRepository.getSlackIdentityByDropboxId(dropboxId)
             .then( slackIdentity => ({

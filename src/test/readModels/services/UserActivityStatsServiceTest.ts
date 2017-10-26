@@ -18,7 +18,6 @@ describe('User Activity stats service', () => {
 
             const unit = new UserActivityStatsService(activityCountRepository, indentityRepository)
 
- 
             when(identityRepositoryMock.getSlackIdentityByDropboxId('dropbox-id')).thenReturn( Promise.resolve({
                 id: 'slack-id',
                 accessToken: 'access-token',
@@ -29,10 +28,9 @@ describe('User Activity stats service', () => {
             when(activityCountRepositoryMock.createTableIfNotExists()).thenReturn(Promise.resolve())
             when(activityCountRepositoryMock.incActivityCount(anything())).thenReturn(Promise.resolve())
             
-
             const events: DropboxFileChangeEvent[] = [
-                { dropboxAccountId: 'dropbox-id', timestamp: new Date()},
-                { dropboxAccountId: 'dropbox-id', timestamp: new Date()}
+                { dropboxUserId: 'dropbox-id', timestamp: new Date()},
+                { dropboxUserId: 'dropbox-id', timestamp: new Date()}
             ]
 
             await unit.processDropboxFileChangeEvents(events)
@@ -54,7 +52,7 @@ describe('User Activity stats service', () => {
             when(activityCountRepositoryMock.createTableIfNotExists()).thenReturn(Promise.resolve())
             
             const events: DropboxFileChangeEvent[] = [
-                { dropboxAccountId: 'unknown-dropbox-id', timestamp: new Date()},
+                { dropboxUserId: 'unknown-dropbox-id', timestamp: new Date()},
             ]
 
             await unit.processDropboxFileChangeEvents(events)

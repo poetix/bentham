@@ -26,9 +26,11 @@ export class FileChangesEventProcessor {
 
 
     // Extract multiple DropboxFileChangeEvents from a lambda event
+    // It gets the dropbox ID of the user who changed the file, not the tracked account!
+    // They may be different for shared directories
     private toDropobxFileChangeEvents(event: event): DropboxFileChangeEvent[] {
         return event.Records.map( record => ({
-            dropboxAccountId: record.dynamodb.Keys.account_id.S,
+            dropboxUserId: record.dynamodb.NewImage.user_id.S, 
             timestamp: new Date( record.dynamodb.Keys.timestamp.S )
         }))
     }

@@ -28,7 +28,7 @@ describe('File Changes DynamoDB table event processors', () => {
         verify(userActivityStatsServiceMock.processDropboxFileChangeEvents(anything())).once()
 
         expect(fileChangeEvents).to.have.lengthOf(2)
-        expect(fileChangeEvents[0].dropboxAccountId).is.equal('my-dropbox-id')
+        expect(fileChangeEvents[0].dropboxUserId).is.equal('my-dropbox-id')
         expect(fileChangeEvents[0].timestamp).to.deep.equal(new Date('2017-10-25T10:13:22Z'))
         expect(fileChangeEvents[1].timestamp).to.deep.equal(new Date('2017-10-25T10:13:25Z'))
     })
@@ -48,10 +48,24 @@ const dynamoDbStreamEventWith2Records = {
                 "ApproximateCreationDateTime": 1508926380,
                 "Keys": {
                     "account_id": {
-                        "S": "my-dropbox-id"
+                        "S": "dropbox-id-A"
                     },
                     "timestamp": {
                         "S": "2017-10-25T10:13:22Z"
+                    }
+                },
+                "NewImage": {
+                    "account_id": {
+                        "S": "dropbox-id-A"
+                    },
+                    "user_id": {
+                        "S": "my-dropbox-id"
+                    },
+                    "type": {
+                        "S": "file"
+                    },
+                    "timestamp": {
+                        "S": "2017-10-26T09:23:45Z"
                     }
                 },
                 "SequenceNumber": "100000000003735008969",
@@ -70,10 +84,24 @@ const dynamoDbStreamEventWith2Records = {
                 "ApproximateCreationDateTime": 1508926380,
                 "Keys": {
                     "account_id": {
-                        "S": "my-dropbox-id"
+                        "S": "dropbox-id-B"
                     },
                     "timestamp": {
                         "S": "2017-10-25T10:13:25Z"
+                    }
+                },
+                "NewImage": {
+                    "account_id": {
+                        "S": "dropbox-id-B"
+                    },
+                    "user_id": {
+                        "S": "my-dropbox-id"
+                    },
+                    "type": {
+                        "S": "file"
+                    },
+                    "timestamp": {
+                        "S": "2017-10-26T09:23:45Z"
                     }
                 },
                 "SequenceNumber": "200000000003735009677",
