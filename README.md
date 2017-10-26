@@ -78,7 +78,7 @@ It will be used as stage by default
 
 By default, `sls remove` does not delete DynamoDB tables and RDS instances.
 
-To force deletion, add the `--tableDeletion Delete` option when running `sls deploy` and `sls remove`
+To force deletion of DynamoDB tables and RDS instances, add the `--dbDeletion Delete` option when running `sls deploy` and `sls remove`
 
 
 ## CI/CD

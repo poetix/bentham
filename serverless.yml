@@ -102,10 +102,9 @@ custom:
   client:
     bucketName: ${self:provider.stage}-icarus-site # The public URL become `https://s3.amazonaws.com/<stage>-icarus-site/`
 
-  # DynamoDB table deletion policy
+  # DynamoDB and RDS table deletion policy
   # Default is 'Retain'. Override with 'Delete' to drop tables when removing the stack
-  dynamoDbDeletionPolicy: ${opt:tableDeletion, 'Retain'} # 'Retain' | 'Delete'
-
+  dbDeletionPolicy: ${opt:dbDeletion, 'Retain'} # 'Retain' | 'Delete'
 
 functions:
 
@@ -454,7 +453,7 @@ resources:
     ServerlessRDSCluster:
       DependsOn: ServerlessStorageSecurityGroup
       Type: AWS::RDS::DBCluster
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         Engine: aurora
         Port: 3306
@@ -488,7 +487,7 @@ resources:
 
     AccessTokensTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
         AttributeDefinitions:
@@ -515,7 +514,7 @@ resources:
 
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -530,7 +529,7 @@ resources:
 
     DropboxAccountsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -557,7 +556,7 @@ resources:
 
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXTOKENS_TABLE}
         AttributeDefinitions:
@@ -572,7 +571,7 @@ resources:
 
     DropboxCursorsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXCURSORS_TABLE}
         AttributeDefinitions:
@@ -587,7 +586,7 @@ resources:
 
     FileChangesTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.FILECHANGES_TABLE}
         AttributeDefinitions:
@@ -608,7 +607,7 @@ resources:
 
     GithubEventsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBEVENTS_TABLE}
         AttributeDefinitions:
@@ -641,7 +640,7 @@ resources:
 
     GithubAccountsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -668,7 +667,7 @@ resources:
 
     GithubTokensTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBTOKENS_TABLE}
         AttributeDefinitions:
