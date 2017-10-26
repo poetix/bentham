@@ -13,6 +13,46 @@ provider:
   region: us-east-1 # Domain Manager plugin supports us-east-1 only!
   stage: ${opt:stage, self:custom.stage}
 
+  iamRoleStatements: 
+    # DynamoDB access
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:BatchWriteItem
+        - dynamodb:Query   
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}/index/slackid_by_dropboxid
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}/index/slackid_by_githubuser
+    # For listening to DynamoDB Streams
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
+    # For deploying in VPC
+    - Effect: Allow
+      Action:
+        - ec2:CreateNetworkInterface
+        - ec2:DescribeNetworkInterfaces
+        - ec2:DeleteNetworkInterface
+      Resource: "*"       
+
   environment:
     DROPBOX_CLIENT_ID: ${env:DROPBOX_CLIENT_ID}
     DROPBOX_CLIENT_SECRET: ${env:DROPBOX_CLIENT_SECRET}
@@ -39,6 +79,13 @@ provider:
     GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
     GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
 
+    RDS_HOST: # TODO This value being dynamically generated on deployment blocks from deploying a single function relying on it
+      "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Address]
+    RDS_PORT: 
+      "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Port]
+    RDS_DB: read_models
+    RDS_USER: ${env:RDS_USER, 'master'}
+    RDS_PWD: ${env:RDS_PWD}
 custom:
   stage: ${env:ICARUS_STAGE, 'dev'}
 
@@ -55,15 +102,21 @@ custom:
   client:
     bucketName: ${self:provider.stage}-icarus-site # The public URL become `https://s3.amazonaws.com/<stage>-icarus-site/`
 
-  # DynamoDB table deletion policy
+  # DynamoDB and RDS table deletion policy
   # Default is 'Retain'. Override with 'Delete' to drop tables when removing the stack
-  dynamoDbDeletionPolicy: ${opt:tableDeletion, 'Retain'} # 'Retain' | 'Delete'
-
+  dbDeletionPolicy: ${opt:dbDeletion, 'Retain'} # 'Retain' | 'Delete'
 
 functions:
+
   # Slack
   slack-oauth-initiate:
     handler: src/main/slack/handler.oauthInitiate
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -72,6 +125,12 @@ functions:
 
   slack-oauth-complete:
     handler: src/main/slack/handler.oauthComplete
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -81,6 +140,12 @@ functions:
   # Dropbox
   dropbox-webhook-challenge:
     handler: src/main/dropbox/handler.webhookChallenge
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -88,6 +153,12 @@ functions:
 
   dropbox-webhook-notify:
     handler: src/main/dropbox/handler.webhookNotify
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
@@ -95,6 +166,12 @@ functions:
 
   dropbox-oauth-initiate:
     handler: src/main/dropbox/handler.oauthInitiate
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
@@ -103,6 +180,12 @@ functions:
 
   dropbox-oauth-complete:
     handler: src/main/dropbox/handler.oauthComplete
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -111,6 +194,12 @@ functions:
 
   dropbox-user-report:
     handler: src/main/dropbox/handler.userReport
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -123,6 +212,12 @@ functions:
   # Github
   gihub-webhook-receive:
     handler: src/main/github/handler.webhookReceive
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -130,6 +225,12 @@ functions:
 
   github-oauth-initiate:
     handler: src/main/github/handler.oauthInitiate
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -138,17 +239,255 @@ functions:
 
   github-oauth-complete:
     handler: src/main/github/handler.oauthComplete
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
           path: github-oauth-complete
           cors: true
 
+  # DynamoDB event processors: builds Read Models
+  file-changes-event-processor:
+    handler: src/main/readModels/handler.fileChangesEvents
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB 
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - FileChangesTable
+              - StreamArn
+
+  github-events-processor:
+    handler: src/main/readModels/handler.githubEvents
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB 
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - GithubEventsTable
+              - StreamArn
+
 resources:
   Resources:
+  
+    ######
+    # VPC
+    ######
+
+    ServerlessVPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.42.0.0/16"
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage}"
+
+    # VPC Networking.
+    # See:
+    #   https://github.com/mugglmenzel/serverless-examples-cached-rds-ws/blob/master/serverless.yml
+    #   https://gist.github.com/romaninsh/81d4ee778c1e20f709f3518c22521ba4
+    #   https://gist.github.com/reggi/dc5f2620b7b4f515e68e46255ac042a7
+
+    ServerlessPrivateSubnetA:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}c # There is some issue with Aurora, not able to be deployed on us-east-1a and -1b
+        CidrBlock: "10.42.10.0/24"
+
+    ServerlessPrivateSubnetB:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}d
+        CidrBlock: "10.42.11.0/24"
+
+    ServerlessPublicSubnet:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        AvailabilityZone: ${self:provider.region}a
+        CidrBlock: "10.42.0.0/24"
+
+    ServerlessNATIP:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::EIP
+      Properties:
+        Domain: vpc
+
+    ServelessNatGateway:
+      DependsOn: ServerlessPublicSubnet
+      Type: AWS::EC2::NatGateway
+      Properties:
+        SubnetId:
+          Ref: ServerlessPublicSubnet
+        AllocationId:
+          "Fn::GetAtt": ServerlessNATIP.AllocationId
+
+    ServelessPrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Private (Lambda)"
+
+    ServerlessDefaultPrivateRoute:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: ServelessPrivateRouteTable
+        DestinationCidrBlock: "0.0.0.0/0"
+        NatGatewayId:
+          Ref: ServelessNatGateway
+          
+    ServerlessPrivateARouteTableAssoiciation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServelessPrivateRouteTable
+        SubnetId:
+          Ref: ServerlessPrivateSubnetA
+
+    ServerlessPrivateBRouteTableAssoiciation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServelessPrivateRouteTable
+        SubnetId:
+          Ref: ServerlessPrivateSubnetB
+
+    ServerlessIgw:
+      Type: AWS::EC2::InternetGateway
+
+    ServerlessIgwAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        InternetGatewayId:
+          Ref: ServerlessIgw    
+
+    ServerlessPublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId:
+          Ref: ServerlessVPC
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Public (IGW)"
+
+    ServerlessDefaultPublicRoute:
+      DependsOn: ServerlessIgw
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId:
+          Ref: ServerlessPublicRouteTable
+        DestinationCidrBlock: "0.0.0.0/0"
+        GatewayId:
+          Ref: ServerlessIgw
+
+    ServerlessPublicRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId:
+          Ref: ServerlessPublicRouteTable
+        SubnetId:
+          Ref: ServerlessPublicSubnet         
+
+    ServerlessSecurityGroup:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: SecurityGroup for Icarus Serverless Functions
+        VpcId:
+          Ref: ServerlessVPC
+  
+    # RDS
+    ServerlessStorageSecurityGroup:
+      DependsOn: ServerlessVPC
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Ingress for Aurora (MySQL) Cluster
+        VpcId:
+          Ref: ServerlessVPC
+        SecurityGroupIngress:
+        - IpProtocol: tcp # MySQL (Aurora)
+          FromPort: '3306'
+          ToPort: '3306'
+          SourceSecurityGroupId:
+            Ref: ServerlessSecurityGroup
+
+    ServerlessRDSSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: "RDS Subnet Group"
+        SubnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
+        
+    ServerlessRDSCluster:
+      DependsOn: ServerlessStorageSecurityGroup
+      Type: AWS::RDS::DBCluster
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
+      Properties:
+        Engine: aurora
+        Port: 3306
+        DatabaseName: ${self:provider.environment.RDS_DB}
+        MasterUsername: ${self:provider.environment.RDS_USER}
+        MasterUserPassword: ${self:provider.environment.RDS_PWD}
+        VpcSecurityGroupIds:
+          - Ref: ServerlessStorageSecurityGroup
+        DBSubnetGroupName:
+          Ref: ServerlessRDSSubnetGroup
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Read Models"        
+   
+    ServerlessRDSPrimaryInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        Engine: aurora
+        DBClusterIdentifier: 
+          Ref: ServerlessRDSCluster
+        DBInstanceClass: db.t2.medium
+        DBSubnetGroupName:
+          Ref: ServerlessRDSSubnetGroup
+        Tags:
+          - Key: Name
+            Value: "${self:service}-${self:provider.stage} Read Models - Primary"  
+
+    ##################
+    # DynamoDB tables
+    ##################
+
     AccessTokensTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.ACCESSTOKENS_TABLE}
         AttributeDefinitions:
@@ -175,7 +514,7 @@ resources:
 
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.SLACKACCOUNTS_TABLE}
         AttributeDefinitions:
@@ -190,11 +529,13 @@ resources:
 
     DropboxAccountsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXACCOUNTS_TABLE}
         AttributeDefinitions:
           - AttributeName: slack_id
+            AttributeType: S
+          - AttributeName: dropboxId
             AttributeType: S
         KeySchema:
           - AttributeName: slack_id
@@ -202,10 +543,20 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: slackid_by_dropboxid
+            KeySchema:
+            - AttributeName: dropboxId
+              KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5          
 
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXTOKENS_TABLE}
         AttributeDefinitions:
@@ -220,7 +571,7 @@ resources:
 
     DropboxCursorsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.DROPBOXCURSORS_TABLE}
         AttributeDefinitions:
@@ -235,7 +586,7 @@ resources:
 
     FileChangesTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.FILECHANGES_TABLE}
         AttributeDefinitions:
@@ -251,10 +602,12 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 10
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
 
     GithubEventsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBEVENTS_TABLE}
         AttributeDefinitions:
@@ -278,18 +631,22 @@ resources:
               ProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 5
-              WriteCapacityUnits: 10
+              WriteCapacityUnits: 5
         ProvisionedThroughput:
           ReadCapacityUnits: 5
-          WriteCapacityUnits: 10
+          WriteCapacityUnits: 5
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
 
     GithubAccountsTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBACCOUNTS_TABLE}
         AttributeDefinitions:
           - AttributeName: slack_id
+            AttributeType: S
+          - AttributeName: githubId
             AttributeType: S
         KeySchema:
           - AttributeName: slack_id
@@ -297,10 +654,20 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: slackid_by_githubuser
+            KeySchema:
+            - AttributeName: githubId
+              KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5  
 
     GithubTokensTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: ${self:custom.dynamoDbDeletionPolicy}
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
       Properties:
         TableName: ${self:provider.environment.GITHUBTOKENS_TABLE}
         AttributeDefinitions:
@@ -312,41 +679,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-
-    DynamoDBIamPolicy:
-      Type: AWS::IAM::Policy
-      DependsOn:
-        - GithubTokensTable
-        - GithubAccountsTable
-        - GithubEventsTable
-        - DropboxTokensTable
-        - DropboxCursorsTable
-        - FileChangesTable
-        - AccessTokensTable
-        - SlackAccountsTable
-        - DropboxAccountsTable
-      Properties:
-        PolicyName: lambda-dynamodb
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:GetItem
-                - dynamodb:PutItem
-                - dynamodb:BatchWriteItem
-                - dynamodb:Query
-              Resource:
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
-                - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
-        Roles:
-          - Ref: IamRoleLambdaExecution

@@ -38,14 +38,12 @@ export class IdentityService {
             this.repo.getDropboxIdentity(slackIdentity.id),
             this.repo.getGithubIdentity(slackIdentity.id)
           ])
-          // TODO Use deconstructing instead of accessing results as an array
-          .then( identities => ({
-              accessToken: slackIdentity.accessToken,
-              userName: slackIdentity.userName,
-              dropboxAccountId: (<DropboxIdentity>identities[0]) ?  (<DropboxIdentity>identities[0]).id : undefined,
-              githubUsername: (<GithubIdentity>identities[1]) ? (<GithubIdentity>identities[1]).id : undefined
-            })
-        )
+          .then( ([dropboxIdentity, githubIdentity]) => ({
+            accessToken: slackIdentity.accessToken,
+            userName: slackIdentity.userName,
+            dropboxAccountId: (dropboxIdentity) ? dropboxIdentity.id : undefined,
+            githubUsername: (githubIdentity) ? githubIdentity.id : undefined
+          }) )
       )
   }
 
