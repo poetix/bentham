@@ -17,6 +17,8 @@ const createTableDDL = "CREATE TABLE IF NOT EXISTS user_event_counts ( \
 const insertOrUpdateSQL = "INSERT INTO user_event_counts ( slack_id, integration, dow, hours, event_count) \
 VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE event_count = event_count + 1"
 
+const userActivityDistributionSQL = "SELECT dow, hours, sum(event_count) as event_count FROM user_event_counts WHERE slack_id = ? GROUP BY dow, hours"
+
 /**
  * Repository for User Activity counts, stored on RDS
  */
@@ -36,5 +38,9 @@ export class UserActivityCountRepository {
             userActivity.hours
         ]
         return this.mySql.query(insertOrUpdateSQL, params)
+    }
+
+    async getUserActivityDistribution(slackId:string):Promise<any[]> { 
+        return this.mySql.query(userActivityDistributionSQL, [ slackId ] )
     }
 }

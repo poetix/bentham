@@ -7,7 +7,7 @@ import { ReportService } from "../services/ReportService"
 
 export class ReportEndpoint {
 
-  constructor(readonly service: ReportService) {}
+  constructor(private readonly service: ReportService) {}
 
   /** 
     Retrieve user Dropbox report

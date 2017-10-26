@@ -5,6 +5,7 @@ import { FileChangesEventProcessor } from "./eventProcessors/FileChangesEventPro
 import { GithubEventProcessor } from "./eventProcessors/GithubEventProcessor";
 import { UserActivityCountRepository } from "./repositories/UserActivityCountRepository"
 import { UserActivityStatsService } from "./services/UserActivityStatsService"
+import { UserActivityStatsEndpoint } from "./endpoints/UserActivityStatsEndpoint"
 
 // Clients
 const dynamo = new DynamoClient(process.env.TABLE_PREFIX);
@@ -27,3 +28,6 @@ const userActivityStatsService = new UserActivityStatsService(userActivityCountR
 // Event Processors
 export const fileChangesEventProcessor = new FileChangesEventProcessor(userActivityStatsService)
 export const githubEventsProcessor = new GithubEventProcessor(userActivityStatsService)
+
+// Endpoints
+export const userActivityStatsEndpoint = new UserActivityStatsEndpoint(userActivityStatsService)

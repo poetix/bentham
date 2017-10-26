@@ -116,4 +116,53 @@ describe('User Activity stats service', () => {
             verify(identityRepositoryMock.getSlackIdentityByGithubUser(anyString())).once()            
         })
     })
+
+    describe('get a user activity distribution', () => {
+
+        it('should return an array with restults, if icarus access token is valid', async () => {
+            const identityRepositoryMock = mock(IdentityRepository)
+            const indentityRepository = instance(identityRepositoryMock)
+            const activityCountRepositoryMock = mock(UserActivityCountRepository)
+            const activityCountRepository = instance(activityCountRepositoryMock)
+
+            const unit = new UserActivityStatsService(activityCountRepository, indentityRepository)
+
+            when(identityRepositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve({
+                id: 'slack-id',
+                accessToken: 'access tokens',
+                teamId: 'team-id',
+                userName: 'User Name'
+            }))
+
+            when(activityCountRepositoryMock.getUserActivityDistribution('slack-id')).thenReturn(Promise.resolve([
+                { dow: 0, hours: 0, event_count: 42 },
+                { dow: 6, hours: 23, event_count: 1 }
+            ]))
+
+            const results = await unit.getUserActivityDistribution('access token')
+
+            expect(results).to.have.lengthOf(2)
+
+            verify(identityRepositoryMock.getSlackIdentity('access token')).once()
+            verify(activityCountRepositoryMock.getUserActivityDistribution('slack-id')).once()
+        })
+
+        it('should reject if icarus access token is invalid', () => {
+            const identityRepositoryMock = mock(IdentityRepository)
+            const indentityRepository = instance(identityRepositoryMock)
+            const activityCountRepositoryMock = mock(UserActivityCountRepository)
+            const activityCountRepository = instance(activityCountRepositoryMock)
+
+            const unit = new UserActivityStatsService(activityCountRepository, indentityRepository)
+            
+            when(identityRepositoryMock.getSlackIdentity('invalid token')).thenReturn(Promise.reject('not found'))
+
+            return unit.getUserActivityDistribution('invalid token')
+            .catch(err => {
+                expect(err).to.be.ok
+                verify(identityRepositoryMock.getSlackIdentity('invalid token')).once()
+                verify(activityCountRepositoryMock.getUserActivityDistribution(anyString())).never()
+              })
+        })
+    })
 })
