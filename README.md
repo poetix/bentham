@@ -103,7 +103,7 @@ Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage
 
 
 * [Login & authorisation journeys](./docs/login_journeys.md)
-* [DynamoDB tables](./docs/DynamoDB_tables.md)
+* [DynamoDB and RDS tables](./docs/tables.md)
 
 
 ## Known Issues/Limitations

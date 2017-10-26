@@ -1,27 +1,29 @@
-# DynamoDB Tables
+# Persistent tables
+
+## DynamoDB Tables
 
 Table names are always prefixed with: `icarus-[<developer>]<stage>-`
 
-### access_token
+### `access_tokens` table
 
 - `slack_id`: PK, Slack user ID (e.g. `U7BV5T...`)
 - `access_token`: PK, Icarus access token (UUID)
 
-#### access_tokens_by_token Index
+#### `access_tokens_by_token` index
 
 - `access_token`: PK
 
 Type: GlobalSecondaryIndex
 Attributes: All
 
-### slack_accounts
+### `slack_accounts` table
 
 - `slack_id`: PK, Slack user ID
 - `access_token`: Slack OAuth access token
 - `team_id`: Slack Team ID (e.g. `T5G9Z...`)
 - `user_name`: Slack user name
 
-### dropbox_accounts
+### `dropbox_accounts` table
 
 - `slack_id`: PK, Slack user ID
 - `access_token`: Dropbox OAuth access token
@@ -29,7 +31,12 @@ Attributes: All
 
 **TODO Rename `dropboxId` to `drobox_id`**
 
-### github_accounts
+#### `slackid_by_dropboxid` index
+
+- `dropboxId`: PK
+- `slack_id`
+
+### `github_accounts` table
 
 - `slack_id`: PK, Slack user ID
 - `access_token`: Github OAuth access token
@@ -37,8 +44,12 @@ Attributes: All
 
 **TODO Rename `githubId` to `github_id` or `username`**
 
+#### `slackid_by_githubuser` index
 
-## dropbox_tokens
+- `githubId` PK
+- `slack_id`
+
+## `dropbox_tokens` table
 
 **TODO Can't this be an Index of `dropbox_accounts`?**
 
@@ -46,7 +57,7 @@ Attributes: All
 - `access_token`: Dropbox OAuth access token
 
 
-### github_tokens
+### `github_tokens` table
 
 **TODO Can't this be an Index of `github_accounts`?**
 
@@ -54,7 +65,7 @@ Attributes: All
 - `access_token`: Github OAuth access token
 
 
-### github_events
+### `github_events` table
 
 - `id`: PK, event ID
 - `eventType`: Event type (e.g. `commit`)
@@ -63,7 +74,7 @@ Attributes: All
 - `timestamp`: Event timestamp, ISO 8691 date and time with TZ
 - `username`: Github username
 
-#### events_by_user Index
+#### `events_by_user` Index
 
 - `username`: PK
 - `timestamp`: SK
@@ -71,14 +82,31 @@ Attributes: All
 Type: GlobalSecondaryIndex
 Attributes: All
 
-### drobpox_cursors
+### `drobpox_cursors` table
 
 - `account_id`: PK, Dropbox user ID
 - `cursor`: Dropbox cursor ID
 
-### dropbox_file_changes
+### `dropbox_file_changes` table
 
 - `account_id`: PK, Dropbox user ID
 - `user_id`: *Modified by* user ID
 - `timestamp`: timestamp **TODO Format?**
 - `type`: tag **TODO ??**
+
+## RDS Tables
+
+#### `user_event_counts` table
+
+```
+    slack_id VARCHAR(64) NOT NULL,
+    integration CHAR(1) NOT NULL,
+    dow TINYINT NOT NULL,
+    hours TINYINT NOT NULL,
+    event_count INTEGER NOT NULL  DEFAULT 0,
+    PRIMARY KEY (slack_id, integration, dow, hours),
+    INDEX (slack_id),
+    INDEX (slack_id, dow),
+    INDEX (slack_id, hours),
+    INDEX (slack_id, dow, hours)
+```

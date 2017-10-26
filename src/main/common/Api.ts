@@ -35,6 +35,6 @@ export type icarusAccessToken = string
 export interface IcarusUserToken {
   accessToken: icarusAccessToken,
   userName: slackUsername,
-  dropboxAccountId: string|undefined, // TODO Fix type
-  githubUsername: string|undefined, // TODO Fix type
+  dropboxAccountId: string|undefined,
+  githubUsername: string|undefined,
 }
