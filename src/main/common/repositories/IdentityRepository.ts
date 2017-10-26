@@ -90,7 +90,7 @@ export class IdentityRepository {
 
   // Lookups Slack ID by Dropbox ID; reject if not found
   private async getSlackIdByDropboxId(dropboxId: string): Promise<string> {
-    console.log(`Looking up SlackID by Dropbox ID: ${dropboxId}`) // FIXME remove
+    // console.log(`Looking up SlackID by Dropbox ID: ${dropboxId}`)
     return this.dynamo.query(dropboxAccountsTable, {
       IndexName: 'slackid_by_dropboxid',
       KeyConditionExpression: 'dropboxId = :dropboxId',
@@ -101,7 +101,7 @@ export class IdentityRepository {
       Limit: "1",
     })
     .then(results => {
-      console.log(`DynamoDB query result: ${JSON.stringify(results)}`) // FIXME remove
+      // console.log('DynamoDB query result: %j', results)
       if ( results && results.length )
         return results[0].slack_id
       else
@@ -120,7 +120,7 @@ export class IdentityRepository {
       IndexName: 'slackid_by_githubuser',
       KeyConditionExpression: 'githubId = :githubUser',
       ExpressionAttributeValues: {
-        ':githubId': githubUser, 
+        ':githubUser': githubUser, 
       },
       ProjectionExpression: 'slack_id',
       Limit: "1",

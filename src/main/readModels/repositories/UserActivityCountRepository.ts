@@ -17,7 +17,11 @@ const createTableDDL = "CREATE TABLE IF NOT EXISTS user_event_counts ( \
 const insertOrUpdateSQL = "INSERT INTO user_event_counts ( slack_id, integration, dow, hours, event_count) \
 VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE event_count = event_count + 1"
 
-
+/**
+ * Repository for User Activity counts, stored on RDS
+ * 
+ * The repository is integration agnostic 
+ */
 export class UserActivityCountRepository {
 
     constructor(private readonly mySql:MySqlClient) {}

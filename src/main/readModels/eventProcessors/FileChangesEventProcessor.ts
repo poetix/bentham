@@ -1,5 +1,6 @@
 import { event, callback } from "../../common/Api";
 import { UserActivityStatsService, DropboxFileChangeEvent } from "../services/UserActivityStatsService"
+import { processUserEventsAndRespond } from "./EventProcessorUtils"
 
 // Process DynamoDB file_changes stream events
 export class FileChangesEventProcessor {
@@ -7,21 +8,11 @@ export class FileChangesEventProcessor {
     constructor(private readonly userActivityService: UserActivityStatsService) {}
 
     process(cb: callback, event: event) {
-        console.log(JSON.stringify(event, null, 2)); // FIXME remove logging
+        // console.log('Raw lambda event: ' +  JSON.stringify(event, null, 2));
 
         const fileChangeEvents = this.toDropobxFileChangeEvents(event)
-        console.log(`The event contains ${fileChangeEvents.length} DropboxFileChangeEvent`)
-
-        this.userActivityService.processDropboxFileChangeEvents(fileChangeEvents)
-            .then( success => {
-                console.log('Events processed') // FIXME remove
-                cb(null, "processed")
-            })
-            .catch(err => {
-                console.log(`Error processing events: ${err}`)
-                cb(err, "unable-to-process") 
-            })
-
+        const _userEventProcessor = (events) => this.userActivityService.processDropboxFileChangeEvents(events)
+        processUserEventsAndRespond(fileChangeEvents, _userEventProcessor, cb)
     }
 
 
@@ -34,12 +25,4 @@ export class FileChangesEventProcessor {
             timestamp: new Date( record.dynamodb.Keys.timestamp.S )
         }))
     }
-
 }
-
-
-
-
-
-
-

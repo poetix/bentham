@@ -7,7 +7,7 @@ export class MySqlClient {
     constructor(private readonly connectionOptions:any) {}
 
     private connect(): any {
-        console.log(`Opening MySQL connection: ${JSON.stringify(this.connectionOptions)}`) // FIXME remove
+        // console.log('Opening MySQL connection: %j', this.connectionOptions)
         return mysql.createConnection(this.connectionOptions)
     }
 
@@ -15,11 +15,9 @@ export class MySqlClient {
         return new Promise<void>((resolve,reject) => 
             connection.end( (err) => {
                 if(err) {
-                    console.log('Error closing the connection: ' + err)
+                    console.error('Error closing the connection: ' + err)
                     reject(err)
-
                 } else {
-                    console.log('Connection closed') // FIXME remove
                     resolve()
                 }
             })
@@ -28,16 +26,16 @@ export class MySqlClient {
 
     // Promosify MySQL query in the form query(options, cb)
     private async toPromise(connection, options:any):Promise<any> {
-        console.log(`Executing MySQL query: ${JSON.stringify(options)}`) // FIXME remove
+        // console.log('Executing MySQL query: %j', options)
 
         const toPromise = (mySqlOp: (options, cb) => void, options ): Promise<any> =>
         new Promise<any>((respond, reject) => {
             mySqlOp(options, (err, results, fields) => {
                 if(err) {
-                    console.log(`Error executing MySQL query: ${err}`)
+                    console.error('Error executing MySQL query: ' + err)
                     reject(err)
                 } else {
-                    console.log(`Successful MySQL query. Results: ${JSON.stringify(results)}`) // FIXME remove
+                    // console.log('MySQL query results: %j', results)
                     respond(results)
                 }
             })
@@ -58,12 +56,13 @@ export class MySqlClient {
         }
 
         return this.toPromise(connection, queryOptions)
+            // This eventually close the connection, but the returned Promise doesn't wait for that. Any potential issue?
             .then( result => {
-                this.closeConnection(connection) // TODO This is fire and forget. Is it a correct pattern?
+                this.closeConnection(connection)
                 return result
             })
             .catch(err => {
-                this.closeConnection(connection) // TODO This is fire and forget. Is it a correct pattern?
+                this.closeConnection(connection)
                 throw err
             })
     }

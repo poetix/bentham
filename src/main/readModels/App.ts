@@ -2,6 +2,7 @@ import { IdentityRepository } from "../common/repositories/IdentityRepository";
 import { DynamoClient } from "../common/clients/DynamoClient";
 import { MySqlClient } from "../common/clients/MySqlClient"
 import { FileChangesEventProcessor } from "./eventProcessors/FileChangesEventProcessor";
+import { GithubEventProcessor } from "./eventProcessors/GithubEventProcessor";
 import { UserActivityCountRepository } from "./repositories/UserActivityCountRepository"
 import { UserActivityStatsService } from "./services/UserActivityStatsService"
 
@@ -25,3 +26,4 @@ const userActivityStatsService = new UserActivityStatsService(userActivityCountR
 
 // Event Processors
 export const fileChangesEventProcessor = new FileChangesEventProcessor(userActivityStatsService)
+export const githubEventsProcessor = new GithubEventProcessor(userActivityStatsService)

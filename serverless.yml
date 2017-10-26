@@ -65,8 +65,6 @@ provider:
     GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
     GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
 
-
-
     TABLE_PREFIX: ${self:service}-${self:provider.stage}-
 
     ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
@@ -81,9 +79,7 @@ provider:
     GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
     GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
 
-    # RDS_ENDPOINT:
-    #   "Fn::Join": [":", ["Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Address], "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Port]]]
-    RDS_HOST: 
+    RDS_HOST: # TODO This value being dynamically generated on deployment blocks from deploying a single function relying on it
       "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Address]
     RDS_PORT: 
       "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Port]
@@ -256,7 +252,7 @@ functions:
           path: github-oauth-complete
           cors: true
 
-  # Read Models
+  # DynamoDB event processors: builds Read Models
   file-changes-event-processor:
     handler: src/main/readModels/handler.fileChangesEvents
     vpc:
@@ -271,6 +267,22 @@ functions:
           arn:
             Fn::GetAtt:
               - FileChangesTable
+              - StreamArn
+
+  github-events-processor:
+    handler: src/main/readModels/handler.githubEvents
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB 
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - GithubEventsTable
               - StreamArn
 
 resources:
@@ -421,7 +433,7 @@ resources:
       DependsOn: ServerlessVPC
       Type: AWS::EC2::SecurityGroup
       Properties:
-        GroupDescription: Ingress for RDS Instance
+        GroupDescription: Ingress for Aurora (MySQL) Cluster
         VpcId:
           Ref: ServerlessVPC
         SecurityGroupIngress:
@@ -625,7 +637,7 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
         StreamSpecification:
-          StreamViewType: KEYS_ONLY
+          StreamViewType: NEW_IMAGE
 
     GithubAccountsTable:
       Type: AWS::DynamoDB::Table
