@@ -72,7 +72,7 @@ const dynamoDbStreamEventWith2Records = {
                 "SizeBytes": 79,
                 "StreamViewType": "KEYS_ONLY"
             },
-            "eventSourceARN": "arn:aws:dynamodb:us-east-1:0000:table/icarus-lorenzodev-dropbox_file_changes/stream/2017-10-25T09:40:54.513"
+            "eventSourceARN": "arn:aws:dynamodb:us-east-1:0000:table/icarus-temp-dropbox_file_changes/stream/2017-10-25T09:40:54.513"
         },
         {
             "eventID": "eb2d7cc0e06ab6cd24e5a0c331391dce",
@@ -108,7 +108,7 @@ const dynamoDbStreamEventWith2Records = {
                 "SizeBytes": 79,
                 "StreamViewType": "KEYS_ONLY"
             },
-            "eventSourceARN": "arn:aws:dynamodb:us-east-1:0000:table/icarus-lorenzodev-dropbox_file_changes/stream/2017-10-25T09:40:54.513"
+            "eventSourceARN": "arn:aws:dynamodb:us-east-1:0000:table/icarus-temp-dropbox_file_changes/stream/2017-10-25T09:40:54.513"
         }
     ]
 }

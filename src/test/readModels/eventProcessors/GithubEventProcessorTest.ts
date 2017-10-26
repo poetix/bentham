@@ -46,7 +46,7 @@ const dynamoDbStreamEventWith2Records = {
                 "ApproximateCreationDateTime": 1509019320,
                 "Keys": {
                     "id": {
-                        "S": "nicusX-056bf065948a2403aefa2e354fa04d6b684f4fb2"
+                        "S": "nicusX-056bf065948a2403aefa2e354f"
                     }
                 },
                 "NewImage": {
@@ -54,7 +54,7 @@ const dynamoDbStreamEventWith2Records = {
                         "S": "commit"
                     },
                     "id": {
-                        "S": "nicusX-056bf065948a2403aefa2e354fa04d6b684f4fb2"
+                        "S": "nicusX-056bf065948a2403aefa2e354fa"
                     },
                     "timestamp": {
                         "S": "2017-10-26T13:02:47+01:00"
@@ -67,7 +67,7 @@ const dynamoDbStreamEventWith2Records = {
                 "SizeBytes": 162,
                 "StreamViewType": "NEW_IMAGE"
             },
-            "eventSourceARN": "arn:aws:dynamodb:us-east-1:006393696278:table/icarus-lorenzodev-github_events/stream/2017-10-26T11:59:33.387"
+            "eventSourceARN": "arn:aws:dynamodb:us-east-1:006393696278:table/icarus-temp-github_events/stream/2017-10-26T11:59:33.387"
         },
         {
             "eventID": "91f2e0bb24949834dec1baba058919c5",
@@ -79,7 +79,7 @@ const dynamoDbStreamEventWith2Records = {
                 "ApproximateCreationDateTime": 1509019320,
                 "Keys": {
                     "id": {
-                        "S": "nicusX-0ce7232ef34f25d262b7c53ef5af2a7629f1843a"
+                        "S": "nicusX-0ce7232ef34f25d262b7c53ef5af"
                     }
                 },
                 "NewImage": {
@@ -87,7 +87,7 @@ const dynamoDbStreamEventWith2Records = {
                         "S": "commit"
                     },
                     "id": {
-                        "S": "nicusX-0ce7232ef34f25d262b7c53ef5af2a7629f1843a"
+                        "S": "nicusX-0ce7232ef34f25d262b7c53ef5af"
                     },
                     "timestamp": {
                         "S": "2017-10-26T13:02:30+01:00"
@@ -100,7 +100,7 @@ const dynamoDbStreamEventWith2Records = {
                 "SizeBytes": 162,
                 "StreamViewType": "NEW_IMAGE"
             },
-            "eventSourceARN": "arn:aws:dynamodb:us-east-1:006393696278:table/icarus-lorenzodev-github_events/stream/2017-10-26T11:59:33.387"
+            "eventSourceARN": "arn:aws:dynamodb:us-east-1:006393696278:table/icarus-temp-github_events/stream/2017-10-26T11:59:33.387"
         }
     ]
 }

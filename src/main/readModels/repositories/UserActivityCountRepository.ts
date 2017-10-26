@@ -19,8 +19,6 @@ VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE event_count = event_count + 1"
 
 /**
  * Repository for User Activity counts, stored on RDS
- * 
- * The repository is integration agnostic 
  */
 export class UserActivityCountRepository {
 
