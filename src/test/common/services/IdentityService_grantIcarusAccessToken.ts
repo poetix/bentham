@@ -26,12 +26,12 @@ const githubIdentity:GithubIdentity = {
 const repositoryMock = mock(IdentityRepository)
 const unit = new IdentityService(instance(repositoryMock))
 
-when(repositoryMock.saveIcarusAccessToken(anyString(), anything()))
+when(repositoryMock.saveIcarusAccount(anyString(), anything()))
     .thenCall((arg1: icarusAccessToken, arg2: SlackIdentity) => Promise.resolve(arg1)  )
 when(repositoryMock.saveSlackIdentity(anyString(), anything()))
     .thenCall((arg1: icarusAccessToken, arg2: SlackIdentity) => Promise.resolve(arg2))
-when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( dropboxIdentity ))
-when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( githubIdentity ))
+when(repositoryMock.getDropboxIdentityBySlackId(anyString())).thenReturn(Promise.resolve( dropboxIdentity ))
+when(repositoryMock.getGithubIdentityBySlackId(anyString())).thenReturn(Promise.resolve( githubIdentity ))
 
 
 beforeEach(() => {
@@ -43,7 +43,7 @@ describe('Identity service, grant Icarus user token', () => {
   it('should save the new Icarus access token', async () => {
     await unit.grantIcarusUserToken(slackIdentity)
 
-    verify(repositoryMock.saveIcarusAccessToken(anyString(), slackIdentity)).once()
+    verify(repositoryMock.saveIcarusAccount(anyString(), slackIdentity)).once()
   } )
 
   it('should save the Slack identity', async () => {
@@ -55,8 +55,8 @@ describe('Identity service, grant Icarus user token', () => {
   it('should retrieve Drobox and Github identities', async () => {
       await unit.grantIcarusUserToken(slackIdentity)
 
-      verify(repositoryMock.getDropboxIdentity(slackIdentity.id)).once()
-      verify(repositoryMock.getGithubIdentity(slackIdentity.id)).once()
+      verify(repositoryMock.getDropboxIdentityBySlackId(slackIdentity.id)).once()
+      verify(repositoryMock.getGithubIdentityBySlackId(slackIdentity.id)).once()
   })
 
   it('should generate an Icarus access token containing Dropbox ID and GitHub username when all identities are available', async () => {

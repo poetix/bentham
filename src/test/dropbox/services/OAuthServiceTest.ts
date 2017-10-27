@@ -3,15 +3,12 @@ import 'mocha';
 import { mock, instance, when, verify, capture, resetCalls, anyString,  anything } from 'ts-mockito';
 
 import { OAuthService } from "../../../main/dropbox/services/OAuthService";
-import { TokenRepository } from "../../../main/dropbox/repositories/TokenRepository";
 import { CursorRepository } from "../../../main/dropbox/repositories/CursorRepository";
 import { IdentityService } from "../../../main/common/services/IdentityService"
 import { DropboxClient } from "../../../main/dropbox/clients/DropboxClient";
 import { DropboxIdentity } from "../../../main/common/Api"
 import { DropboxAccessDetails } from "../../../main/dropbox/Api"
 
-const tokenRepositoryMock = mock(TokenRepository)
-const tokenRepository = instance(tokenRepositoryMock)
 
 const cursorRepositoryMock = mock(CursorRepository)
 const cursorRepository = instance(cursorRepositoryMock)
@@ -22,9 +19,8 @@ const identityService = instance(identityServiceMock)
 const dropboxClientMock = mock(DropboxClient)
 const dropboxClient = instance(dropboxClientMock)
 
-const unit = new OAuthService(identityService, dropboxClient, tokenRepository, cursorRepository)
+const unit = new OAuthService(identityService, dropboxClient, cursorRepository)
 
-when(tokenRepositoryMock.saveToken(anyString(), anyString())).thenReturn(Promise.resolve())
 when(cursorRepositoryMock.saveCursor(anyString(), anyString())).thenReturn(Promise.resolve())
 when(identityServiceMock.addIdentity(anyString(), 'dropbox', anything() )).thenReturn(Promise.resolve(
   {
@@ -44,7 +40,6 @@ when(dropboxClientMock.getLatestCursor(anyString(), anyString())).thenReturn(Pro
 
 
 beforeEach(() => {
-  resetCalls(tokenRepositoryMock)
   resetCalls(identityServiceMock)
   resetCalls(dropboxClientMock)
   resetCalls(cursorRepositoryMock)
@@ -55,11 +50,6 @@ describe('Dropbox OAuth Service', () => {
     it('should exchange Authorization Code for Access Token', async () => {
       const result = await unit.processCode('icarus-access-token', 'dropbox-auth-code', 'http://return.uri')
       verify(dropboxClientMock.requestAccessDetails('dropbox-auth-code', 'http://return.uri')).once()
-    })
-
-    it('should save the token in Dropbox Token Repository', async () => {
-      const result = await unit.processCode('icarus-access-token', 'dropbox-auth-code', 'http://return.uri')
-      verify(tokenRepositoryMock.saveToken('dropbox-account-id', 'dropbox-access-token')).once()
     })
 
     it('should retrieve and store the latest cursor', async () => {

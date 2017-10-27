@@ -1,6 +1,5 @@
 import { IdentityService } from "../../common/services/IdentityService";
 import { DropboxClient } from "../clients/DropboxClient";
-import { TokenRepository } from "../repositories/TokenRepository";
 import { CursorRepository } from "../repositories/CursorRepository";
 import { icarusAccessToken, host, uri, lambdaStage, IcarusUserToken } from "../../common/Api";
 import { dropboxAuthorisationCode, dropboxAccountId, dropboxAccessToken, cursor } from "../Api";
@@ -10,7 +9,6 @@ export class OAuthService {
   constructor(
     private readonly identity: IdentityService,
     private readonly dropbox: DropboxClient,
-    private readonly tokenRepository: TokenRepository,
     private readonly cursorRepository: CursorRepository) {}
 
   getOAuthAuthoriseUri( icarusAccessToken: icarusAccessToken, returnUri:uri): uri {
@@ -31,13 +29,12 @@ export class OAuthService {
     const dropboxAccessDetails = await this.dropbox.requestAccessDetails(dropboxAuthorisationCode, accessCodeRequestRedirectUri);
 
     return Promise.all([
-      this.tokenRepository.saveToken(dropboxAccessDetails.accountId, dropboxAccessDetails.accessToken),
       this.storeInitialCursor(dropboxAccessDetails.accountId, dropboxAccessDetails.accessToken),
       this.identity.addIdentity(icarusAccessToken, 'dropbox', {
         id: dropboxAccessDetails.accountId,
         accessToken: dropboxAccessDetails.accessToken
       })
-    ]).then(res => res[2]); // Returning only the IcarusUserToken from IdentityService.addIdentity
+    ]).then( res => res[1]); // Returning only the IcarusUserToken from IdentityService.addIdentity
   };
 
   private async storeInitialCursor(accountId: dropboxAccountId, accessToken: dropboxAccessToken): Promise<cursor> {
