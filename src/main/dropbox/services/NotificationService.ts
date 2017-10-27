@@ -1,8 +1,8 @@
 import { dropboxAccountId } from "../Api";
 import { DropboxClient } from "../clients/DropboxClient";
-import { TokenRepository } from "../repositories/TokenRepository";
 import { CursorRepository } from "../repositories/CursorRepository";
 import { FileChangeRepository } from "../repositories/FileChangeRepository";
+import { IdentityRepository } from "../../common/repositories/IdentityRepository"
 
 export interface ListFolder {
   accounts: Array<string>
@@ -30,16 +30,23 @@ export class NotificationService {
 export class FileUpdateRecorder {
 
   constructor(
-    private readonly tokenRepository: TokenRepository,
+    private readonly identityRepository: IdentityRepository,
     private readonly cursorRepository: CursorRepository,
     private readonly dropbox: DropboxClient,
     private readonly fileChangeRepository: FileChangeRepository
   ) {}
 
-  async recordUpdates(accountId: dropboxAccountId): Promise<void> {
+  
+  private async lookupDropboxToken(accountId: dropboxAccountId): Promise<string|null> {
+    return this.identityRepository.getDropboxIdentityByDropboxId(accountId)
+      .then( dropboxIdentity => dropboxIdentity.accessToken )
+      .catch(err => null )
+  }
+
+   async recordUpdates(accountId: dropboxAccountId): Promise<void> {
     console.log(`Fetching updates for account ${accountId}`);
     const [token, cursor] = await Promise.all([
-      this.tokenRepository.fetchToken(accountId),
+      this.lookupDropboxToken(accountId),
       this.cursorRepository.fetchCursor(accountId)
     ]);
 

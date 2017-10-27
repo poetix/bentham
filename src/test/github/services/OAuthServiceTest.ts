@@ -3,13 +3,9 @@ import 'mocha';
 import { mock, instance, when, verify, resetCalls, anyString,  anything } from 'ts-mockito';
 
 import { OAuthService } from "../../../main/github/services/OAuthService";
-import { TokenRepository } from "../../../main/github/repositories/TokenRepository";
 import { IdentityService } from "../../../main/common/services/IdentityService"
 import { GithubClient } from "../../../main/github/clients/GithubClient";
 import { GithubIdentity } from "../../../main/common/Api"
-
-const tokenRepositoryMock = mock(TokenRepository)
-const tokenRepository = instance(tokenRepositoryMock)
 
 const identityServiceMock = mock(IdentityService)
 const identityService = instance(identityServiceMock)
@@ -17,9 +13,8 @@ const identityService = instance(identityServiceMock)
 const githubClientMock = mock(GithubClient)
 const githubClient = instance(githubClientMock)
 
-const unit = new OAuthService(identityService, githubClient, tokenRepository)
+const unit = new OAuthService(identityService, githubClient)
 
-when(tokenRepositoryMock.saveToken(anyString(), anyString())).thenReturn(Promise.resolve())
 when(identityServiceMock.addIdentity(anyString(), 'github', anything() )).thenReturn(Promise.resolve(
   {
     accessToken: '',
@@ -32,7 +27,6 @@ when(githubClientMock.getUsername(anyString())).thenReturn(Promise.resolve('gith
 when(githubClientMock.requestAccessToken(anyString(), anyString())).thenReturn(Promise.resolve('github-access-token'))
 
 beforeEach(() => {
-  resetCalls(tokenRepositoryMock)
   resetCalls(identityServiceMock)
   resetCalls(githubClientMock)
 })
@@ -49,11 +43,6 @@ describe('GitHub OAuth Service', () => {
     it('should request the username', async () => {
       const result = await unit.processCode('icarus-access-token', 'github-access-code', 'http://return.uri')
       verify(githubClientMock.getUsername('github-access-token')).once()
-    })
-
-    it('should save the token in Token Repository', async () => {
-      const result = await unit.processCode('icarus-access-token', 'github-access-code', 'http://return.uri')
-      verify(tokenRepositoryMock.saveToken('github-username', 'github-access-token')).once()
     })
 
     it('should add a new Identity to Identity Service', async () => {

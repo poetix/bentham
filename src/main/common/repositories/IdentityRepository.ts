@@ -1,62 +1,77 @@
 import { GithubIdentity, DropboxIdentity, slackAccessToken, SlackIdentity, icarusAccessToken } from "../Api";
 import { DynamoClient } from "../clients/DynamoClient";
 
-const dropboxAccountsTable = 'dropbox_accounts'
-const githubAccountsTable = 'github_accounts'
-const accessTokensTable = 'access_tokens'
-const slackAccountsTable = 'slack_accounts'
+
+const accountsTable = 'accounts'
+const identitiesTable = 'identities'
+
+enum IdentityType {
+  Slack = 'S',
+  Dropbox = 'D',
+  Github = 'G'
+}
 
 export class IdentityRepository {
 
   constructor(
     private readonly dynamo: DynamoClient) {}
 
+  // Save Icarus account
+  async saveIcarusAccount(icarusAccessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<icarusAccessToken> {
+    console.log(`Writing Icarus Access Token ${icarusAccessToken} related to SlackID: ${slackIdentity.id}`)
+    return this.dynamo.put(accountsTable, {
+      slack_id: slackIdentity.id,     
+      access_token: icarusAccessToken,
+    }).then(res => icarusAccessToken)
+  }
+
+
+  // Save DropboxIdentity into identities table
   async saveDropboxIdentity(slackId: string, dropboxIdentity: DropboxIdentity): Promise<DropboxIdentity> {
     console.log(`Writing Dropbox identity for Slack ID: ${slackId} to DynanoDB`)
-    return this.dynamo.put(dropboxAccountsTable, {
+    return this.dynamo.put(identitiesTable, {
       slack_id: slackId,
-      dropboxId: dropboxIdentity.id,
+      type: IdentityType.Dropbox,
+      account_id: dropboxIdentity.id,
       access_token: dropboxIdentity.accessToken
     }).then(res =>  dropboxIdentity )
   }
 
+  // Save GitHub into identities table
   async saveGithubIdentity(slackId: string, githubIdentity: GithubIdentity): Promise<GithubIdentity> {
     console.log(`Writing Github identity for Slack ID: ${slackId} to DynanoDB`)
-    return this.dynamo.put(githubAccountsTable, {
+    return this.dynamo.put(identitiesTable, {
       slack_id: slackId,
-      githubId: githubIdentity.id,
+      type: IdentityType.Github,
+      account_id: githubIdentity.id,
       access_token: githubIdentity.accessToken
     }).then(res => githubIdentity)
   }
 
-  async saveIcarusAccessToken(icarusAccessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<icarusAccessToken> {
-    console.log(`Writing Icarus Access Token ${icarusAccessToken} related to SlackID: ${slackIdentity.id}`)
-    return this.dynamo.put(accessTokensTable, {
-      access_token: icarusAccessToken,
-      slack_id: slackIdentity.id,
-    }).then(res => icarusAccessToken)
-  }
-
+  // Save Slack identity into identities table
   async saveSlackIdentity(icarusAccessToken: icarusAccessToken, slackIdentity: SlackIdentity): Promise<SlackIdentity> {
     console.log(`Writing Slack identity for SlackID: ${slackIdentity.id}`)
-    return this.dynamo.put(slackAccountsTable, {
+    return this.dynamo.put(identitiesTable, {
       slack_id: slackIdentity.id,
+      type: IdentityType.Slack,
+      account_id: slackIdentity.id, // For Slack Identity account_id == slack_id, obviously
+      access_token: slackIdentity.accessToken,
       user_name: slackIdentity.userName,
       team_id: slackIdentity.teamId,
-      access_token: slackIdentity.accessToken
     })
     .then(res => slackIdentity)
   }
 
+  // Retrieves Slack Identity by icarus access token; reject if lookup fails
   async getSlackIdentity(icarusAccessToken: icarusAccessToken): Promise<SlackIdentity> {
-    console.log(`Retreiving Slack identity by Icarus access token: ${icarusAccessToken}`)
     return this.getSlackIdByAccessToken(icarusAccessToken)
       .then( slackId => this.getSlackIdentityBySlackId(slackId) )
   }
 
   private async getSlackIdByAccessToken(icarusAccessToken: icarusAccessToken): Promise<string> {
-    return this.dynamo.query(accessTokensTable, {
-      IndexName: 'access_tokens_by_token',
+    console.log('Looking up SlackId by Icarus Access Token')
+    return this.dynamo.query(accountsTable, {
+      IndexName: 'slack_id_by_access_token',
       KeyConditionExpression: 'access_token = :token',
       ExpressionAttributeValues: {
         ':token': icarusAccessToken, 
@@ -69,33 +84,51 @@ export class IdentityRepository {
         return results[0].slack_id
       else
         throw Error('Cannot find any Slack ID for Icarus access token: ' + icarusAccessToken)
-    })
+    })   
   }
 
   private async getSlackIdentityBySlackId(slackId: string): Promise<SlackIdentity> {
-    return this.dynamo.get(slackAccountsTable, { slack_id: slackId })
-      .then( result => {
-        if(result)
-          return {
-            id: result.slack_id,
-            userName: result.user_name,
-            teamId: result.team_id,
-            accessToken: result.access_token
-          }
-        else
-          throw Error('Cannot find any Slack identity for Slack ID: ' + slackId)
+    console.log(`Retrieving Slack identity by Slack Id: ${slackId} `)
+    return this.dynamo.get(identitiesTable, 
+      { 
+        slack_id: slackId,
+        type: IdentityType.Slack
       })
+    .then( result => {
+      if(result)
+        return {
+          id: result.slack_id,
+          userName: result.user_name,
+          teamId: result.team_id,
+          accessToken: result.access_token
+        }
+      else
+        throw Error('Cannot find any Slack identity for Slack ID: ' + slackId)
+    })
   }
 
+  // Lookup Slack Identity by Dropbox Id; rejects if lookup fails
+  async getSlackIdentityByDropboxId(dropboxId: string): Promise<SlackIdentity> {
+    return this.getSlackIdByIdentityId(dropboxId, IdentityType.Dropbox)
+      .then( slackId => this.getSlackIdentityBySlackId(slackId))
+  }
 
-  // Lookups Slack ID by Dropbox ID; reject if not found
-  private async getSlackIdByDropboxId(dropboxId: string): Promise<string> {
-    // console.log(`Looking up SlackID by Dropbox ID: ${dropboxId}`)
-    return this.dynamo.query(dropboxAccountsTable, {
-      IndexName: 'slackid_by_dropboxid',
-      KeyConditionExpression: 'dropboxId = :dropboxId',
+  // Lookup Slack Identity by Github username; rejects if lookup fails
+  async getSlackIdentityByGithubUser(githubUser: string): Promise<SlackIdentity> {
+    return this.getSlackIdByIdentityId(githubUser, IdentityType.Github)
+    .then( slackId => this.getSlackIdentityBySlackId(slackId))
+  }
+
+  // Lookup Slack ID by identity account and identity type
+  private async getSlackIdByIdentityId(identityAccountId: string, identityType: IdentityType): Promise<string> {
+    console.log(`Lookup identity type: ${identityType} by identity account Id: ${identityAccountId}` )
+
+    return this.dynamo.query(identitiesTable, {
+      IndexName: 'identity_by_account_id_and_type',
+      KeyConditionExpression: 'account_id = :accountId AND type = :identityType',
       ExpressionAttributeValues: {
-        ':dropboxId': dropboxId, 
+        ':accountId': identityAccountId, 
+        ':identityType': identityType
       },
       ProjectionExpression: 'slack_id',
       Limit: "1",
@@ -105,70 +138,104 @@ export class IdentityRepository {
       if ( results && results.length )
         return results[0].slack_id
       else
-        throw Error('Cannot find any Slack ID for Dropbox ID: ' + dropboxId)
-    })    
+        throw Error('No SlackId found')
+    })     
   }
 
-  async getSlackIdentityByDropboxId(dropboxId: string): Promise<SlackIdentity> {
-    return this.getSlackIdByDropboxId(dropboxId)
-      .then( slackId => this.getSlackIdentityBySlackId(slackId))
+  // Get Dropbox identity by Slack ID; returns undefined if none found
+  async getDropboxIdentityBySlackId(slackId: string): Promise<DropboxIdentity | undefined> {
+    console.log(`Retrieving Dropbox identity by Slack ID: ${slackId}`)
+    
+    return this.dynamo.get(identitiesTable, 
+      { 
+        slack_id: slackId,
+        type: IdentityType.Dropbox 
+      })
+    .then( results => {
+      if( results ) {
+        return {
+          id: results.account_id,
+          accessToken: results.access_token
+        }
+      } else { 
+        console.log('No Dropbox identity found')
+        return undefined
+      }
+    })
   }
 
-  // Lookup Slack ID by Github Username; reject if not found
-  private async getSlackIdByGithubUsername(githubUser: string) {
-    return this.dynamo.query(githubAccountsTable, {
-      IndexName: 'slackid_by_githubuser',
-      KeyConditionExpression: 'githubId = :githubUser',
+  // Get Github identity by Slack ID; returns undefined if none found
+  async getGithubIdentityBySlackId(slackId: string): Promise<GithubIdentity | undefined> {
+    console.log(`Retrieving Github identity by Slack ID: ${slackId}`)
+    
+    return this.dynamo.get(identitiesTable, 
+      { 
+        slack_id: slackId,
+        type: IdentityType.Github
+      })
+    .then( results => {
+      if( results ) {
+        return {
+          id: results.account_id,
+          accessToken: results.access_token
+        }
+      } else {
+        console.log('No Github identity found')
+        return undefined
+      }
+    })
+  }
+
+
+  // Get the Dropbox identity by Drobox Id; reject if none found
+  async getDropboxIdentityByDropboxId(dropboxId: string): Promise<DropboxIdentity> {
+    console.log(`Retrieving Dropbox identity by Dropbox ID: ${dropboxId}`)
+
+    return this.dynamo.query(identitiesTable, {
+      IndexName: 'identity_by_account_id_and_type',
+      KeyConditionExpression: 'account_id = :accountId AND type = :identityType',
       ExpressionAttributeValues: {
-        ':githubUser': githubUser, 
+        ':accountId': dropboxId, 
+        ':identityType': IdentityType.Dropbox
       },
-      ProjectionExpression: 'slack_id',
+      ProjectionExpression: 'account_id, access_token',
       Limit: "1",
     })
     .then(results => {
-      if ( results && results.length )
-        return results[0].slack_id
-      else
-        throw Error('Cannot find any Slack ID for Github user: ' + githubUser)
+      // console.log('DynamoDB query result: %j', results)
+      if ( results && results.length ) {
+        return {
+          id: results[0].account_id,
+          accessToken: results[0].access_token
+        }
+      } else
+        throw Error('No SlackId found')
     })      
   }
 
-  async getSlackIdentityByGithubUser(githubUser: string): Promise<SlackIdentity> {
-    return this.getSlackIdByGithubUsername(githubUser)
-    .then( slackId => this.getSlackIdentityBySlackId(slackId))
-  }
+  // Get the Github identity by Github username; reject if none found
+  async getGithubIdentityByGithubUsername(githubUsername: string): Promise<GithubIdentity> {
+    console.log(`Retrieving Github identity by Github username: ${githubUsername}`)
 
-  async getDropboxIdentity(slackId: string): Promise<DropboxIdentity | undefined> {
-    console.log(`Retrieving Dropbox identity by Slack ID: ${slackId}`)
-    
-    return this.dynamo.get(dropboxAccountsTable, { slack_id: slackId })
-      .then( dropboxIdLookupResult => {
-        if( dropboxIdLookupResult ) {
-          return {
-            id: dropboxIdLookupResult.dropboxId,
-            accessToken: dropboxIdLookupResult.access_token
-          }
-        } else { 
-          console.log('No Dropbox identity found')
-          return undefined
+    return this.dynamo.query(identitiesTable, {
+      IndexName: 'identity_by_account_id_and_type',
+      KeyConditionExpression: 'account_id = :accountId AND type = :identityType',
+      ExpressionAttributeValues: {
+        ':accountId': githubUsername, 
+        ':identityType': IdentityType.Github
+      },
+      ProjectionExpression: 'account_id, access_token',
+      Limit: "1",
+    })
+    .then(results => {
+      // console.log('DynamoDB query result: %j', results)
+      if ( results && results.length ) {
+        return {
+          id: results[0].account_id,
+          accessToken: results[0].access_token
         }
-      })
-  }
-
-  async getGithubIdentity(slackId: string): Promise<GithubIdentity | undefined> {
-    console.log(`Retrieving Github identity by Slack ID: ${slackId}`)
-    
-    return this.dynamo.get(githubAccountsTable, { slack_id: slackId })
-      .then( githubIdLookupResult => {
-        if( githubIdLookupResult ) {
-          return {
-            id: githubIdLookupResult.githubId,
-            accessToken: githubIdLookupResult.access_token
-          }
-        } else {
-          console.log('No Github identity found')
-          return undefined
-        }
-      })
-  }
+      } else
+        throw Error('No SlackId found')
+    })      
+  }  
 }

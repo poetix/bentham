@@ -3,7 +3,6 @@ import { HttpClient } from "../common/clients/HttpClient"
 import { GithubClient } from "./clients/GithubClient"
 
 import { UserEventRepository } from "./repositories/UserEventRepository"
-import { TokenRepository } from "./repositories/TokenRepository"
 import { IdentityRepository } from "../common/repositories/IdentityRepository"
 
 import { IdentityService } from "../common/services/IdentityService"
@@ -23,13 +22,12 @@ const githubClient = new GithubClient(
 
 // Repositories
 const userEventRepository = new UserEventRepository(dynamo)
-const tokenRepository = new TokenRepository(dynamo);
 const identityRepository = new IdentityRepository(dynamo);
 
 // Services
 const identityService = new IdentityService(identityRepository);
 const webhookEventService = new WebhookEventService(userEventRepository, process.env.GITHUB_WEBHOOK_SECRET);
-const oauthService = new OAuthService(identityService, githubClient, tokenRepository);
+const oauthService = new OAuthService(identityService, githubClient);
 
 
 // Endpoints

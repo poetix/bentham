@@ -33,7 +33,7 @@ describe('Identity Service, Add Identity', () => {
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
       when(repositoryMock.saveDropboxIdentity(anyString(), anything())).thenReturn(Promise.resolve( dropboxIdentity ))
-      when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( githubIdentity ))
+      when(repositoryMock.getGithubIdentityBySlackId(anyString())).thenReturn(Promise.resolve( githubIdentity ))
 
       const result = await unit.addIdentity('icarus-access-token', 'dropbox', dropboxIdentity)
 
@@ -44,7 +44,7 @@ describe('Identity Service, Add Identity', () => {
 
       verify(repositoryMock.getSlackIdentity('icarus-access-token')).once()
       verify(repositoryMock.saveDropboxIdentity('slack-account-id', dropboxIdentity)).once()
-      verify(repositoryMock.getGithubIdentity('slack-account-id')).once()
+      verify(repositoryMock.getGithubIdentityBySlackId('slack-account-id')).once()
     })
 
     it('should return an Icarus user token with both Drobox ID and GitHub username, on adding GitHub identity when the user already has Dropbox identity', async () => {
@@ -53,7 +53,7 @@ describe('Identity Service, Add Identity', () => {
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
       when(repositoryMock.saveGithubIdentity(anyString(), anything())).thenReturn(Promise.resolve( githubIdentity ))
-      when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( dropboxIdentity ))
+      when(repositoryMock.getDropboxIdentityBySlackId(anyString())).thenReturn(Promise.resolve( dropboxIdentity ))
 
       const result = await unit.addIdentity('icarus-access-token', 'github', githubIdentity)
 
@@ -64,7 +64,7 @@ describe('Identity Service, Add Identity', () => {
 
       verify(repositoryMock.getSlackIdentity('icarus-access-token')).once()
       verify(repositoryMock.saveGithubIdentity('slack-account-id', githubIdentity)).once()
-      verify(repositoryMock.getDropboxIdentity('slack-account-id')).once()
+      verify(repositoryMock.getDropboxIdentityBySlackId('slack-account-id')).once()
     })
 
     it('should return an Icarus user token with Dropbox ID only, on adding Drobox identity when a user does not have a Github identity', async () => {
@@ -73,7 +73,7 @@ describe('Identity Service, Add Identity', () => {
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
       when(repositoryMock.saveDropboxIdentity(anyString(), anything())).thenReturn(Promise.resolve( dropboxIdentity ))
-      when(repositoryMock.getGithubIdentity(anyString())).thenReturn(Promise.resolve( undefined ))
+      when(repositoryMock.getGithubIdentityBySlackId(anyString())).thenReturn(Promise.resolve( undefined ))
 
       const result = await unit.addIdentity('icarus-access-token', 'dropbox', dropboxIdentity)
 
@@ -84,7 +84,7 @@ describe('Identity Service, Add Identity', () => {
 
       verify(repositoryMock.getSlackIdentity('icarus-access-token')).once()
       verify(repositoryMock.saveDropboxIdentity('slack-account-id', dropboxIdentity)).once()
-      verify(repositoryMock.getGithubIdentity('slack-account-id')).once()
+      verify(repositoryMock.getGithubIdentityBySlackId('slack-account-id')).once()
     })
 
     it('should return an Icarus user token with Github username only, on adding GitHub identity when a user does not have a Dropbox identity', async () => {
@@ -93,7 +93,7 @@ describe('Identity Service, Add Identity', () => {
 
       when(repositoryMock.getSlackIdentity(anyString())).thenReturn(Promise.resolve( slackIdentity ))
       when(repositoryMock.saveGithubIdentity(anyString(), anything())).thenReturn(Promise.resolve( githubIdentity ))
-      when(repositoryMock.getDropboxIdentity(anyString())).thenReturn(Promise.resolve( undefined ))
+      when(repositoryMock.getDropboxIdentityBySlackId(anyString())).thenReturn(Promise.resolve( undefined ))
 
       const result = await unit.addIdentity('icarus-access-token', 'github', githubIdentity)
 
@@ -104,7 +104,7 @@ describe('Identity Service, Add Identity', () => {
 
       verify(repositoryMock.getSlackIdentity('icarus-access-token')).once()
       verify(repositoryMock.saveGithubIdentity('slack-account-id', githubIdentity)).once()
-      verify(repositoryMock.getDropboxIdentity('slack-account-id')).once()
+      verify(repositoryMock.getDropboxIdentityBySlackId('slack-account-id')).once()
     })
 
 })
