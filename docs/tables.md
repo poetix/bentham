@@ -1,8 +1,39 @@
 # Persistent tables
 
+
+
 ## DynamoDB Tables
 
-Table names are always prefixed with: `icarus-[<developer>]<stage>-`
+DynamoDB table names are always prefixed with: `icarus-[<developer>]<stage>-`
+
+
+### `accounts`table
+
+- slack_id: PK, Icarus account ID == Slack ID
+- access_token
+- { other user info }
+
+GSI:
+- PK access_token -> KEYS_ONLY (slack_id)
+
+### `integrations` table
+
+- slack_id: PK
+- integration: SK (S|D|G...)
+- account_id: ID of the account in the integration (e.g. SlackID, DropboxID, GithubUsername)
+- access_token: integration access token
+- { other info: team_id, userName, }
+
+GSI:
+- account_id: PK, integration: SK -> KEYS_ONLY (slack_id)
+
+
+
+
+
+
+
+
 
 ### `access_tokens` table
 

@@ -22,19 +22,23 @@ provider:
         - dynamodb:BatchWriteItem
         - dynamodb:Query   
       Resource:
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE} # FIXME remove
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE} # FIXME remove
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE} # FIXME remove
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE} # FIXME remove
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE} # FIXME remove
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE} # FIXME remove
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token # FIXME remove
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}/index/slackid_by_dropboxid
-        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}/index/slackid_by_githubuser
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}/index/slackid_by_dropboxid # FIXME remove
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}/index/slackid_by_githubuser # FIXME remove
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCOUNTS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.INTEGRATIONS_TABLE}
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCOUNTS_TABLE}/index/slack_id_by_access_token
+        - arn:aws:dynamodb:*:*:table/${self:provider.environment.INTEGRATIONS_TABLE}/index/slack_id_by_account_id_and_integration
     # For listening to DynamoDB Streams
     - Effect: Allow
       Action:
@@ -67,15 +71,18 @@ provider:
 
     TABLE_PREFIX: ${self:service}-${self:provider.stage}-
 
-    ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
-    SLACKACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}slack_accounts
+    ACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}accounts
+    INTEGRATIONS_TABLE: ${self:provider.environment.TABLE_PREFIX}integrations
 
-    DROPBOXACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_accounts
-    DROPBOXTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_tokens
+    GITHUBEVENTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_events
     DROPBOXCURSORS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_cursors
     FILECHANGES_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_file_changes
 
-    GITHUBEVENTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_events
+    # FIXME remove all obsolete tables
+    ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
+    SLACKACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}slack_accounts
+    DROPBOXACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_accounts
+    DROPBOXTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_tokens
     GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
     GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
 
@@ -504,6 +511,68 @@ resources:
     # DynamoDB tables
     ##################
 
+    AccountsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
+      Properties:
+        TableName: ${self:provider.environment.ACCOUNTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S        
+          - AttributeName: access_token
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: slack_id
+            KeyType: HASH   
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1  
+        GlobalSecondaryIndexes:
+          - IndexName: slack_id_by_access_token   
+            KeySchema:
+            - AttributeName: access_token
+              KeyType: HASH  
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 1                     
+
+    IntegrationsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: ${self:custom.dbDeletionPolicy}
+      Properties:
+        TableName: ${self:provider.environment.INTEGRATIONS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: slack_id
+            AttributeType: S
+          - AttributeName: integration
+            AttributeType: S
+          - AttributeName: account_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: slack_id
+            KeyType: HASH
+          - AttributeName: integration
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: slack_id_by_account_id_and_integration
+            KeySchema:
+            - AttributeName: account_id
+              KeyType: HASH
+            - AttributeName: integration
+              KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 1                         
+
+
+    # FIXME remove
     AccessTokensTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
@@ -531,6 +600,7 @@ resources:
               ReadCapacityUnits: 5
               WriteCapacityUnits: 10 
 
+    # FIXME remove
     SlackAccountsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
@@ -546,6 +616,7 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
 
+    # FIXME remove
     DropboxAccountsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
@@ -573,6 +644,7 @@ resources:
               ReadCapacityUnits: 5
               WriteCapacityUnits: 5          
 
+    # FIXME remove
     DropboxTokensTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
@@ -588,6 +660,7 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
 
+    # FIXME remove
     DropboxCursorsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
@@ -657,6 +730,7 @@ resources:
         StreamSpecification:
           StreamViewType: NEW_IMAGE
 
+    # FIXME remove
     GithubAccountsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
@@ -684,6 +758,7 @@ resources:
               ReadCapacityUnits: 5
               WriteCapacityUnits: 5  
 
+    # FIXME remove
     GithubTokensTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: ${self:custom.dbDeletionPolicy}
