@@ -50,6 +50,7 @@ describe('User Activity counts repository', () => {
     })
 
     describe('Create user event count table if not exists', () => {
+
         it('should execute a CREATE TABLE IF NOT EXISTS... statement on "user_event_counts" table without params', async () => {
             const mySqlClientMock = mock(MySqlClient)
             const mySqlClient = instance(mySqlClientMock)
@@ -66,6 +67,29 @@ describe('User Activity counts repository', () => {
             expect(sql).to.containIgnoreSpaces('user_event_counts')
 
             verify(mySqlClientMock.execute(anyString())).once()
+        })
+    })
+
+    describe('query user activity distribution', () => {
+        
+        it('should execute a SELECT on "user_event_counts" with the slackId param', async () => {
+
+            const mySqlClientMock = mock(MySqlClient)
+            const mySqlClient = instance(mySqlClientMock)
+
+            const unit = new UserActivityCountRepository(mySqlClient)
+            
+            when(mySqlClientMock.query(anyString(), anything())).thenReturn(Promise.resolve([]))
+            
+            const result = await unit.getUserActivityDistribution('slack-id')
+
+            const [ sql, params ] = capture(mySqlClientMock.query).last()
+
+            expect(sql).to.startWith('SELECT')
+            expect(sql).to.containIgnoreSpaces('user_event_counts')
+            expect(params[0]).be.equal('slack-id')
+
+            verify(mySqlClientMock.query(anyString(), anything())).once()
         })
     })
 })

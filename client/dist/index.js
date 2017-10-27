@@ -19,6 +19,7 @@ var landing = new Vue({
         console.log(userToken);
         this.accessToken = userToken;
         showApplication(userToken);
+        showUserActivityStats()
       } else {
         showLoginButton();
       }
@@ -48,6 +49,10 @@ var landing = new Vue({
         returnUri: returnPageUri,        
       })
     },
+    logout: function() {
+      removeIcarusUserToken()
+      showLoginButton()
+    }
   }
 });
 

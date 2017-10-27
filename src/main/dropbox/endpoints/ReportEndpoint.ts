@@ -5,9 +5,10 @@ import { complete, response, xAccessTokenHeader } from "../../common/endpoints/E
 import { event, callback, icarusAccessToken } from "../../common/Api";
 import { ReportService } from "../services/ReportService"
 
+// TODO This class is obsolete as we are not using this report
 export class ReportEndpoint {
 
-  constructor(readonly service: ReportService) {}
+  constructor(private readonly service: ReportService) {}
 
   /** 
     Retrieve user Dropbox report

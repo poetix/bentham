@@ -1,6 +1,6 @@
 import { UserActivityCountRepository } from "../repositories/UserActivityCountRepository"
 import { UserActivity } from "../Api"
-import { SlackIdentity } from "../../common/Api";
+import { SlackIdentity, icarusAccessToken } from "../../common/Api";
 import { IdentityRepository } from "../../common/repositories/IdentityRepository"
 
 interface UserEvent {
@@ -15,6 +15,12 @@ export interface GithubEvent extends UserEvent {
     githubUsername: string,
 }
 
+export interface UserActivityDistributionEntry {
+    dow: number,
+    hours: number,
+    event_count: number
+}
+
 enum Integration {
     Dropbox = "D",
     Github = "G"
@@ -26,6 +32,22 @@ export class UserActivityStatsService {
         private readonly activityCountRepository: UserActivityCountRepository,
         private readonly identityRepository: IdentityRepository
     ) {}
+
+    // Retrieves a user's activity distribution: activity count by day-of-week and hours
+    // Returns an arrau 
+    async getUserActivityDistribution(icarusAccessToken:icarusAccessToken): Promise<UserActivityDistributionEntry[]> {
+        return this.identityRepository.getSlackIdentity(icarusAccessToken)
+            .then(slackIdentity => {
+                if ( slackIdentity ) {
+                    const slackId = slackIdentity.id;
+                    console.log('Retrieving User activity distribution for SlackId: ' + slackId)
+                    return this.activityCountRepository.getUserActivityDistribution(slackId)
+                        .then( results => results )
+                } else {
+                    throw Error('Invalid Icarus access Token')
+                }
+            })
+    }
 
     async processDropboxFileChangeEvents(events: DropboxFileChangeEvent[]):Promise<void[]> {
         const _mapper = (event) => this.dropboxFileChangeEventToUserActivity(event)

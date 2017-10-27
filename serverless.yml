@@ -192,6 +192,7 @@ functions:
           path: dropbox-oauth-complete
           cors: true
 
+  # TODO This endpoint is obsolete
   dropbox-user-report:
     handler: src/main/dropbox/handler.userReport
     vpc:
@@ -283,6 +284,24 @@ functions:
             Fn::GetAtt:
               - GithubEventsTable
               - StreamArn
+
+  # Reports
+  user-activity-distribution:
+    handler: src/main/readModels/handler.userActivityDistribition
+    vpc:
+      securityGroupIds:
+        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+      subnetIds:
+        - Ref: ServerlessPrivateSubnetA
+        - Ref: ServerlessPrivateSubnetB
+    events:
+      - http:
+          method: get
+          path: user-activity-distribution
+          cors:
+            origin: '*'
+            headers:
+              - X-AccessToken 
 
 resources:
   Resources:
