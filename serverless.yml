@@ -22,19 +22,10 @@ provider:
         - dynamodb:BatchWriteItem
         - dynamodb:Query   
       Resource:
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXTOKENS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.SLACKACCOUNTS_TABLE}
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBTOKENS_TABLE}
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCESSTOKENS_TABLE}/index/access_tokens_by_token
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBEVENTS_TABLE}/index/events_by_user
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXACCOUNTS_TABLE}/index/slackid_by_dropboxid
-        # - arn:aws:dynamodb:*:*:table/${self:provider.environment.GITHUBACCOUNTS_TABLE}/index/slackid_by_githubuser
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCOUNTS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.IDENTITIES_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.ACCOUNTS_TABLE}/index/slack_id_by_access_token
@@ -77,14 +68,6 @@ provider:
     GITHUBEVENTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_events
     DROPBOXCURSORS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_cursors
     FILECHANGES_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_file_changes
-
-
-    # ACCESSTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}access_tokens
-    # SLACKACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}slack_accounts
-    # DROPBOXACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_accounts
-    # DROPBOXTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}dropbox_tokens
-    # GITHUBACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_accounts
-    # GITHUBTOKENS_TABLE: ${self:provider.environment.TABLE_PREFIX}github_tokens
 
     RDS_HOST: # TODO This value being dynamically generated on deployment blocks from deploying a single function relying on it
       "Fn::GetAtt": [ServerlessRDSCluster, Endpoint.Address]
