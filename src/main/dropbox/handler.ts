@@ -9,4 +9,5 @@ export const oauthInitiate = (event, context, cb) => oauthEndpoint.initiate(cb, 
 export const oauthComplete = (event, context, cb) => oauthEndpoint.complete(cb, event);
 
 // Report lambdas
+// TODO This report is obsolete
 export const userReport = (event, context, cb) => reportEndpoint.getReport(cb, event);

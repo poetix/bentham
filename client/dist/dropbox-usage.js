@@ -1,3 +1,4 @@
+// TODO This page is obsolete
 var router = new VueRouter({
     mode: 'history',
     routes: []

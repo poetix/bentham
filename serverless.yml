@@ -192,7 +192,7 @@ functions:
           path: dropbox-oauth-complete
           cors: true
 
-  # TODO Remove this endpoint
+  # TODO This endpoint is obsolete
   dropbox-user-report:
     handler: src/main/dropbox/handler.userReport
     vpc:

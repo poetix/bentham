@@ -16,6 +16,7 @@ export interface UserReport {
   interactions: { [key: string]: UserInteractions }
 }
 
+// TODO This class is obsolete as we are not using this report
 export class ReportService {
 
   constructor(

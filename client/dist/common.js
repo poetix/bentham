@@ -9,13 +9,17 @@ function getIcarusUserToken() {
 }
 
 function setIcarusUserToken(userToken) {
-	Vue.ls.set("icarus_user_token", userToken)
+	Vue.ls.set("icarus_user_token", userToken, 1000 * 60 * 60 * 24 * 3) // Expires every 72h
+}
+
+function removeIcarusUserToken() {
+	Vue.ls.remove("icarus_user_token")
 }
 
 
 // Simple utility to POST data as a form
 // based on https://www.npmjs.com/package/submitform
-// TODO Seriously, this is the clean way to post an object as a form?
+// Seriously, this is the clean way to post an object as a form?
 function postForm(url, data) {
 	if (typeof data !== 'object') {
 		throw new TypeError('Expected an object');
