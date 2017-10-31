@@ -26,4 +26,5 @@ echo "Deploying from branch $BRANCH to stage $STAGE"
 sls deploy --stage $STAGE --dbDeletion $DBDELETIONPOLICY -v
 
 # Deploy frontend
+# FIXME Compile frontend
 sls client deploy --stage $STAGE -v 

@@ -39,8 +39,19 @@
                         </div>
                     </div>              
                 </div>  
-            </div>    
+            </div>   
+
+            <!-- Logout -->
+            <div class="row logout">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><button  v-on:click="logout()" class="btn btn-lg btn-warning">Logout</button></div>
+                    <div class="panel-body">Logging out this page will not stop Icarus from monitoring your activity.
+                        This is only useful while the product in development to refresh your status.
+                    </div>
+                </div>    
+            </div> 
         </div>  
+
         <!-- Slack login --> 
         <div v-else class="row slack-login">
             <div class="panel panel-default">
@@ -54,7 +65,7 @@
 </template>
 
 <script>
-import { postForm, getUserToken } from '../common.js'
+import { postForm, getUserToken, removeUserToken } from '../common.js'
 
 export default {
   name: 'integrations',
@@ -91,6 +102,10 @@ export default {
         returnUri: returnPageUri,        
       })
     },
+    logout: function() {
+        removeUserToken()
+        this.userToken = undefined
+    }
     
   }
 }
