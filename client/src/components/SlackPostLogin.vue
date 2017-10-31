@@ -47,7 +47,7 @@ export default {
   }
 }
 
-
+// FIXME move to a common mobile
 function setUserToken(userToken) {
   Vue.ls.set("user_token", userToken, 1000 * 60 * 60 * 24 * 3) // Expires every 72h
 }

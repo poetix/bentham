@@ -15,7 +15,7 @@ export class SlackClient {
     return `${this.slackTeamUrl}/oauth/authorize` +
       '?scope=identity.basic' +
       `&client_id=${this.clientId}` +
-      `&redirect_url=${returnUri}`
+      `&redirect_url= ${encodeURIComponent(returnUri)}`
   }
 
   async getToken(code: slackAuthCode, loginRedirectUri: uri): Promise<slackToken> {

@@ -69,7 +69,7 @@ export default {
   methods: {
     slackLogin: function() {
       var returnPageUri = this.siteBasePath + '/#/post-login';
-      var authInitiateUri = this.lambdaPath + '/slack-oauth-initiate?returnUri=' + returnPageUri;
+      var authInitiateUri = this.lambdaPath + '/slack-oauth-initiate?returnUri=' + encodeURIComponent(returnPageUri);
       console.log('Initiating Slack login via: ' + authInitiateUri)
       window.location.href = authInitiateUri;      
     },
@@ -94,7 +94,7 @@ export default {
   }
 }
 
-
+// FIXME move to a common mobile
 function getUserToken() {
   const userToken = Vue.ls.get("user_token")
   console.log('Retrieving user token:', JSON.stringify(userToken))  
@@ -102,7 +102,7 @@ function getUserToken() {
 }
 
 
-
+// FIXME move to a common mobile
 function removeUserToken() {
   Vue.ls.remove("user_token")
 }
@@ -110,6 +110,7 @@ function removeUserToken() {
 // Simple utility to POST data as a form
 // based on https://www.npmjs.com/package/submitform
 // Seriously, this is the clean way to post an object as a form?
+// FIXME move to a common mobile
 function postForm(url, data) {
 	if (typeof data !== 'object') {
 		throw new TypeError('Expected an object');

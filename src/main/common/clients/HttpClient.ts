@@ -7,6 +7,7 @@ export function pathToLambda(host: host, stage:lambdaStage, path: string): uri {
 }
 
 export function redirectTo(uri: uri) {
+  console.log('Replying with redirect to: ' + uri)
   return {
     statusCode: 302,
     headers: {

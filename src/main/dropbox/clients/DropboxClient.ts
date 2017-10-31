@@ -22,8 +22,7 @@ export class DropboxClient {
   getOAuthAuthoriseUri(icarusAccessToken: icarusAccessToken, returnUri: uri): uri {
     return "https://www.dropbox.com/oauth2/authorize?response_type=code" +
     `&client_id=${this.clientId}` +
-    `&redirect_uri=${returnUri}` +
-    `&state=${icarusAccessToken}`;
+    `&redirect_uri=${encodeURIComponent(returnUri)}`;
   }
 
   async requestAccessDetails(code: dropboxAuthorisationCode, accessCodeRequestRedirectUri:uri): Promise<DropboxAccessDetails> {
