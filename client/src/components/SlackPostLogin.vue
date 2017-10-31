@@ -1,12 +1,14 @@
 <template>
     <div class="jumbotron">
         <h3><span class='glyphicon-left glyphicon glyphicon-refresh spinning'></span>One moment please...</h3>
+        <p>...creating a new Icarus identity or linking to an existing one.</p>
     </div>  
 </template>
 
 <script>
 
 import axios from 'axios'
+import { setUserToken } from '../common.js'
 
 export default {
   props: [ 'siteBasePath', 'lambdaPath' ],
@@ -22,34 +24,25 @@ export default {
 
     this.$nextTick(function() {
       // Redeem auth code
-      const initReturnPageUri = this.siteBasePath + '/#/post-login';
+      const initReturnPageUri = this.siteBasePath + '/post-login'; // Must match the returnPageUri of the OAuth init
 
       axios.post(this.lambdaPath + '/slack-oauth-complete', {
         code: slackAuthorisationCode,
         returnUri: initReturnPageUri,
       }).then(function(response) {
-            console.log(response);
-            const userToken = response.data
-            setUserToken(userToken);
+          console.log(response);
+          const userToken = response.data
+          setUserToken(userToken)
 
-            gotoMain()
-        })
-        .catch(function(err) {
-            console.log(err);
-        })
+          gotoMain()
+      })
+      .catch(function(err) {
+          console.log(err)
+          gotoMain()
+      })
     })
   },
 
-  methods: {
-    gotoMain: function() {
-      this.$route.go({ path: "/"});
-    }
-  }
-}
-
-// FIXME move to a common mobile
-function setUserToken(userToken) {
-  Vue.ls.set("user_token", userToken, 1000 * 60 * 60 * 24 * 3) // Expires every 72h
 }
 
 </script>

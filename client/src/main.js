@@ -18,21 +18,27 @@ require('./css/main.css');
 
 import App from './App.vue'
 import SlackPostLogin from "./components/SlackPostLogin.vue"
+import GithubPostLogin from "./components/GithubPostLogin.vue"
+import DropboxPostLogin from "./components/DropboxPostLogin.vue"
 
 import Integrations from "./components/Integrations.vue"
 Vue.component('integrations', Integrations)
 
 const paths = {
   siteBasePath:  window.location.href.substr(0, window.location.href.lastIndexOf("/")).replace(/#$/, "").replace(/\/$/, ""),
-  lambdaPath:  "https://icarus.riglet.eu/lorenzodev" // FIXME parametrise   
+  lambdaPath:  "https://icarus.riglet.eu/lorenzodev" // FIXME externalise   
 }
 
 const routes = [
   { path: '/', component: Integrations, props: paths },
   { path: '/post-login', component: SlackPostLogin, props: paths },
+  { path: '/github-post-login', component: GithubPostLogin, props: paths },
+  { path: '/dropbox-post-login', component: DropboxPostLogin, props: paths }, 
 ]
 
 const router = new VueRouter({
+  // FIXME 'history' mode works with localhost dev server, but not on S3 with redirect rules
+  mode: 'history', // history mode doesn't work on S3 web hosting with redirect rules (see http://aserafin.pl/2016/03/23/react-router-on-amazon-s3/)
   routes
 })
 
