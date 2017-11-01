@@ -48,16 +48,12 @@ used for assigning public DNS names to lambda endpoints
 
 ## Dev deployment
 
+### Lambdas
+
 To deploy `dev` stage backend run:
 
 ```
 sls deploy -v
-```
-
-To deploy the frontend:
-
-```
-sls client deploy
 ```
 
 When working more than one developer at a time is extermely useful to have a separate dev deployment per-developer.
@@ -80,6 +76,29 @@ By default, `sls remove` does not delete DynamoDB tables and RDS instances.
 
 To force deletion of DynamoDB tables and RDS instances, add the `--dbDeletion Delete` option when running `sls deploy` and `sls remove`
 
+### Frontend
+
+Frontend build expects the `ICARUS_STAGE` environment variable to decise which lambda stage to use (no `--stage` command line parameter) there.
+The default lambda stage is `dev`.
+
+Frontend is a separate Node project in the `./client` subdirectory.
+
+#### Localhost development
+
+- (from `./client` subdir): `npm run dev`
+
+Runs a Node instance on localhost serving the application and reloading dynamically.
+
+Localhost frontend still uses deployed Lambdas, so don't forget specifying `ICARUS_STAGE` (or using the default `dev` stage).
+
+#### Deployment
+
+1. Build the application: (from `./client`) `npm run build`
+2. Deploy on S3: (from main directory) `sls client deploy`
+
+Note that the build runs from the client subdir, while the deploy runs from the main subdir!
+
+**TODO Set S3 routing and create CloudFront distribution for SSL**
 
 ## CI/CD
 
