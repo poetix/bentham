@@ -24,9 +24,11 @@ import DropboxPostLogin from "./components/DropboxPostLogin.vue"
 import Integrations from "./components/Integrations.vue"
 Vue.component('integrations', Integrations)
 
+console.log('Environment:', process.env)
+
 const paths = {
   siteBasePath:  window.location.href.substr(0, window.location.href.lastIndexOf("/")).replace(/#$/, "").replace(/\/$/, ""),
-  lambdaPath:  "https://icarus.riglet.eu/lorenzodev" // FIXME externalise   
+  lambdaPath:  "https://icarus.riglet.eu/" + process.env.LAMBDA_STAGE
 }
 
 const routes = [
@@ -37,8 +39,7 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  // FIXME 'history' mode works with localhost dev server, but not on S3 with redirect rules
-  mode: 'history', // history mode doesn't work on S3 web hosting with redirect rules (see http://aserafin.pl/2016/03/23/react-router-on-amazon-s3/)
+  mode: (process.env.NODE_ENV === 'development') ? 'history' : 'hash', // Use 'history' mode for localhost, but it doesn't work on S3 web hosting with redirect rules (see http://aserafin.pl/2016/03/23/react-router-on-amazon-s3/)
   routes
 })
 

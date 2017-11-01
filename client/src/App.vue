@@ -11,10 +11,8 @@ export default {
   name: 'app',
   props: [ 'siteBasePath', 'lambdaPath' ],
   mounted: function() {
-    this.$nextTick(function() {
-      console.log('App: lambda: ' + this.lambdaPath)
-      console.log('App: site: ' + this.siteBasePath)
-    })
+      console.log('Lambda base URI: ' + this.lambdaPath)
+      console.log('Site base URI: ' + this.siteBasePath)
   },  
 }
 </script>

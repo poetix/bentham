@@ -73,10 +73,6 @@ export default {
   data: () => ({
       userToken:  getUserToken()
   }),
-  mounted: function() {
-      console.log('Integrations: lambda: ' + this.lambdaPath)
-      console.log('Integrations: site: ' + this.siteBasePath)
-  },
   methods: {
     slackLogin: function() {
       const returnPageUri = this.siteBasePath + '/post-login'; // Using URL-rewrite or redirect rule to map to /#/post-login

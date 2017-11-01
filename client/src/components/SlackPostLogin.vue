@@ -13,9 +13,6 @@ import { setUserToken } from '../common.js'
 export default {
   props: [ 'siteBasePath', 'lambdaPath' ],
   mounted: function() {
-    console.log('Integrations: lambda: ' + this.lambdaPath)
-    console.log('Integrations: site: ' + this.siteBasePath)
-
     const slackAuthorisationCode = this.$route.query.code;
     console.log("Slack authorisation code obtained: " + slackAuthorisationCode);
 
