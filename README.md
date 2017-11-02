@@ -23,28 +23,46 @@ This application uses custom DNS names for lambdas.
 
 The base domain must be hosted by Route53.
 
-The domain name to use for the endpoints is defined by the `ICARUS_DOMAIN` environment variable.
+The domain name to use by the API is defined by the `ICARUS_API_DOMAIN` environment variable.
+All Lambda stages uses the same domain.
 
 DNS and certificate setup requires [manual setup](./custom_domain.md) to be executed, one-off, before deploying.
+
+Frontend site use custom domains as well.
+Every stage uses a separate sub-domain, following the pattern:
+`icarus-<stage>.<site-base-domain>`
+
+**TBD Frontend domain setup**
 
 ## Environment
 
 The following environment variables are expected, to deploy the project:
 
-* `ICARUS_DOMAIN`: DNS name of the API
+* `ICARUS_API_DOMAIN`: DNS name of the domain used by API
+* `ICARUS_STAGE`: Lambda stage you are deploying
+* `ICARUS_SITE_BASE_DOMAIN`: Base domain for front-end site. May be the base domain of API domain, but this is not required.
 * `SLACK_TEAM_URL`: URL of Slack team
+
+Secrets:
 * `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`: Slack integration credentials
 * `DROPBOX_CLIENT_ID` and `DROPBOX_CLIENT_SECRET`: Dropbox integration credentials
 * `GITHUB_WEBHOOK_SECRET`: GitHub webhook application secret
 * `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
 * `RDS_USER` and `RDS_PWD`: RDS master user and pwd (master username default: `master`; no default pwd!)
-### AWS credentials
+* `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`: AWS credentials of the user with enough power to execute the deployment.
 
-Expects `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set in the deployment environment.
+### AWS Region
 
 At the moment the region is hardwired to `us-east-1`, due to a limit of Amazon Certificate Manager,
 used for assigning public DNS names to lambda endpoints
 (see: https://github.com/amplify-education/serverless-domain-manager#user-content-known-issues)
+
+### AWS user permission
+
+For deployment, a user with total admin powers works for sure. 
+It is possible to set up a user with less, but still great power.. and great responsibility ;)
+
+**TBD Document required permissions**
 
 ## Dev deployment
 
@@ -98,7 +116,37 @@ Localhost frontend still uses deployed Lambdas, so don't forget specifying `ICAR
 
 Note that the build runs from the client subdir, while the deploy runs from the main subdir!
 
+#### Database retention
+
+By default, databases (DynamoDB tables and Aurora instances) are deployed with a `'Delete'` *DeletionPolicy*.
+It means they will be deleted when you remove the stack, losing all data.
+
+You may optionally specify `--dbDeletion Retain` when **deploying** the stack to prevent deletion on terminartion.
+
+Note that the *DeletionPolicy* has to be specified when the infrastructure is created, to make it work when you will later delete it.
+
 **TODO Set S3 routing and create CloudFront distribution for SSL**
+
+### Cleanup
+
+#### Frontend stage cleanup
+
+`sls client remove --stage <stage>` takes down the S3 bucket containing the frontend
+
+**TBD Remove CloudFront distribution**
+
+#### Backend stage cleanup
+
+`sls remove -v --stage <stage>` removes lambdas, DynamoDB tables and RDS Cluster
+
+**There is a known issue blocking complete removal**. If removal fails, delete DynamoDB tables and RDS Cluster from AWS Console, then re-run the remove script.
+
+#### Custom API Gateway domaim removal
+
+`sls delete_domain` removes the custom domain used by all stages.
+
+Execute this command only after deleting all stages.
+
 
 ## CI/CD
 
@@ -109,8 +157,8 @@ Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage
 
 ## Public URLs
 
-* Frontend: `https://s3.amazonaws.com/<stage>-icarus-site/`
-* Lambda service base URI: `https://<icarus-domain>/<stage>/`
+* Frontend: `https://icarus-<stage>.<site-base-domain>`
+* Lambda service base URI: `https://<icarus-api-domain>/<stage>/`
 
 ## More documentation
 

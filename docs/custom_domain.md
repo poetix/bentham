@@ -3,7 +3,7 @@
 Icarus uses [Serverless Domain Manager plugin](https://github.com/amplify-education/serverless-domain-manager)
 (Also see https://serverless.com/blog/serverless-api-gateway-domain/)
 
-To use it, you need to set up a custom public domain (or subdomain) on Route53 and add a valid cerrificarte to ACM (lambdas uses HTTPS).
+To use it, you need to set up a custom public domain on Route53 and add a valid cerrificarte to ACM (lambdas uses HTTPS).
 
 The domain to use is defined in `./serverless.yml`. Change it to use a different domain
 

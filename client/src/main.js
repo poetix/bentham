@@ -28,7 +28,7 @@ console.log('Environment:', process.env)
 
 const paths = {
   siteBasePath:  window.location.href.substr(0, window.location.href.lastIndexOf("/")).replace(/#$/, "").replace(/\/$/, ""),
-  lambdaPath:  "https://icarus.riglet.eu/" + process.env.LAMBDA_STAGE
+  lambdaPath:  `https://${process.env.API_DOMAIN}/${process.env.LAMBDA_STAGE}`
 }
 
 const routes = [
