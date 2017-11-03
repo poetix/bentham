@@ -78,7 +78,7 @@ export default {
       const returnPageUri = this.siteBasePath + '/post-login'; // Using URL-rewrite or redirect rule to map to /#/post-login
       const authInitiateUri = this.lambdaPath + '/slack-oauth-initiate?returnUri=' + encodeURIComponent(returnPageUri);
       console.log('Initiating Slack login via: ' + authInitiateUri)
-      window.location.href = authInitiateUri;      
+      window.location.href = authInitiateUri; // TODO This could be a Form POST, for consistency
     },
     dropboxLogin: function() {
       const icarusAccessToken = this.userToken.accessToken;

@@ -1,5 +1,7 @@
 # Login journeys
 
+**TODO Update to the current journey** (there are small differences)
+
 An Icarus instance is bound to one Slack team.
 
 Icarus main user identity is the user's Slack account in the team.

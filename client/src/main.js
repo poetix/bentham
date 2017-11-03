@@ -27,7 +27,7 @@ Vue.component('integrations', Integrations)
 console.log('Environment:', process.env)
 
 const paths = {
-  siteBasePath:  window.location.href.substr(0, window.location.href.lastIndexOf("/")).replace(/#$/, "").replace(/\/$/, ""),
+  siteBasePath:  window.location.origin,
   lambdaPath:  `https://${process.env.API_DOMAIN}/${process.env.LAMBDA_STAGE}`
 }
 
@@ -39,9 +39,11 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  mode: (process.env.NODE_ENV === 'development') ? 'history' : 'hash', // Use 'history' mode for localhost, but it doesn't work on S3 web hosting with redirect rules (see http://aserafin.pl/2016/03/23/react-router-on-amazon-s3/)
+  mode: 'history',  
   routes
 })
+
+console.log('Routing mode: ', router.mode)
 
 /* eslint-disable no-new */
 const vm = new Vue({
