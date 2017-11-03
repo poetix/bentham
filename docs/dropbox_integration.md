@@ -15,6 +15,7 @@ OAuth2:
 
 * Redirect URIs: `<frontend-url>/dropbox-post-login`
 * Allow implicit grant: Disallow
+* Enable Additional Users
 
 Webhooks:
 
