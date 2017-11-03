@@ -16,8 +16,8 @@ The App is used only for OAuth, while the webhook may be sent to any endpoint.
 Setup an "**OAuth App**" (not a "Github App")
 
 * Client ID, Client Secret: `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` set in environment
-* Homepage URL: `<frontend-url>/index.html`
-* Authorisation callback URL: `<frontend-url>/github-post-login.html`
+* Homepage URL: `<frontend-url>/`
+* Authorisation callback URL: `<frontend-url>/github-post-login`
 
 ## Webhook setup
 
