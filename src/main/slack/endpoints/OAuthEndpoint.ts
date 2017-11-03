@@ -35,7 +35,7 @@ export class OAuthEndpoint {
     const body = parseBody(evt)
     const slackAuthCode = body.code
     const returnUri:uri = body.returnUri
-
+    console.log('Request body: %j', body)
     return complete(cb, this.oAuthService.processCode(slackAuthCode, returnUri)
       .then(icarusUserToken => response(200, icarusUserToken)));
   }

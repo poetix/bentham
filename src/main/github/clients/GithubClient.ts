@@ -11,8 +11,7 @@ export class GithubClient {
     getOAuthAuthoriseUri(icarusAccessToken: icarusAccessToken, returnUri: uri): uri {
       return  'https://github.com/login/oauth/authorize' +
       `?client_id=${this.clientId}` +
-      `&redirect_uri=${returnUri}` +
-      `&state=${icarusAccessToken}`;
+      `&redirect_uri=${encodeURIComponent(returnUri)}`;
       // No 'scope' = Read-only access to public information
     }
 

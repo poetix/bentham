@@ -29,14 +29,14 @@ describe("Slack OAuth Endpoint", () => {
 
       const result = await toPromise(_initiate, {
         queryStringParameters: {
-          returnUri: 'http://return.uri'
+          returnUri: 'http://return.uri/#/'
         }
       });
 
       expect(result.statusCode).to.equal(302);
       expect(result.headers.Location).to.equal("http://oauth-uri");
 
-      verify(mockOAuthService.getOAuthAuthoriseUri('http://return.uri')).once()
+      verify(mockOAuthService.getOAuthAuthoriseUri('http://return.uri/#/')).once()
     })
   })
 
