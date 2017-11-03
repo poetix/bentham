@@ -25,6 +25,7 @@ sls deploy -v
 
 # Compile frontend
 cd client
+npm install
 npm run build
 
 # Deploy frontend
