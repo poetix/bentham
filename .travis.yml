@@ -30,7 +30,7 @@ before_script:
   - fluxbox >/dev/null 2>&1 &  
 script: ./scripts/build-fe.sh
 after_success:
-  - ./scripts/pre-deploy.sh
+  - source ./scripts/pre-deploy.sh
   - ./scripts/deploy-sls.sh
   - ./scripts/deploy-fe.sh
 after_script: ./scripts/post-deploy.sh
