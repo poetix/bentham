@@ -1,3 +1,12 @@
+sudo: required
+
+addons:
+  apt:
+    sources:
+     - google-chrome
+    packages:
+     - google-chrome-stable fluxbox
+
 language: node_js
 node_js:
   - "6"
@@ -8,10 +17,23 @@ env:
   global:
     - SLS_DEBUG=true 
 before_install:
-  - npm i -g serverless  
+  - yarn global add serverless
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-script: ./deploy.sh
+install:
+  - ./scripts/install-sls.sh
+  - ./scripts/install-fe.sh
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
+  - fluxbox >/dev/null 2>&1 &  
+script: ./scripts/build-fe.sh
+before_deploy: ./scripts/pre-deploy.sh
+deploy:
+  - ./scripts/deploy-sls.sh
+  - ./scripts/deploy-fe.sh
+after_deploy: ./scripts/post-deploy.sh
 
 # See: https://medium.com/a-man-with-no-server/setting-up-a-ci-cd-pipeline-with-travis-ci-for-a-serverless-app-e98b0e57d30c
 # See: https://serverless.zone/ci-cd-with-serverless-v1-0-0-beta-ccb332944c6

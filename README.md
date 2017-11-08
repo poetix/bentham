@@ -102,7 +102,7 @@ You may define a different `stage` per developer, named like `<developer name>de
 The developer name must contains only letters (A-Za-z) and no hyphen is allowed between the name and the suffix.
 
 
-**DO NOT USE** `deploy.sh` during development: it only deploys the `master` branch to `test` stage. 
+**DO NOT USE** `scripts/*deploy*.sh` during development: it only deploys the `master` branch to `test` stage. 
 
 
 #### DynamoDB and RDS deletion
@@ -161,7 +161,7 @@ Execute this command only after deleting all stages.
 
 Set all required env variables in Travis project settings, including AWS credentials.
 
-Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage.
+Travis uses `scripts/pre-deploy.sh` script, and only deploys `master` branch to `test` stage.
 
 The `CERTIFICATE_ARN` variable must not be set up as the deploy script takes care of it.
 

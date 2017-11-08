@@ -6,9 +6,9 @@
   "private": true,
   "scripts": {
     "dev": "node build/dev-server.js",
-    "start": "npm run dev",
+    "start": "yarn dev",
     "build": "node build/build.js",
-    "test": "testcafe chrome e2e/features/*.spec.js -e"
+    "e2e": "testcafe chrome e2e/features/*.spec.js -e"
   },
   "dependencies": {
     "axios": "^0.17.0",
