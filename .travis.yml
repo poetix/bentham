@@ -29,11 +29,11 @@ before_script:
   - sleep 3
   - fluxbox >/dev/null 2>&1 &  
 script: ./scripts/build-fe.sh
-before_deploy: ./scripts/pre-deploy.sh
-deploy:
+after_success:
+  - ./scripts/pre-deploy.sh
   - ./scripts/deploy-sls.sh
   - ./scripts/deploy-fe.sh
-after_deploy: ./scripts/post-deploy.sh
+after_script: ./scripts/post-deploy.sh
 
 # See: https://medium.com/a-man-with-no-server/setting-up-a-ci-cd-pipeline-with-travis-ci-for-a-serverless-app-e98b0e57d30c
 # See: https://serverless.zone/ci-cd-with-serverless-v1-0-0-beta-ccb332944c6
