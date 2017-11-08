@@ -1,0 +1,1 @@
+export const testEnvironmentUrl = 'https://icarus-dev.riglet.io';
