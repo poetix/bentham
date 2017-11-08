@@ -11,7 +11,7 @@ provider:
   name: aws
   runtime: nodejs6.10
   region: us-east-1 # Domain Manager plugin supports us-east-1 only!
-  stage: ${opt:stage, self:custom.stage}
+  stage: ${env:ICARUS_STAGE, 'dev'} # Ignores any stage defined by CLI `--stage` option
 
   iamRoleStatements: 
     # DynamoDB access
@@ -60,7 +60,7 @@ provider:
     GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
     GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
 
-    TABLE_PREFIX: ${self:service}-${self:provider.stage}-
+    TABLE_PREFIX: ${self:custom.nameSpace}-
 
     ACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}accounts
     IDENTITIES_TABLE: ${self:provider.environment.TABLE_PREFIX}identities
@@ -77,7 +77,7 @@ provider:
     RDS_USER: ${env:RDS_USER, 'master'}
     RDS_PWD: ${env:RDS_PWD}
 custom:
-  stage: ${env:ICARUS_STAGE, 'dev'}
+  nameSpace: ${self:service}-${self:provider.stage}
   apiDomain: ${env:ICARUS_API_DOMAIN}
   siteBaseDomain: ${env:ICARUS_SITE_BASE_DOMAIN}
 
@@ -92,7 +92,7 @@ custom:
 
   # Used by serverless-finch plugin
   client:
-    bucketName: icarus-${self:provider.stage}.${self:custom.siteBaseDomain} # S3 Bucket: `icarus-<stage>.<site-base-domain>`
+    bucketName: ${self:custom.nameSpace}.${self:custom.siteBaseDomain} # S3 Bucket: `icarus-<stage>.<site-base-domain>`
 
   # DynamoDB and RDS table deletion policy
   # Default is 'Delete'. Override with 'Retain' not to drop datastores when removing the stack
@@ -290,7 +290,7 @@ resources:
         CidrBlock: "10.42.0.0/16"
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage}"
+            Value: "${self:custom.nameSpace"
 
     # VPC Networking.
     # See:
@@ -347,7 +347,7 @@ resources:
           Ref: ServerlessVPC
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Private (Lambda)"
+            Value: "${self:custom.nameSpace} Private (Lambda)"
 
     ServerlessDefaultPrivateRoute:
       Type: AWS::EC2::Route
@@ -392,7 +392,7 @@ resources:
           Ref: ServerlessVPC
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Public (IGW)"
+            Value: "${self:custom.nameSpace} Public (IGW)"
 
     ServerlessDefaultPublicRoute:
       DependsOn: ServerlessIgw
@@ -459,7 +459,7 @@ resources:
           Ref: ServerlessRDSSubnetGroup
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Read Models"        
+            Value: "${self:custom.nameSpace} Read Models"        
    
     ServerlessRDSPrimaryInstance:
       Type: AWS::RDS::DBInstance
@@ -472,7 +472,7 @@ resources:
           Ref: ServerlessRDSSubnetGroup
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Read Models - Primary"  
+            Value: "${self:custom.nameSpace} Read Models - Primary"  
 
     ##################
     # DynamoDB tables
