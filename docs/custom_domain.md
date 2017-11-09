@@ -2,7 +2,9 @@
 
 ### Backend domain
 
-Icarus uses [Serverless Domain Manager plugin](https://github.com/amplify-education/serverless-domain-manager)
+Icarus uses a custom DNS domain for APIs.
+
+The API Gateway custom domain is managed using [Serverless Domain Manager plugin](https://github.com/amplify-education/serverless-domain-manager).
 (Also see https://serverless.com/blog/serverless-api-gateway-domain/)
 
 The domain name is specified by the `ICARUS_DOMAIN` environment variable.
@@ -20,6 +22,8 @@ The base FE domain is defined by the `ICARUS_SITE_BASE_DOMAIN` variable.
 Different stages uses different FE hostnames, following this pattern: `icarus-<stage>.<ICARUS_SITE_BASE_DOMAIN>`.
 
 Note that `<ICARUS_SITE_BASE_DOMAIN>` may be also the base domain of `<ICARUS_DOMAIN>`.
+
+You also need a valid certificate in ACM for any subdomain of `<ICARUS_SITE_BASE_DOMAIN>` (see below).
 
 ## SSL Certificartes
 
