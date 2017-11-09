@@ -1,20 +1,30 @@
 # Custom DNS domain
 
+### Backend domain
+
 Icarus uses [Serverless Domain Manager plugin](https://github.com/amplify-education/serverless-domain-manager)
 (Also see https://serverless.com/blog/serverless-api-gateway-domain/)
 
-To use it, you need to set up a custom public domain on Route53 and add a valid cerrificarte to ACM (lambdas uses HTTPS).
-
-The domain to use is defined in `./serverless.yml`. Change it to use a different domain
+The domain name is specified by the `ICARUS_DOMAIN` environment variable.
 
 All stages are deployed to the same domain, using different basepaths.
 
-The domain name is specified by the environment variable `ICARUS_DOMAIN`.
 This domain must match with the certificate added to ACM (see below.)
+
+### Frontend domain
+
+The FrontEnd also uses a custom DNS Domain.
+
+The base FE domain is defined by the `ICARUS_SITE_BASE_DOMAIN` variable. 
+
+Different stages uses different FE hostnames, following this pattern: `icarus-<stage>.<ICARUS_SITE_BASE_DOMAIN>`.
+
+Note that `<ICARUS_SITE_BASE_DOMAIN>` may be also the base domain of `<ICARUS_DOMAIN>`.
 
 ## SSL Certificartes
 
-We need a valid, signed SSL certifcate for all our subdomains.
+We need a valid, signed SSL certifcate for `<ICARUS_DOMAIN>` and for `*.<ICARUS_SITE_BASE_DOMAIN>`.
+Obviously, if `<ICARUS_SITE_BASE_DOMAIN>` is also the base domain of  `<ICARUS_DOMAIN>` we only need the certificate `*.<ICARUS_SITE_BASE_DOMAIN>`.
 
 Unless you have a paid certificate, see [here](./free_ssl_certificates.md) to generate one for free and load it into ACM.
 
@@ -40,6 +50,12 @@ The distribution may take up to 40 mins to come up and the same time to be delet
 To monitor the deployment status of the Custom domain: *AWS Console: Amazon API Gateway > Custom Domain Names*.
 The ACM Certificate status takes a while "Initialising...".
 I can't find any AWS CLI equivalent for retrieving that information.
+
+### Create FrontEnd DNS entry
+
+The certificate for  `*.<ICARUS_SITE_BASE_DOMAIN>` must be loaded in ACM and `<ICARUS_SITE_BASE_DOMAIN>` must be hosted on Route53.
+
+The deployment process (`sls deploy`) takes care of creating DNS records for the FrontEnd.
 
 ### Certificate renewal
 
