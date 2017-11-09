@@ -8,7 +8,9 @@ env:
   global:
     - SLS_DEBUG=true 
 before_install:
-  - npm i -g serverless
+  - npm i -g serverless  
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
 script: ./deploy.sh
 
 # See: https://medium.com/a-man-with-no-server/setting-up-a-ci-cd-pipeline-with-travis-ci-for-a-serverless-app-e98b0e57d30c
