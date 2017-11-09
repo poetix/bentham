@@ -11,7 +11,7 @@ provider:
   name: aws
   runtime: nodejs6.10
   region: us-east-1 # Domain Manager plugin supports us-east-1 only!
-  stage: ${opt:stage, self:custom.stage}
+  stage: ${env:ICARUS_STAGE, 'dev'} # Ignores any stage defined by CLI `--stage` option
 
   iamRoleStatements: 
     # DynamoDB access
@@ -60,7 +60,7 @@ provider:
     GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
     GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
 
-    TABLE_PREFIX: ${self:service}-${self:provider.stage}-
+    TABLE_PREFIX: ${self:custom.nameSpace}-
 
     ACCOUNTS_TABLE: ${self:provider.environment.TABLE_PREFIX}accounts
     IDENTITIES_TABLE: ${self:provider.environment.TABLE_PREFIX}identities
@@ -77,9 +77,11 @@ provider:
     RDS_USER: ${env:RDS_USER, 'master'}
     RDS_PWD: ${env:RDS_PWD}
 custom:
-  stage: ${env:ICARUS_STAGE, 'dev'}
+  nameSpace: ${self:service}-${self:provider.stage}
   apiDomain: ${env:ICARUS_API_DOMAIN}
   siteBaseDomain: ${env:ICARUS_SITE_BASE_DOMAIN}
+  frontendDomain: ${self:custom.nameSpace}.${self:custom.siteBaseDomain} # `icarus-<stage>.<site-base-domain>`
+  acmCertificateArn: ${env:CERTIFICATE_ARN}
 
   # Domain Manager
   ## Comment out the entire branch to disable custom DNS domain
@@ -89,10 +91,11 @@ custom:
     domainName: ${self:custom.apiDomain}
     stage: ${self:provider.stage}
     createRoute53Record: true
+    
 
   # Used by serverless-finch plugin
   client:
-    bucketName: icarus-${self:provider.stage}.${self:custom.siteBaseDomain} # S3 Bucket: `icarus-<stage>.<site-base-domain>`
+    bucketName: ${self:custom.frontendDomain} # S3 Bucket: named after the frontend DNS host
 
   # DynamoDB and RDS table deletion policy
   # Default is 'Delete'. Override with 'Retain' not to drop datastores when removing the stack
@@ -290,7 +293,7 @@ resources:
         CidrBlock: "10.42.0.0/16"
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage}"
+            Value: "${self:custom.nameSpace"
 
     # VPC Networking.
     # See:
@@ -347,7 +350,7 @@ resources:
           Ref: ServerlessVPC
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Private (Lambda)"
+            Value: "${self:custom.nameSpace} Private (Lambda)"
 
     ServerlessDefaultPrivateRoute:
       Type: AWS::EC2::Route
@@ -392,7 +395,7 @@ resources:
           Ref: ServerlessVPC
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Public (IGW)"
+            Value: "${self:custom.nameSpace} Public (IGW)"
 
     ServerlessDefaultPublicRoute:
       DependsOn: ServerlessIgw
@@ -459,7 +462,7 @@ resources:
           Ref: ServerlessRDSSubnetGroup
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Read Models"        
+            Value: "${self:custom.nameSpace} Read Models"        
    
     ServerlessRDSPrimaryInstance:
       Type: AWS::RDS::DBInstance
@@ -472,7 +475,7 @@ resources:
           Ref: ServerlessRDSSubnetGroup
         Tags:
           - Key: Name
-            Value: "${self:service}-${self:provider.stage} Read Models - Primary"  
+            Value: "${self:custom.nameSpace} Read Models - Primary"  
 
     ##################
     # DynamoDB tables
@@ -606,3 +609,99 @@ resources:
           WriteCapacityUnits: 5
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+
+    ############
+    # Front End
+    ############
+
+    # FE S3 Bucket
+    # We are creating the Bucket even though the Finch plugin will try to do the same again on `client deploy`
+    # but we need to create the Cloudfront Distribution attached to the bucket
+    FrontendS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.client.bucketName}
+        AccessControl: PublicRead
+        # WebsiteConfiguration:
+        #   IndexDocument: index.html
+        #   ErrorDocument: index.html
+
+    FrontendS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: FrontendS3Bucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+              - s3:GetObject
+              Resource: arn:aws:s3:::${self:custom.client.bucketName}/*
+
+    # Cloudfront Distribution
+    FrontendCloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Origins:
+            - DomainName: ${self:custom.client.bucketName}.s3-website-${self:provider.region}.amazonaws.com # Accessing S3 as Website hosting
+              Id: Frontend
+              CustomOriginConfig:
+                HTTPPort: 80
+                HTTPSPort: 443
+                OriginProtocolPolicy: http-only
+          Enabled: 'true'
+          Aliases:
+            - ${self:custom.frontendDomain}
+          # DefaultRootObject: index.html
+          CustomErrorResponses:
+             - ErrorCode: 404
+               ResponseCode: 200
+               ErrorCachingMinTTL: 0
+               ResponsePagePath: /index.html
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - GET
+              - HEAD
+            TargetOriginId: Frontend
+            ## Defining if and how the QueryString and Cookies are forwarded to the origin which in this case is S3
+            ForwardedValues:
+              QueryString: 'false'
+              Cookies:
+                Forward: none
+            ViewerProtocolPolicy: redirect-to-https
+          ## The certificate to use when viewers use HTTPS to request objects.
+          ViewerCertificate:
+            AcmCertificateArn: ${self:custom.acmCertificateArn}
+            SslSupportMethod: sni-only            
+
+    # Frontend Route53 Alias record to Cloudfront
+    FrontendDnsRecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneName: '${self:custom.siteBaseDomain}.' # Hosted zone name ends with a period
+        Name: '${self:custom.frontendDomain}.' # Host name ends with a period
+        Type: A
+        AliasTarget:
+          DNSName:
+            "Fn::GetAtt": FrontendCloudFrontDistribution.DomainName
+          HostedZoneId: 'Z2FDTNDATAQYW2' # This is fixed for CloudFront. This is not a hardwired value           
+
+  Outputs:
+    NameSpace: 
+      Description: NameSpace used as name prefix for most of resources
+      Value:  ${self:custom.nameSpace}
+
+    FrontEndUri:
+      Description: FrontEnd URI
+      Value: 'https://${self:custom.frontendDomain}'
+      Export:
+        Name: ${self:custom.nameSpace}:FrontEndUri
+
+    ApiBaseUri:
+      Description: API base URI
+      Value: 'https://${self:custom.customDomain.domainName}/${self:custom.customDomain.basePath}/'
+      Export:
+        Name: ${self:custom.nameSpace}:ApiBaseUri

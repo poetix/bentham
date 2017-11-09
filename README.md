@@ -127,25 +127,15 @@ You may optionally specify `--dbDeletion Retain` when **deploying** the stack to
 
 Note that the *DeletionPolicy* has to be specified when the infrastructure is created, to make it work when you will later delete it.
 
-**TODO Set CloudFront distribution and Route53 alias**
-
 ### Cleanup
 
-#### Frontend stage cleanup
-
-`sls client remove --stage <stage>` takes down the S3 bucket containing the frontend
-
-**TBD Remove CloudFront distribution**
-
-#### Backend stage cleanup
-
-`sls remove -v --stage <stage>` removes lambdas, DynamoDB tables and RDS Cluster
+`sls remove -v --stage <stage>` removes lambdas, DynamoDB tables, RDS Cluster, frontend S3 bucket and CloudFront Distribution
 
 **There is a known issue blocking complete removal**. If removal fails, delete DynamoDB tables and RDS Cluster from AWS Console, then re-run the remove script.
 
 #### Custom API Gateway domaim removal
 
-`sls delete_domain` removes the custom domain used by all stages.
+`sls delete_domain` removes the custom domain (used by all stages).
 
 Execute this command only after deleting all stages.
 
