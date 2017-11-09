@@ -10,6 +10,12 @@ Node:
 brew install node
 ```
 
+AWS CLI: 
+
+```bash
+pip install awscli --upgrade --user
+```
+
 NPM modules
 
 ```bash
@@ -32,7 +38,6 @@ Frontend site use custom domains as well.
 Every stage uses a separate sub-domain, following the pattern:
 `icarus-<stage>.<site-base-domain>`
 
-**TBD Frontend domain setup**
 
 ## Environment
 
@@ -66,7 +71,19 @@ It is possible to set up a user with less, but still great power.. and great res
 
 ## Dev deployment
 
-### Lambdas
+### ACM Certificate ARN
+
+Before deploying, you need to setup the `CERTIFICARTE_ARN` environment variable, containing the ARN of the 
+certificate used for frontend domains. See [Custom Domain and Certificates]( ./docs/custom_domain.md)
+
+You may either look at the AWS Console or use the provided `getCertificateArnByDomain.sh` script:
+```bash
+export CERTIFICATE_ARN=`scripts/getCertificateArnByDomain.sh <base-domain> us-east-1`
+```
+
+The second parameter is obviously the AWS Region, but at the moment only `us-east-1` is supported.
+
+### Infrastructure and Lambdas
 
 To deploy `dev` stage backend run:
 
@@ -146,6 +163,8 @@ Set all required env variables in Travis project settings, including AWS credent
 
 Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage.
 
+The `CERTIFICATE_ARN` variable must not be set up as the deploy script takes care of it.
+
 
 ## Public URLs
 
@@ -167,7 +186,7 @@ Travis uses `deploy.sh` script, and only deploys `master` branch to `test` stage
 
 ## Known Issues/Limitations
 
-* SSL Certificate generation and import in ACM, DNS base domain setup are all manual.
+* SSL Certificate generation and import in ACM is manual.
 * API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
     * There is some issue deploying RDS Aurora on `us-east-1a` and `-1b`. I can't find any documentation, but other people had the same issue. CF complaining about "Your subnet group doesn't have enough availability zones..." when using `us-east-1a` and `-1b`, while it works on `-1c` and `-1d`. For example, see [this answer](https://stackoverflow.com/questions/44924723/creation-rds-aurora-cluster-via-cloudformation#answer-45340611)
 
