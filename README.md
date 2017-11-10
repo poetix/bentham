@@ -71,6 +71,11 @@ It is possible to set up a user with less, but still great power.. and great res
 
 ## Dev deployment
 
+All environment variables above must be set, including `ICARUS_STAGE`.
+
+**Attention: specifying the stage with `--stage ...` would work for the backend but not for the frontend.**
+
+
 ### ACM Certificate ARN
 
 Before deploying, you need to setup the `CERTIFICARTE_ARN` environment variable, containing the ARN of the 
@@ -83,24 +88,22 @@ export CERTIFICATE_ARN=`scripts/getCertificateArnByDomain.sh <base-domain> us-ea
 
 The second parameter is obviously the AWS Region, but at the moment only `us-east-1` is supported.
 
-### Infrastructure and Lambdas
+### Compile Frontend
 
-To deploy `dev` stage backend run:
+From `./client` directory:
+
+```bash
+npm run build
+```
+
+### Deploy Backend & Frontend
 
 ```
 sls deploy -v
 ```
 
-When working more than one developer at a time is extermely useful to have a separate dev deployment per-developer.
-This includes separate endpoints, separate DynamoDB tables and separate CloudFormation stacks.
-
-Set the environment variable `ICARUS_STAGE` to the stage.
-
-**Attention: specifying the stage with `--stage ...` would work for the backend but not for the frontend.**
-
-You may define a different `stage` per developer, named like `<developer name>dev`. 
-The developer name must contains only letters (A-Za-z) and no hyphen is allowed between the name and the suffix.
-
+This deploys infrastructure and Lambdas, and copy the content of the frontend target directory (`./client/dist`)
+to the frontend S3 bucket.
 
 **DO NOT USE** `deploy.sh` during development: it only deploys the `master` branch to `test` stage. 
 
