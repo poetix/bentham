@@ -192,4 +192,4 @@ The `CERTIFICATE_ARN` variable must not be set up as the deploy script takes car
 * SSL Certificate generation and import in ACM is manual.
 * API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
     * There is some issue deploying RDS Aurora on `us-east-1a` and `-1b`. I can't find any documentation, but other people had the same issue. CF complaining about "Your subnet group doesn't have enough availability zones..." when using `us-east-1a` and `-1b`, while it works on `-1c` and `-1d`. For example, see [this answer](https://stackoverflow.com/questions/44924723/creation-rds-aurora-cluster-via-cloudformation#answer-45340611)
-
+* There is a known AWS issue potentially preventing from deleting the whole stack: https://stackoverflow.com/questions/41299662/aws-lambda-created-eni-not-deleting-while-deletion-of-stack#answer-41310289
