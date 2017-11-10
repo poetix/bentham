@@ -5,7 +5,7 @@ REGION="us-east-1" # This is hardwired
 
 
 # Maps branch to stage
-if [[ $BRANCH == 'master' ]]; then
+if [ $BRANCH == 'master' ] || [ $BRANCH == 'feature/52_e2e_test' ]; then
   STAGE="test"
 fi
 echo "Branch: $BRANCH, Mapped Stage: $STAGE, Is a PR? ${TRAVIS_PULL_REQUEST}"
