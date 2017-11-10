@@ -11,13 +11,12 @@ fi
 echo "Branch: $BRANCH, Mapped Stage: $STAGE, Is a PR? ${TRAVIS_PULL_REQUEST}"
 
 # Only deploy branches with stages, but not PR
-if [ -z "$STAGE" ] || [ ! "$PR" = false ]; then
+if [ -z "$STAGE" ] || [ ! "$PR" = false ]
+then
   echo "Not deploying this branch";
-  exit 0;
+else
+  export ICARUS_STAGE=$STAGE
 fi
-
-echo "Deploying from branch $BRANCH to stage $STAGE"
-export ICARUS_STAGE=$STAGE
 
 # Check we know what domain we are deploying FE to (CloudFormation must be able to create the DNS record)
 if [ -z "$ICARUS_SITE_BASE_DOMAIN" ] ; then
@@ -32,15 +31,3 @@ if [ -z "$CERTIFICATE_ARN" ]; then
   exit 1
 fi
 export CERTIFICATE_ARN
-
-# Deploy backend
-sls deploy -v
-
-# Compile frontend
-cd client
-npm install
-npm run build
-
-# Deploy frontend
-cd ..
-sls client deploy  -v 
