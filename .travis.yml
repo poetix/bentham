@@ -24,7 +24,7 @@ install:
   - ./scripts/install-sls.sh
   - ./scripts/install-fe.sh
 before_script:
-  - source scripts/pre-deploy.sh
+  - scripts/pre-deploy.sh
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3
