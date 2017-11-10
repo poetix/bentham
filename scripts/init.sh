@@ -31,3 +31,9 @@ if [ -z "$CERTIFICATE_ARN" ]; then
   exit 1
 fi
 export CERTIFICATE_ARN
+
+# Set up Headless Chrome
+export DISPLAY=:99.0
+sh -e /etc/init.d/xvfb start
+sleep 3
+fluxbox >/dev/null 2>&1 &
