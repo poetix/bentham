@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 BRANCH=${TRAVIS_BRANCH:-$(git rev-parse --abbrev-ref HEAD)} 
 PR=${TRAVIS_PULL_REQUEST:-false}
 REGION="us-east-1" # This is hardwired
