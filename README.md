@@ -71,6 +71,11 @@ It is possible to set up a user with less, but still great power.. and great res
 
 ## Dev deployment
 
+All environment variables above must be set, including `ICARUS_STAGE`.
+
+**Attention: specifying the stage with `--stage ...` would work for the backend but not for the frontend.**
+
+
 ### ACM Certificate ARN
 
 Before deploying, you need to setup the `CERTIFICARTE_ARN` environment variable, containing the ARN of the 
@@ -83,24 +88,22 @@ export CERTIFICATE_ARN=`scripts/getCertificateArnByDomain.sh <base-domain> us-ea
 
 The second parameter is obviously the AWS Region, but at the moment only `us-east-1` is supported.
 
-### Infrastructure and Lambdas
+### Compile Frontend
 
-To deploy `dev` stage backend run:
+From `./client` directory:
+
+```bash
+npm run build
+```
+
+### Deploy Backend & Frontend
 
 ```
 sls deploy -v
 ```
 
-When working more than one developer at a time is extermely useful to have a separate dev deployment per-developer.
-This includes separate endpoints, separate DynamoDB tables and separate CloudFormation stacks.
-
-Set the environment variable `ICARUS_STAGE` to the stage.
-
-**Attention: specifying the stage with `--stage ...` would work for the backend but not for the frontend.**
-
-You may define a different `stage` per developer, named like `<developer name>dev`. 
-The developer name must contains only letters (A-Za-z) and no hyphen is allowed between the name and the suffix.
-
+This deploys infrastructure and Lambdas, and copy the content of the frontend target directory (`./client/dist`)
+to the frontend S3 bucket.
 
 **DO NOT USE** `deploy.sh` during development: it only deploys the `master` branch to `test` stage. 
 
@@ -189,4 +192,4 @@ The `CERTIFICATE_ARN` variable must not be set up as the deploy script takes car
 * SSL Certificate generation and import in ACM is manual.
 * API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
     * There is some issue deploying RDS Aurora on `us-east-1a` and `-1b`. I can't find any documentation, but other people had the same issue. CF complaining about "Your subnet group doesn't have enough availability zones..." when using `us-east-1a` and `-1b`, while it works on `-1c` and `-1d`. For example, see [this answer](https://stackoverflow.com/questions/44924723/creation-rds-aurora-cluster-via-cloudformation#answer-45340611)
-
+* There is a known AWS issue potentially preventing from deleting the whole stack: https://stackoverflow.com/questions/41299662/aws-lambda-created-eni-not-deleting-while-deletion-of-stack#answer-41310289
