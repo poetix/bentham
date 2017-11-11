@@ -5,6 +5,12 @@ PR=${TRAVIS_PULL_REQUEST:-false}
 REGION="us-east-1" # This is hardwired
 
 
+# Compile frontend
+cd client
+npm install
+npm run build
+cd ..
+
 # Maps branch to stage
 if [[ $BRANCH == 'master' ]]; then
   STAGE="test"
@@ -34,14 +40,5 @@ if [ -z "$CERTIFICATE_ARN" ]; then
 fi
 export CERTIFICATE_ARN
 
-# Deploy backend
+# Deploy backend & frontend
 sls deploy -v
-
-# Compile frontend
-cd client
-npm install
-npm run build
-
-# Deploy frontend
-cd ..
-sls client deploy  -v 
