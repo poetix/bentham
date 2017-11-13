@@ -4,8 +4,8 @@ service:
 # Add the serverless-webpack plugin
 plugins:
   - serverless-webpack        # compiles and bundles together typescript code
-  - serverless-finch          # deploys static web pages to S3
   - serverless-domain-manager # custom DNS domain for lambda endpoints
+  - serverless-s3-sync        # deploys static web pages to S3
 
 provider:
   name: aws
@@ -82,6 +82,7 @@ custom:
   siteBaseDomain: ${env:ICARUS_SITE_BASE_DOMAIN}
   frontendDomain: ${self:custom.nameSpace}.${self:custom.siteBaseDomain} # `icarus-<stage>.<site-base-domain>`
   acmCertificateArn: ${env:CERTIFICATE_ARN}
+  siteBucket: ${self:custom.frontendDomain} # S3 Bucket: named after the frontend DNS host
 
   # Domain Manager
   ## Comment out the entire branch to disable custom DNS domain
@@ -91,11 +92,12 @@ custom:
     domainName: ${self:custom.apiDomain}
     stage: ${self:provider.stage}
     createRoute53Record: true
-    
+  
+  # S3 Sync to deploy frontend
+  s3Sync:
+    - bucketName: ${self:custom.siteBucket}
+      localDir: client/dist/
 
-  # Used by serverless-finch plugin
-  client:
-    bucketName: ${self:custom.frontendDomain} # S3 Bucket: named after the frontend DNS host
 
   # DynamoDB and RDS table deletion policy
   # Default is 'Delete'. Override with 'Retain' not to drop datastores when removing the stack
@@ -620,11 +622,11 @@ resources:
     FrontendS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:custom.client.bucketName}
+        BucketName: ${self:custom.siteBucket}
         AccessControl: PublicRead
-        # WebsiteConfiguration:
-        #   IndexDocument: index.html
-        #   ErrorDocument: index.html
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: index.html
 
     FrontendS3BucketPolicy:
       Type: AWS::S3::BucketPolicy
@@ -638,7 +640,7 @@ resources:
               Principal: "*"
               Action:
               - s3:GetObject
-              Resource: arn:aws:s3:::${self:custom.client.bucketName}/*
+              Resource: arn:aws:s3:::${self:custom.siteBucket}/*
 
     # Cloudfront Distribution
     FrontendCloudFrontDistribution:
@@ -646,7 +648,7 @@ resources:
       Properties:
         DistributionConfig:
           Origins:
-            - DomainName: ${self:custom.client.bucketName}.s3-website-${self:provider.region}.amazonaws.com # Accessing S3 as Website hosting
+            - DomainName: ${self:custom.siteBucket}.s3-website-${self:provider.region}.amazonaws.com # Accessing S3 as Website hosting
               Id: Frontend
               CustomOriginConfig:
                 HTTPPort: 80
