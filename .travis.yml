@@ -16,19 +16,23 @@ cache:
 env:  
   global:
     - SLS_DEBUG=true 
+
 before_install:
   - yarn global add serverless
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
+ 
 install:
-  - ./scripts/install-sls.sh
-  - ./scripts/install-fe.sh
+ # - ./scripts/install-sls.sh
+ # - ./scripts/install-fe.sh
+  - yarn
+  - cd ${TRAVIS_BUILD_DIR}/client && 
+    yarn && 
+    cd $TRAVIS_BUILD_DIR 
+
 before_script: source scripts/init.sh  
 script: 
-  - ./scripts/build-fe.sh &&
+  - yarn test &&
+    ./scripts/build-fe.sh &&
     ./scripts/deploy-sls.sh &&
-    ./scripts/deploy-fe.sh &&
     ./scripts/test-e2e.sh
-
-# See: https://medium.com/a-man-with-no-server/setting-up-a-ci-cd-pipeline-with-travis-ci-for-a-serverless-app-e98b0e57d30c
-# See: https://serverless.zone/ci-cd-with-serverless-v1-0-0-beta-ccb332944c6
