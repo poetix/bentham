@@ -33,5 +33,5 @@ before_script:
 script: 
   - ./scripts/test-sls.sh &&
     ./scripts/build-fe.sh &&
-    ./scripts/deploy-sls.sh &&
-#    ./scripts/test-e2e.sh
+    ./scripts/deploy-sls.sh
+##  ./scripts/test-e2e.sh
