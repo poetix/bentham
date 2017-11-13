@@ -16,6 +16,7 @@ then
   echo "Not deploying this branch";
 else
   export ICARUS_STAGE=$STAGE
+  echo "Will deploy to stage $ICARUS_STAGE"
 fi
 
 # Check we know what domain we are deploying FE to (CloudFormation must be able to create the DNS record)
@@ -31,9 +32,5 @@ if [ -z "$CERTIFICATE_ARN" ]; then
   exit 1
 fi
 export CERTIFICATE_ARN
+echo "Using certificate $CERTIFICATE_ARN"
 
-# Set up Headless Chrome
-export DISPLAY=:99.0
-sh -e /etc/init.d/xvfb start
-sleep 3
-fluxbox >/dev/null 2>&1 &

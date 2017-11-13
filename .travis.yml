@@ -15,7 +15,8 @@ cache:
     - "node_modules"
 env:  
   global:
-    - SLS_DEBUG=true 
+    - SLS_DEBUG=true
+    - DISPLAY=:99.0 
 
 before_install:
   - yarn global add serverless
@@ -23,16 +24,14 @@ before_install:
   - export PATH=$PATH:$HOME/.local/bin
  
 install:
- # - ./scripts/install-sls.sh
- # - ./scripts/install-fe.sh
-  - yarn
-  - cd ${TRAVIS_BUILD_DIR}/client && 
-    yarn && 
-    cd $TRAVIS_BUILD_DIR 
+  - ./scripts/install-sls.sh
+  - ./scripts/install-fe.sh
 
-before_script: source scripts/init.sh  
+before_script: 
+  - source scripts/init-env.sh
+   
 script: 
-  - yarn test &&
+  - ./scripts/test-sls.sh &&
     ./scripts/build-fe.sh &&
     ./scripts/deploy-sls.sh &&
-    ./scripts/test-e2e.sh
+#    ./scripts/test-e2e.sh
