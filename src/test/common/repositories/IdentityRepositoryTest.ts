@@ -44,6 +44,24 @@ describe('Identity repository', () => {
         })
     })
 
+    describe('delete Icarus account', () =>{
+        it('should delete a record from accounts table by slack id', async() => {
+            const [ dynamoClientMock, unit ] = mocks()
+
+            when(dynamoClientMock.delete(anyString(), anything())).thenReturn(Promise.resolve('deleted'))
+
+            await unit.deleteIcarusAccount('slack-id')
+
+            const [table, params] = capture(dynamoClientMock.delete).last()
+            expect(table).is.equal('accounts')
+            expect(params).to.be.deep.include({
+                slack_id: 'slack-id'
+            })
+
+            verify(dynamoClientMock.delete(anyString(), anything())).once()
+        })
+    })
+
     describe('save Dropox identity', () => {
 
         it('should put slack_id, dropbox details into identities table with "D" integration type', async () => {
@@ -70,6 +88,25 @@ describe('Identity repository', () => {
             })
 
             verify(dynamoClientMock.put(anyString(), anything())).once()
+        })
+    })
+
+    describe('delete Dropbox identity', () => {
+        it('should delete a record of type "D" from identities table by slack id', async () => {
+            const [ dynamoClientMock, unit ] = mocks()
+
+            when(dynamoClientMock.delete(anyString(), anything())).thenReturn(Promise.resolve('deleted'))
+
+            await unit.deleteDropboxIdentity('slack-id')
+
+            const [table, params] = capture(dynamoClientMock.delete).last()
+            expect(table).is.equal('identities')
+            expect(params).to.be.deep.include({
+                slack_id: 'slack-id',
+                type: 'D',
+            })
+
+            verify(dynamoClientMock.delete(anyString(), anything())).once()            
         })
     })
 
@@ -103,6 +140,24 @@ describe('Identity repository', () => {
         })
     })
 
+    describe('delete Github identity', () => {
+        it('should delete a record of type "G" from identities table by slack id', async () => {
+            const [ dynamoClientMock, unit ] = mocks()
+
+            when(dynamoClientMock.delete(anyString(), anything())).thenReturn(Promise.resolve('deleted'))
+
+            await unit.deleteGithubIdentity('slack-id')
+
+            const [table, params] = capture(dynamoClientMock.delete).last()
+            expect(table).is.equal('identities')
+            expect(params).to.be.deep.include({
+                slack_id: 'slack-id',
+                type: 'G',
+            })
+
+            verify(dynamoClientMock.delete(anyString(), anything())).once()            
+        })
+    })    
 
     describe('save Slack idenity', () => {
         
@@ -137,6 +192,25 @@ describe('Identity repository', () => {
             verify(dynamoClientMock.put(anyString(), anything())).once()
         })
     })
+
+    describe('delete Slack identity', () => {
+        it('should delete a record of type "S" from identities table by slack id', async () => {
+            const [ dynamoClientMock, unit ] = mocks()
+
+            when(dynamoClientMock.delete(anyString(), anything())).thenReturn(Promise.resolve('deleted'))
+
+            await unit.deleteSlackIdentity('slack-id')
+
+            const [table, params] = capture(dynamoClientMock.delete).last()
+            expect(table).is.equal('identities')
+            expect(params).to.be.deep.include({
+                slack_id: 'slack-id',
+                type: 'S',
+            })
+
+            verify(dynamoClientMock.delete(anyString(), anything())).once()            
+        })
+    })     
 
     describe('get Slack identity by Icarus access token', () => {
 

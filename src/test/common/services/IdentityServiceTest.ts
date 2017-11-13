@@ -141,6 +141,55 @@ describe('Identity service, get Icarus user token', () => {
         })
 
     })
-  }) 
+  })
+  
+  describe('forget user', () => {
+    it('should remove account and all identities of the user', async () => {
+      const repositoryMock = mock(IdentityRepository)
+      const unit = new IdentityService(instance(repositoryMock))
+
+      const slackIdentity:SlackIdentity = {
+        id: 'slack id',
+        accessToken: 'slack access token',
+        teamId: 'slack-team-id',
+        userName: 'User Name'
+      }
+      when(repositoryMock.getSlackIdentity(anyString())).thenReturn( Promise.resolve(slackIdentity) )
+
+      when(repositoryMock.deleteIcarusAccount(anyString())).thenReturn(Promise.resolve())
+      when(repositoryMock.deleteSlackIdentity(anyString())).thenReturn(Promise.resolve())
+      when(repositoryMock.deleteGithubIdentity(anyString())).thenReturn(Promise.resolve())
+      when(repositoryMock.deleteDropboxIdentity(anyString())).thenReturn(Promise.resolve())
+
+      await unit.forgetUser('icarus access token')
+
+      verify(repositoryMock.getSlackIdentity('icarus access token')).once()
+      verify(repositoryMock.deleteIcarusAccount('slack id')).once()
+      verify(repositoryMock.deleteSlackIdentity('slack id')).once()
+      verify(repositoryMock.deleteGithubIdentity('slack id')).once()
+      verify(repositoryMock.deleteDropboxIdentity('slack id')).once()
+      
+    })
+
+    it('should reject when acces token is invalid', () => {
+      const repositoryMock = mock(IdentityRepository)
+      const unit = new IdentityService(instance(repositoryMock))
+
+
+      when(repositoryMock.getSlackIdentity(anyString())).thenReturn( Promise.reject('invalid token') )
+      
+      return unit.forgetUser('invalid token')
+        .catch(err => {
+          expect(err).to.be.ok
+
+          verify(repositoryMock.getSlackIdentity('invalid token')).once()
+          
+          verify(repositoryMock.deleteIcarusAccount(anyString())).never()
+          verify(repositoryMock.deleteSlackIdentity(anyString())).never()
+          verify(repositoryMock.deleteGithubIdentity(anyString())).never()
+          verify(repositoryMock.deleteDropboxIdentity(anyString())).never()
+        })
+    })
+  })
  
 })

@@ -27,10 +27,11 @@ describe('User activity stats endpoint', () => {
             }
           });
 
- 
         verify(userActivityStatsServiceMock.getUserActivityDistribution("the-access-token")).once();
           
         expect(result.statusCode).to.equal(200);
         expect(result.body).to.equal(JSON.stringify(report));         
     })
+
+    // TODO Test failure scenarios: missing access token header and invalid access token
 })

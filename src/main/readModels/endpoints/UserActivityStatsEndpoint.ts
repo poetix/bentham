@@ -1,4 +1,4 @@
-import { complete, response, xAccessTokenHeader } from "../../common/endpoints/EndpointUtils";
+import { complete, response, sendResponse, xAccessTokenHeader } from "../../common/endpoints/EndpointUtils";
 import { event, callback, icarusAccessToken } from "../../common/Api";
 import { UserActivityStatsService } from "../services/UserActivityStatsService";
 
@@ -15,15 +15,17 @@ export class UserActivityStatsEndpoint {
     getUserActivityDistribution(cb: callback, event: event) {
         const icarusAccessToken:icarusAccessToken|undefined = xAccessTokenHeader(event)
 
-        if( icarusAccessToken ) {
+        if( icarusAccessToken) {
             complete(cb, this.service.getUserActivityDistribution(icarusAccessToken)
-            .then((report) => response(200, report)))
-            .catch( err => {
-                console.error(err)
-                cb( response(403, 'Unauthorized' ), null) // Returns unauthorised on any error
-            })
-          } else {
-            cb( response(403, 'Unauthorized' ), null)      
-          }
+                .then((report) => response(200, report))
+                .catch( err => { 
+                    console.error(err)
+                    return response(403, 'Unauthorized' ) // Returns unauthorised on any error
+                })
+            )
+        } else {
+            console.log('No access token header in request')
+            sendResponse(cb, response(403, 'Unauthorized' ))
+        }
     }
 }

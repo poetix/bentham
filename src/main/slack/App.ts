@@ -5,6 +5,7 @@ import { IdentityRepository } from "../common/repositories/IdentityRepository";
 import { IdentityService } from "../common/services/IdentityService";
 import { OAuthService } from "./services/OAuthService";
 import { OAuthEndpoint } from "./endpoints/OAuthEndpoint";
+import { IdentityEndpoint } from "./endpoints/IdentityEndpoint"
 import { DynamoClient } from "../common/clients/DynamoClient";
 
 const httpClient = new HttpClient();
@@ -25,3 +26,4 @@ const oAuthService = new OAuthService(slackClient, identityService);
 
 // Endpoints
 export const oAuthEndpoint = new OAuthEndpoint(oAuthService);
+export const identityEndpoint = new IdentityEndpoint(identityService)

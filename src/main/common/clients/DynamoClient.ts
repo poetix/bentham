@@ -34,6 +34,13 @@ export class DynamoClient {
       .then(result => result && result.Item || undefined);
   }
 
+  delete(tableName: string, key: any): Promise<any> {
+    return this.doOp({
+      TableName: `${this.tablePrefix}${tableName}`,
+      Key: key
+    }, (p, cb) => DynamoClient.dynamo.delete(p, cb));    
+  }
+
   putAll(tableName: string, items: Array<any>): Promise<any> {
     const params = {
       RequestItems: {}

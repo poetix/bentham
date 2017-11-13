@@ -103,4 +103,25 @@ export class IdentityService {
     }
   }
 
+  /**
+   * Remove Account and all Identities for a user
+   */
+  async forgetUser(icarusAccessToken: icarusAccessToken): Promise<void> {
+    return this.repo.getSlackIdentity(icarusAccessToken)
+      .then( slackIdentity => {
+        if( slackIdentity) {
+          const slackId = slackIdentity.id
+
+          return Promise.all([
+            this.repo.deleteDropboxIdentity(slackId),
+            this.repo.deleteGithubIdentity(slackId),
+            this.repo.deleteSlackIdentity(slackId),
+            this.repo.deleteIcarusAccount(slackId)
+          ]).then( res => { return } )
+        } else {
+          throw Error('Invalid Icarus access Token')
+        }
+      })
+  }
+
 }

@@ -231,6 +231,24 @@ functions:
           path: github-oauth-complete
           cors: true
 
+  # Identity management
+  forget-me:
+    handler: src/main/slack/handler.forgetMe
+    vpc:
+    securityGroupIds:
+      - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
+    subnetIds:
+      - Ref: ServerlessPrivateSubnetA
+      - Ref: ServerlessPrivateSubnetB
+    events:
+      - http:
+          method: get
+          path: forget-me
+          cors:
+            origin: '*'
+            headers:
+              - X-AccessToken          
+
   # DynamoDB event processors: builds Read Models
   file-changes-event-processor:
     handler: src/main/readModels/handler.fileChangesEvents
