@@ -1,3 +1,12 @@
+sudo: required
+
+addons:
+  apt:
+    sources:
+     - google-chrome
+    packages:
+     - google-chrome-stable fluxbox
+
 language: node_js
 node_js:
   - "6"
@@ -6,12 +15,23 @@ cache:
     - "node_modules"
 env:  
   global:
-    - SLS_DEBUG=true 
+    - SLS_DEBUG=true
+    - DISPLAY=:99.0 
+
 before_install:
-  - npm i -g serverless  
+  - yarn global add serverless
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-script: ./deploy.sh
+ 
+install:
+  - ./scripts/install-sls.sh
+  - ./scripts/install-fe.sh
 
-# See: https://medium.com/a-man-with-no-server/setting-up-a-ci-cd-pipeline-with-travis-ci-for-a-serverless-app-e98b0e57d30c
-# See: https://serverless.zone/ci-cd-with-serverless-v1-0-0-beta-ccb332944c6
+before_script: 
+  - source scripts/init-env.sh
+   
+script: 
+  - ./scripts/test-sls.sh &&
+    ./scripts/build-fe.sh &&
+    ./scripts/deploy-sls.sh
+  - 'if [ "$SKIP_E2E" != "true" ]; then bash ./scripts/test-e2e.sh; fi'
