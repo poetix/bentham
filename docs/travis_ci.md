@@ -38,3 +38,7 @@ The build currently only deploys `master` branch to `test` stage.
 You may force deploying any build to any stage setting `FORCE_DEPLOY_STAGE` to the name of target stage.
 
 End-to-end tests run only if the branch has been successfully deployed.
+
+## Known limitations
+* Need to run a complete login, integration link journey MANUALLY, using the test users againts stages deployed by the CI/CD before running e2e tests for the first time
+* The first deployment of a stage creates a CloudFront Distribution. It takes a while to set up (up to 45 mins) and causes Travis to timeout (default timeout is 10 mins). Deploy from console once to the target stage, before letting Travis to deploy.

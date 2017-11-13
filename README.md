@@ -125,6 +125,7 @@ sls deploy -v
 This provision infrastructure, deploys lambda and the content of the frontend target directory  (`./client/dist`).
 The frontend must be build before running deploy.
 
+When you deploy a Stage for the first time, a CloudFront Distribution got created. It may take quite a while to complete (up to 54 mins).
 
 ### Frontend localhost development
 

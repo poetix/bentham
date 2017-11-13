@@ -7,7 +7,7 @@ REGION="us-east-1" # This is hardwired
 # Maps branch to stage
 if [ $BRANCH == 'master' ]; then
   STAGE="test"
-else if [ -n "$FORCE_DEPLOY_STAGE" ]; then
+elif [ -n "$FORCE_DEPLOY_STAGE" ]; then
   echo "Forcing deploy to $FORCE_DEPLOY_STAGE"
   STAGE=$FORCE_DEPLOY_STAGE
 fi
@@ -36,4 +36,3 @@ if [ -z "$CERTIFICATE_ARN" ]; then
 fi
 export CERTIFICATE_ARN
 echo "Using certificate $CERTIFICATE_ARN"
-
