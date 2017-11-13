@@ -5,8 +5,11 @@ REGION="us-east-1" # This is hardwired
 
 
 # Maps branch to stage
-if [ $BRANCH == 'master' ] || [ $BRANCH == 'feature/52_e2e_test' ]; then
+if [ $BRANCH == 'master' ]; then
   STAGE="test"
+else if [ -n "$FORCE_DEPLOY_STAGE" ]; then
+  echo "Forcing deploy to $FORCE_DEPLOY_STAGE"
+  STAGE=$FORCE_DEPLOY_STAGE
 fi
 echo "Branch: $BRANCH, Mapped Stage: $STAGE, Is a PR? ${TRAVIS_PULL_REQUEST}"
 

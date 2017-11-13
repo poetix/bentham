@@ -4,10 +4,13 @@ Serverless project for monitoring various repositories and productivity tools
 
 ## Prerequisites
 
-Node:
+Node & Yarn:
 
 ```bash
 brew install node
+brew install yarn
+yarn global add serverless
+yarn
 ```
 
 AWS CLI: 
@@ -16,12 +19,6 @@ AWS CLI:
 pip install awscli --upgrade --user
 ```
 
-NPM modules
-
-```bash
-npm install serverless -g
-npm install
-```
 
 ## Domain setup
 
@@ -47,6 +44,7 @@ The following environment variables are expected, to deploy the project:
 * `ICARUS_STAGE`: Lambda stage you are deploying. **NOT required when buinding in CI**: the `build.sh` script takes care of it.
 * `ICARUS_SITE_BASE_DOMAIN`: Base domain for front-end site. May be the base domain of API domain, but this is not required.
 * `SLACK_TEAM_URL`: URL of Slack team
+* `CERTIFICARTE_ARN`: ARN of the ACM certificate (see below)
 
 Secrets:
 * `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`: Slack integration credentials
@@ -55,6 +53,11 @@ Secrets:
 * `GITHB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: GitHub API integration credentials
 * `RDS_USER` and `RDS_PWD`: RDS master user and pwd (master username default: `master`; no default pwd!)
 * `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`: AWS credentials of the user with enough power to execute the deployment.
+
+End-to-end test users:
+* `SLACK_TEST_USER_ID` and `SLACK_TEST_USER_PASSWORD`: Slack user for tests
+* `GITHUB_TEST_USER_ID` and `GITHUB_TEST_USER_PASSWORD`: Github user for tests
+* `DROPBOX_TEST_USER_ID` and `DROPBOX_TEST_USER_PASSWORD`: Dropbox user for tests
 
 ### AWS Region
 
@@ -88,57 +91,68 @@ export CERTIFICATE_ARN=`scripts/getCertificateArnByDomain.sh <base-domain> us-ea
 
 The second parameter is obviously the AWS Region, but at the moment only `us-east-1` is supported.
 
-### Compile Frontend
+### Application registration and integration setup
+
+The Icarus application must registered in Slack, Dropbox and Github.
+
+Dropobox and Github webhook must be setup for Icarus to receive events.
+
+See:
+* [Slack integration setup](./docs/slack_integration.md)
+* [Dropbox integration setup](./docs/dropbox_integration.md)
+* [Github integration setup](./docs/github_integration.md)
+
+
+### Build Frontend
 
 From `./client` directory:
 
 ```bash
-npm run build
+yarn build
 ```
-
-### Deploy Backend & Frontend
-
-```
-sls deploy -v
-```
-
-This deploys infrastructure and Lambdas, and copy the content of the frontend target directory (`./client/dist`)
-to the frontend S3 bucket.
-
-**DO NOT USE** `scripts/*deploy*.sh` during development: it only deploys the `master` branch to `test` stage. 
-
-
-#### DynamoDB and RDS deletion
-
-By default, `sls remove` does not delete DynamoDB tables and RDS instances.
-
-To force deletion of DynamoDB tables and RDS instances, add the `--dbDeletion Delete` option when running `sls deploy`.
-
-Note that the Deletion Policy is defined when you create the Stack and used when you remove it.
-
-### Frontend
 
 Frontend build expects the `ICARUS_STAGE` environment variable to decise which lambda stage to use (no `--stage` command line parameter) there.
 The default lambda stage is `dev`.
 
-Frontend is a separate Node project in the `./client` subdirectory.
+### Deploy Backend & Frontend
 
-#### Localhost development
+From main project directory: 
 
-- (from `./client` subdir): `npm run dev`
+```bash
+sls deploy -v
+```
+
+This provision infrastructure, deploys lambda and the content of the frontend target directory  (`./client/dist`).
+The frontend must be build before running deploy.
+
+
+### Frontend localhost development
+
+From `./client` subdir: 
+
+```bash
+yarn run dev
+```
 
 Runs a Node instance on localhost serving the application and reloading dynamically.
 
 Localhost frontend still uses deployed Lambdas, so don't forget specifying `ICARUS_STAGE` (or using the default `dev` stage).
 
-#### Deployment
+### Frontend end-to-end tests
 
-1. Build the application: (from `./client`) `npm run build`
-2. Deploy on S3: (from main directory) `sls client deploy`
+From `./client` subdir: 
 
-Note that the build runs from the client subdir, while the deploy runs from the main subdir!
+```bash
+yarn e2e
+```
 
-#### Database retention
+Tests use a deployed frontend. 
+By default the stage defined by `ICARUS_STAGE` is used, but may be overridden setting `ICARUS_E2E_TARGET`.
+
+E2e test uses Slack, Dropbox and Github actual users. Their credentials must be set up in `*_TEST_USER_ID` and `*_TEST_USER_PWD` variables.
+
+
+### Database retention
 
 By default, databases (DynamoDB tables and Aurora instances) are deployed with a `'Delete'` *DeletionPolicy*.
 It means they will be deleted when you remove the stack, losing all data.
@@ -147,26 +161,32 @@ You may optionally specify `--dbDeletion Retain` when **deploying** the stack to
 
 Note that the *DeletionPolicy* has to be specified when the infrastructure is created, to make it work when you will later delete it.
 
+
 ### Cleanup
 
-`sls remove -v --stage <stage>` removes lambdas, DynamoDB tables, RDS Cluster, frontend S3 bucket and CloudFront Distribution
+```bash
+sls remove -v
+```
 
-**There is a known issue blocking complete removal**. If removal fails, delete DynamoDB tables and RDS Cluster from AWS Console, then re-run the remove script.
+Removes lambdas, DynamoDB tables, RDS Cluster, frontend S3 bucket and CloudFront Distribution
 
-#### Custom API Gateway domaim removal
+**There is a known AWS issue potentially preventing complete deletion. See below.**
+If deletion fails, look for orphan network interfaces (ENI) linked to the VPC, detach and drop than manually and try deleting the 
+stack again, either by `sls` or from the CloudFormation console.
+
+
+### Custom API Gateway domaim removal
 
 `sls delete_domain` removes the custom domain (used by all stages).
 
-Execute this command only after deleting all stages.
+This operation removes the domain used by all API stages.
+It is required only if you are completely dropping the project.
 
 
 ## CI/CD
 
-Set all required env variables in Travis project settings, including AWS credentials.
-
-Travis uses `scripts/pre-deploy.sh` script, and only deploys `master` branch to `test` stage.
-
-The `CERTIFICATE_ARN` variable must not be set up as the deploy script takes care of it.
+Build manifest and build scripts are available for setting up Travis CI.
+See [detailed docs for setting up Travis](./docs/travis_ci.md).
 
 
 ## Public URLs
@@ -193,3 +213,4 @@ The `CERTIFICATE_ARN` variable must not be set up as the deploy script takes car
 * API Gateway Custom Domains are only available in `us-east-1` Region (10/2017) so we must use that Region.
     * There is some issue deploying RDS Aurora on `us-east-1a` and `-1b`. I can't find any documentation, but other people had the same issue. CF complaining about "Your subnet group doesn't have enough availability zones..." when using `us-east-1a` and `-1b`, while it works on `-1c` and `-1d`. For example, see [this answer](https://stackoverflow.com/questions/44924723/creation-rds-aurora-cluster-via-cloudformation#answer-45340611)
 * There is a known AWS issue potentially preventing from deleting the whole stack: https://stackoverflow.com/questions/41299662/aws-lambda-created-eni-not-deleting-while-deletion-of-stack#answer-41310289
+* The user journey authenticating with Slack, Dropbox and Github depends on whether the test user has already authorised the Icarus application instance. The current end-2-end tests assumes the user has authorised the app (otherwise the journey would not be repeatable). **You have to run a MANUAL login an link integrations journey using test users before running the end-2-end tests**
