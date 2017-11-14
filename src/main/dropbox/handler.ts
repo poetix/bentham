@@ -5,5 +5,4 @@ export const webhookChallenge = (event, context, cb) => webhookEndpoint.challeng
 export const webhookNotify = (event, context, cb) => webhookEndpoint.notify(cb, event);
 
 // Oauth lambdas
-export const oauthInitiate = (event, context, cb) => oauthEndpoint.initiate(cb, event);
-export const oauthComplete = (event, context, cb) => oauthEndpoint.complete(cb, event);
+export const oauth = (event, context, cb) => oauthEndpoint.oauth(cb, event)

@@ -22,12 +22,12 @@ when(mockedOauthService.processCode(anyString(), anyString(), anyString())).then
 const endpoint = new OAuthEndpoint(oauthService);
 
 
-const _initiate = (cb, e) => endpoint.initiate(cb, e);
-const _complete = (cb, e) => endpoint.complete(cb, e);
+const _oauth = (cb, e) => endpoint.oauth(cb, e);
 
 describe("Dropbox OAuth Endpoint", () => {
   it("should redirect an 'initiate' request to Dropbox OAuth authorise endpoint", async () => {
-      const result = await toPromise(_initiate, {
+      const result = await toPromise(_oauth, {
+        resource: '/dropbox-oauth-initiate',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
@@ -43,7 +43,8 @@ describe("Dropbox OAuth Endpoint", () => {
   });
 
   it("should return an Icarus User Token including Dropbox ID on completion", async () => {
-    const result = await toPromise(_complete, {
+    const result = await toPromise(_oauth, {
+      resource: '/dropbox-oauth-complete',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },

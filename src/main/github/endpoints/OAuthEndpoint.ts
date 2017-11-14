@@ -12,8 +12,27 @@ import { githubAuthorisationCode } from "../Api"
 export class OAuthEndpoint {
   constructor(private readonly oauthService: OAuthService) {}
 
+  oauth(callback: callback, event: event) {
+    const resource = event.resource
+    switch(resource) {
+      case '/github-oauth-initiate': {
+        this.initiate(callback, event)
+        break
+      }
+      case '/github-oauth-complete': {
+        this.complete(callback, event)
+        break
+      }
+      default: {
+        console.log('Unexpected resource mapped to this handler: ', resource)
+        sendResponse(callback, response(400, 'Resource not supported'))
+      }       
+    }
+
+  }
+
   // Initiate OAuth flow sending the user to the GithHub Authorise endpoint
-  initiate(callback: callback, event: event) {
+  private initiate(callback: callback, event: event) {
 
 
     const body = parseBody(event)
@@ -24,7 +43,7 @@ export class OAuthEndpoint {
   }
 
   // Complete OAuth flow, redeeming Github auth code and adding Github identity to the user
-  complete(cb: callback, event: event) {
+  private complete(cb: callback, event: event) {
     const body = parseBody(event)
     const icarusAccessToken:icarusAccessToken = body.icarusAccessToken
     const githubAuthorisationCode:githubAuthorisationCode = body.code

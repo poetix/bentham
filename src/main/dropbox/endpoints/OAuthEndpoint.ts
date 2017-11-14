@@ -13,6 +13,25 @@ export class OAuthEndpoint {
   constructor(
     private readonly oauthService: OAuthService) {}
 
+  oauth(cb: callback, event: event) {
+    const resource = event.resource;
+        
+    switch(resource) {
+      case '/dropbox-oauth-initiate': {
+        this.initiate(cb, event)
+        break
+      }
+      case '/dropbox-oauth-complete': {
+        this.complete(cb, event)
+        break
+      }
+      default: {
+        console.log('Unexpected resource mapped to this handler: ', resource)
+        sendResponse(cb, response(400, 'Resource not supported'))
+      }
+    }
+  }
+
   /** 
     Initiate OAuth web flow with Dropbox
     
@@ -22,7 +41,7 @@ export class OAuthEndpoint {
 
     Redirects user to Github authorise page
   */
-  initiate(cb: callback, event: event) {
+  private initiate(cb: callback, event: event) {
     
     const body = parseBody(event)
     const icarusAccessToken:icarusAccessToken = body.icarusAccessToken
@@ -43,7 +62,7 @@ export class OAuthEndpoint {
     Response
       Body: IcarusUserToken
   */
-  complete(cb: callback, event: event) {
+  private complete(cb: callback, event: event) {
     
     const body = parseBody(event)
     const icarusAccessToken:icarusAccessToken = body.icarusAccessToken

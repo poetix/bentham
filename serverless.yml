@@ -107,8 +107,8 @@ custom:
 functions:
 
   # Slack
-  slack-oauth-initiate:
-    handler: src/main/slack/handler.oauthInitiate
+  slack-oauth:
+    handler: src/main/slack/handler.oauth
     vpc:
       securityGroupIds:
         - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
@@ -120,16 +120,6 @@ functions:
           method: get
           path: slack-oauth-initiate
           cors: true  
-
-  slack-oauth-complete:
-    handler: src/main/slack/handler.oauthComplete
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB
-    events:
       - http:
           method: post
           path: slack-oauth-complete
@@ -162,22 +152,8 @@ functions:
           method: post
           path: dropbox-webhook
 
-  dropbox-oauth-initiate:
-    handler: src/main/dropbox/handler.oauthInitiate
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB  
-    events:
-      - http:
-          method: post
-          path: dropbox-oauth-initiate
-          cors: true
-
-  dropbox-oauth-complete:
-    handler: src/main/dropbox/handler.oauthComplete
+  dropbox-oauth:
+    handler: src/main/dropbox/handler.oauth
     vpc:
       securityGroupIds:
         - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
@@ -185,6 +161,10 @@ functions:
         - Ref: ServerlessPrivateSubnetA
         - Ref: ServerlessPrivateSubnetB
     events:
+      - http:
+          method: post
+          path: dropbox-oauth-initiate
+          cors: true
       - http:
           method: post
           path: dropbox-oauth-complete
@@ -204,8 +184,8 @@ functions:
           method: post
           path: github-webhook
 
-  github-oauth-initiate:
-    handler: src/main/github/handler.oauthInitiate
+  github-oauth:
+    handler: src/main/github/handler.oauth
     vpc:
       securityGroupIds:
         - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
@@ -217,16 +197,6 @@ functions:
           method: post
           path: github-oauth-initiate
           cors: true
-
-  github-oauth-complete:
-    handler: src/main/github/handler.oauthComplete
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB  
-    events:
       - http:
           method: post
           path: github-oauth-complete
