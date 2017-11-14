@@ -25,6 +25,13 @@ export class IdentityRepository {
     }).then(res => icarusAccessToken)
   }
 
+  // Delete an Icarus account
+  async deleteIcarusAccount(slackId: string): Promise<void> {
+    console.log(`Deleting Icarus account for SlackID: ${slackId}`)
+    return this.dynamo.delete(accountsTable, {
+      slack_id: slackId
+    })
+  }
 
   // Save DropboxIdentity into identities table
   async saveDropboxIdentity(slackId: string, dropboxIdentity: DropboxIdentity): Promise<DropboxIdentity> {
@@ -36,6 +43,8 @@ export class IdentityRepository {
       access_token: dropboxIdentity.accessToken
     }).then(res =>  dropboxIdentity )
   }
+
+
 
   // Save GitHub into identities table
   async saveGithubIdentity(slackId: string, githubIdentity: GithubIdentity): Promise<GithubIdentity> {
@@ -61,6 +70,29 @@ export class IdentityRepository {
     })
     .then(res => slackIdentity)
   }
+
+  private async deleteIdentity(slackId: string, type: IdentityType): Promise<void> {
+    console.log(`Deleting an Identity of type "${type} for SlackID: ${slackId} from DynamoDB`)
+    return this.dynamo.delete(identitiesTable, {
+      slack_id: slackId,
+      type: type
+    })     
+  }
+
+  // Delete a Dropbox identity
+  async deleteDropboxIdentity(slackId: string): Promise<void> {
+    return this.deleteIdentity(slackId, IdentityType.Dropbox)
+  }
+
+  // Delete a Github identity
+  async deleteGithubIdentity(slackId: string): Promise<void> {
+    return this.deleteIdentity(slackId, IdentityType.Github)   
+  }
+  
+  // Delete a Slack identity
+  async deleteSlackIdentity(slackId: string): Promise<void> {
+    return this.deleteIdentity(slackId, IdentityType.Slack)   
+  }  
 
   // Retrieves Slack Identity by icarus access token; reject if lookup fails
   async getSlackIdentity(icarusAccessToken: icarusAccessToken): Promise<SlackIdentity> {

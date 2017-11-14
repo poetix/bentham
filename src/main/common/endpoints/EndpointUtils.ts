@@ -15,13 +15,17 @@ export const complete = <T>(cb: callback, p: Promise<T>) => {
     })
 };
 
-export const response = (statusCode: number, bodyObject: any) => ({
-  statusCode: 200,
+export const sendResponse = (cb: callback, response: any) => {
+  cb(null, response)
+} 
+
+export const response = (statusCode: number, bodyObject?: any) => ({
+  statusCode: statusCode,
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*"
   },
-  body: JSON.stringify(bodyObject)
+  body: bodyObject ? JSON.stringify(bodyObject) : null
 })
 
 export const parseBody = (evt: event ) => {
@@ -35,6 +39,8 @@ export const xAccessTokenHeader = (evt:event): icarusAccessToken|undefined => {
 }
 
 const getHeaderCaseUnsensitive = (evt: event, headerName:string): string|undefined => {
+  if ( !evt.headers ) return
+  
   const headerNames = Object.keys(evt.headers)
   .reduce( (keys, k) => { keys[k.toLowerCase()] = k; return keys}, {} )
 
