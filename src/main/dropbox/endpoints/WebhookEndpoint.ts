@@ -1,10 +1,9 @@
 /**
 Classes in this module handle the protocol-level tasks of handling Events and returning HTTP responses.
 */
-import { complete } from "../../common/endpoints/EndpointUtils";
+import { complete, sendResponse, response } from "../../common/endpoints/EndpointUtils";
 import { event, callback, uri } from "../../common/Api";
 import { challenge } from "../Api";
-import { redirectTo } from "../../common/clients/HttpClient";
 import { Notification, NotificationService } from "../services/NotificationService";
 
 export class WebhookEndpoint {
@@ -12,22 +11,17 @@ export class WebhookEndpoint {
   constructor(private readonly service: NotificationService) {}
 
   challenge(cb: callback, event: event) {
-    cb(null,
-        {
-          statusCode: 200,
-          body: event.queryStringParameters.challenge
-        });
+    const challenge = event.queryStringParameters.challenge
+    sendResponse(cb, response(200, challenge))
   }
 
   notify(cb: callback, event: event) {
-    complete(cb, this.processAndReturn(JSON.parse(event.body)));
+    const notification: Notification = JSON.parse(event.body)
+    complete(cb, this.processAndReturn200( notification ));
   }
 
-  private async processAndReturn(notification: Notification): Promise<any> {
+  private async processAndReturn200(notification: Notification): Promise<any> {
     await this.service.processNotification(notification);
-
-    return {
-      statusCode: 200
-    };
+    return response(200)
   }
 }

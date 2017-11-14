@@ -13,8 +13,7 @@ const oAuthService = instance(mockOAuthService);
 
 const endpoint = new OAuthEndpoint(oAuthService);
 
-const _initiate = (cb, e) => endpoint.initiate(cb, e);
-const _complete = (cb, e) => endpoint.complete(cb, e);
+const _oauth = (cb, e) => endpoint.oauth(cb, e)
 
 beforeEach(() => {
   resetCalls(mockOAuthService)
@@ -27,7 +26,8 @@ describe("Slack OAuth Endpoint", () => {
     it("should redirect an 'initiate' request to the Slack team API", async () => {
       when(mockOAuthService.getOAuthAuthoriseUri(anyString())).thenReturn("http://oauth-uri");
 
-      const result = await toPromise(_initiate, {
+      const result = await toPromise(_oauth, {
+        resource: '/slack-oauth-initiate',
         queryStringParameters: {
           returnUri: 'http://return.uri/#/'
         }
@@ -43,6 +43,7 @@ describe("Slack OAuth Endpoint", () => {
   describe("complete", () => {
 
     const requestEvent = {
+      resource: '/slack-oauth-complete',
       headers: {
         Host: "aws-api",
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -65,7 +66,7 @@ describe("Slack OAuth Endpoint", () => {
       }
       when(mockOAuthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
       
-        const result = await toPromise(_complete, requestEvent);
+        const result = await toPromise(_oauth, requestEvent);
   
         expect(result.statusCode).to.equal(200);
         expect(result.body).to.equal(JSON.stringify(icarusUserToken));
@@ -83,7 +84,7 @@ describe("Slack OAuth Endpoint", () => {
   
       when(mockOAuthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
-      const result = await toPromise(_complete, requestEvent);
+      const result = await toPromise(_oauth, requestEvent);
   
       expect(result.statusCode).to.equal(200);
       expect(result.body).to.equal(JSON.stringify(icarusUserToken));
@@ -100,7 +101,7 @@ describe("Slack OAuth Endpoint", () => {
       }
       when(mockOAuthService.processCode(anyString(), anyString())).thenReturn(Promise.resolve(icarusUserToken));
 
-      const result = await toPromise(_complete, requestEvent);
+      const result = await toPromise(_oauth, requestEvent);
   
       expect(result.statusCode).to.equal(200);
       expect(result.body).to.equal(JSON.stringify(icarusUserToken));

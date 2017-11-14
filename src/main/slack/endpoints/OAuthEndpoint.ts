@@ -1,5 +1,4 @@
-import { complete, response, parseBody } from "../../common/endpoints/EndpointUtils";
-import { redirectTo } from "../../common/clients/HttpClient";
+import { complete, response, sendResponse, redirectToResponse, parseBody } from "../../common/endpoints/EndpointUtils";
 import { slackAuthCode } from "../Api";
 import { OAuthService } from "../services/OAuthService";
 import { callback, event, uri, host, lambdaStage } from "../../common/Api";
@@ -9,16 +8,34 @@ export class OAuthEndpoint {
   constructor(
     private readonly oAuthService: OAuthService) {}
 
+    oauth(callback: callback, evt: event) {
+      const resource = evt.resource;
+      switch(resource) {
+        case '/slack-oauth-initiate': {
+          this.initiate(callback, evt)
+          break
+        }
+        case '/slack-oauth-complete': {
+          this.complete(callback, evt)
+          break
+        }
+        default: {
+          console.log('Unexpected resource mapped to this handler: ', resource)
+          sendResponse(callback, response(400, 'Resource not supported'))
+        }
+      }
+    }
+
   /** 
     Initiate OAuth flow, sending the user to the Slack Authorise endpoint
     Expects the following querystring params:
       - returnUri: return URI after Slack authorise
     Redirects user to the Slack authorize page
   */
-  initiate(callback: callback, evt: event) {
+  private initiate(callback: callback, evt: event) {
     const returnUri:uri = evt.queryStringParameters.returnUri
     
-    callback(null, redirectTo(this.oAuthService.getOAuthAuthoriseUri(returnUri)));
+    sendResponse(callback, redirectToResponse(this.oAuthService.getOAuthAuthoriseUri(returnUri)))
   }
 
 
@@ -31,7 +48,7 @@ export class OAuthEndpoint {
     Accepts application/json and 'application/x-www-form-urlencoded
     Returns an IcarusUserToken
   */
-  complete(cb: callback, evt: event) {
+  private complete(cb: callback, evt: event) {
     const body = parseBody(evt)
     const slackAuthCode = body.code
     const returnUri:uri = body.returnUri
