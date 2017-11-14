@@ -24,7 +24,7 @@ export const sendResponse = (cb: callback, response: any) => {
 export const response = (statusCode: number, bodyObject?: string|any) => ({
   statusCode: statusCode,
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": (typeof bodyObject === 'string') ? 'text/plain' : "application/json",
     "Access-Control-Allow-Origin": "*"
   },
   body: bodyObject ? ( (typeof bodyObject === 'string') ? bodyObject : JSON.stringify(bodyObject) ) : null
