@@ -20,7 +20,8 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:BatchWriteItem
-        - dynamodb:Query   
+        - dynamodb:Query
+        - dynamodb:DeleteItem   
       Resource:
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.DROPBOXCURSORS_TABLE}
         - arn:aws:dynamodb:*:*:table/${self:provider.environment.FILECHANGES_TABLE}
@@ -242,7 +243,7 @@ functions:
       - Ref: ServerlessPrivateSubnetB
     events:
       - http:
-          method: get
+          method: delete
           path: forget-me
           cors:
             origin: '*'
