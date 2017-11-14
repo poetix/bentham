@@ -6,16 +6,6 @@ export function pathToLambda(host: host, stage:lambdaStage, path: string): uri {
   return `https://${host}/${stage}/${path}`;
 }
 
-export function redirectTo(uri: uri) {
-  console.log('Replying with redirect to: ' + uri)
-  return {
-    statusCode: 302,
-    headers: {
-      Location: uri
-    }
-  };
-}
-
 export class HttpClient {
 
   doHttp(options: any): Promise<any> {

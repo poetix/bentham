@@ -1,6 +1,6 @@
-import { complete, response, parseBody } from "../../common/endpoints/EndpointUtils";
+import { complete, response, sendResponse, redirectToResponse, parseBody } from "../../common/endpoints/EndpointUtils";
 import { event, callback, icarusAccessToken, uri, host, lambdaStage } from "../../common/Api";
-import { pathToLambda, redirectTo } from "../../common/clients/HttpClient";
+import { pathToLambda } from "../../common/clients/HttpClient";
 import { OAuthService } from "../services/OAuthService";
 import { githubAuthorisationCode } from "../Api"
 
@@ -20,8 +20,7 @@ export class OAuthEndpoint {
     const icarusAccessToken:icarusAccessToken = body.icarusAccessToken
     const returnUri:uri = body.returnUri
 
-
-    callback(null, redirectTo(this.oauthService.getOAuthAuthoriseUri(icarusAccessToken, returnUri)));
+    sendResponse(callback, redirectToResponse(this.oauthService.getOAuthAuthoriseUri(icarusAccessToken, returnUri)))
   }
 
   // Complete OAuth flow, redeeming Github auth code and adding Github identity to the user

@@ -1,8 +1,8 @@
-import { callback, event, icarusAccessToken } from "../Api";
+import { callback, event, icarusAccessToken, uri } from "../Api";
 import { parse as parseEncodedForm } from "querystring"
 
 /**
- Takes a Promise, and uses it to complete a callback.
+  Takes a Promise, and uses it to complete a callback.
  */
 export const complete = <T>(cb: callback, p: Promise<T>) => {
 
@@ -15,18 +15,31 @@ export const complete = <T>(cb: callback, p: Promise<T>) => {
     })
 };
 
+// Call the callback sending back a synchronous response object
 export const sendResponse = (cb: callback, response: any) => {
   cb(null, response)
 } 
 
-export const response = (statusCode: number, bodyObject?: any) => ({
+// Create a response object with a status code and a given (optional) payload
+export const response = (statusCode: number, bodyObject?: string|any) => ({
   statusCode: statusCode,
   headers: {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*"
   },
-  body: bodyObject ? JSON.stringify(bodyObject) : null
+  body: bodyObject ? ( (typeof bodyObject === 'string') ? bodyObject : JSON.stringify(bodyObject) ) : null
 })
+
+// Create a redirect response object
+export function redirectToResponse(uri: uri) {
+  console.log('Replying with redirect to: ' + uri)
+  return {
+    statusCode: 302,
+    headers: {
+      Location: uri
+    }
+  };
+}
 
 export const parseBody = (evt: event ) => {
   const contentType = getHeaderCaseUnsensitive(evt, 'content-type')

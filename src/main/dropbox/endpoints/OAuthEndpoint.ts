@@ -1,10 +1,10 @@
 /**
 Classes in this module handle the protocol-level tasks of handling Events and returning HTTP responses.
 */
-import { complete, response, parseBody } from "../../common/endpoints/EndpointUtils";
+import { complete, response, sendResponse, redirectToResponse, parseBody } from "../../common/endpoints/EndpointUtils";
 import { event, callback, host, uri, lambdaStage, icarusAccessToken } from "../../common/Api";
 import { IdentityService } from "../../common/services/IdentityService";
-import { pathToLambda, redirectTo } from "../../common/clients/HttpClient";
+import { pathToLambda } from "../../common/clients/HttpClient";
 import { OAuthService } from "../services/OAuthService";
 import { dropboxAccountId, dropboxAuthorisationCode } from "../Api"
 
@@ -28,8 +28,8 @@ export class OAuthEndpoint {
     const icarusAccessToken:icarusAccessToken = body.icarusAccessToken
     const returnUri:uri = body.returnUri
   
-    
-    cb(null, redirectTo(this.oauthService.getOAuthAuthoriseUri(icarusAccessToken, returnUri)));
+
+    sendResponse(cb, redirectToResponse(this.oauthService.getOAuthAuthoriseUri(icarusAccessToken, returnUri)))
   }
 
   /**

@@ -1,5 +1,4 @@
-import { complete, response, parseBody } from "../../common/endpoints/EndpointUtils";
-import { redirectTo } from "../../common/clients/HttpClient";
+import { complete, response, sendResponse, redirectToResponse, parseBody } from "../../common/endpoints/EndpointUtils";
 import { slackAuthCode } from "../Api";
 import { OAuthService } from "../services/OAuthService";
 import { callback, event, uri, host, lambdaStage } from "../../common/Api";
@@ -18,7 +17,7 @@ export class OAuthEndpoint {
   initiate(callback: callback, evt: event) {
     const returnUri:uri = evt.queryStringParameters.returnUri
     
-    callback(null, redirectTo(this.oAuthService.getOAuthAuthoriseUri(returnUri)));
+    sendResponse(callback, redirectToResponse(this.oAuthService.getOAuthAuthoriseUri(returnUri)))
   }
 
 

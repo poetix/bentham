@@ -1,4 +1,4 @@
-import { complete } from "../../common/endpoints/EndpointUtils";
+import { complete, sendResponse, response } from "../../common/endpoints/EndpointUtils";
 import { event, callback } from "../../common/Api";
 import { WebhookEventService, WebhookEvent, webhookEventType } from "../services/WebhookEventService";
 
@@ -21,17 +21,12 @@ export class WebhookEndpoint {
       }
 
       this.service.processWebhookEvent(webhookEvent)
-        .then(res => sendResponse(callback, 201))
-        .catch(err => sendResponse(callback, 500, { 'X-GitHub-Webhook-Error': err }))
-    } else {
-      sendResponse(callback, 400, { 'X-GitHub-Webhook-Error': 'Invalid payload signature'})
-    }
-  }
-}
+        .then(res => sendResponse(callback, response(201)) )
+        .catch(err => sendResponse(callback, response(500, err )) )
 
-const sendResponse = (callback, statusCode:number, headers:any = null) => {
-  callback(null, {
-      statusCode: statusCode,
-      headers: headers,
-  });
+    } else {
+      sendResponse(callback, response(400, "Invalid payload signature"))
+    }
+
+  }
 }
