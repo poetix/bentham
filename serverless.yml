@@ -109,12 +109,6 @@ functions:
   # Slack
   slack-oauth:
     handler: src/main/slack/handler.oauth
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -128,12 +122,6 @@ functions:
   # Dropbox
   dropbox-webhook-challenge:
     handler: src/main/dropbox/handler.webhookChallenge
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: get
@@ -141,12 +129,6 @@ functions:
 
   dropbox-webhook-notify:
     handler: src/main/dropbox/handler.webhookNotify
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB  
     events:
       - http:
           method: post
@@ -154,12 +136,6 @@ functions:
 
   dropbox-oauth:
     handler: src/main/dropbox/handler.oauth
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -173,12 +149,6 @@ functions:
   # Github
   gihub-webhook-receive:
     handler: src/main/github/handler.webhookReceive
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -186,12 +156,6 @@ functions:
 
   github-oauth:
     handler: src/main/github/handler.oauth
-    vpc:
-      securityGroupIds:
-        - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-      subnetIds:
-        - Ref: ServerlessPrivateSubnetA
-        - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: post
@@ -205,12 +169,6 @@ functions:
   # Identity management
   forget-me:
     handler: src/main/slack/handler.forgetMe
-    vpc:
-    securityGroupIds:
-      - "Fn::GetAtt": ServerlessSecurityGroup.GroupId
-    subnetIds:
-      - Ref: ServerlessPrivateSubnetA
-      - Ref: ServerlessPrivateSubnetB
     events:
       - http:
           method: delete
@@ -284,7 +242,7 @@ resources:
         CidrBlock: "10.42.0.0/16"
         Tags:
           - Key: Name
-            Value: "${self:custom.nameSpace"
+            Value: "${self:custom.nameSpace}"
 
     # VPC Networking.
     # See:
